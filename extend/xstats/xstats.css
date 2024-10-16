@@ -1,0 +1,200 @@
+body {
+    background: url(/bilder/hintergrund.gif);
+    font-family: arial,helvetica,sans-serif;
+    font-size: 12px;
+    color: #aaa;
+    line-height: 180%;
+}
+ul,
+li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+a,
+a:visited {
+    color: #999;
+}
+a:hover {
+    color: #efefef;
+    text-decoration: underline;
+}
+h2 {
+    margin: 0;
+    padding: 0;
+    color: #fff;
+}
+
+h3{
+    font-size: 12pt;
+}
+
+h4{
+    font-size: 10pt;
+}
+
+.clear {
+    clear: both;
+    font-size: 0;
+}
+
+#logo {
+    margin: 30px 0;
+}
+
+.borderedBoxWrap {
+    background: url(images/bg_borderedBox_top.gif) no-repeat;
+    padding-top: 25px;
+    margin-bottom: 30px;
+}
+.borderedBox {
+    background: url(images/bg_borderedBox_bottom.gif) left bottom no-repeat;
+    padding-bottom: 25px;
+}
+.borderedBoxInner {
+    background: url(images/bg_borderedBox_middle.gif) repeat-y;
+    padding: 0 25px;
+}
+
+.borderedBoxWrap.thumbs img {
+    margin: 0 15px 15px 0;
+}
+img.bigStat,
+iframe.statsFrame {
+    margin: 30px;
+}
+
+.pageTop {
+    line-height: 180%;
+    margin-left: 770px;
+    font-weight: bold;
+}
+
+/*TABLE stuff*/
+table.shiptable {
+    width:800px;
+    border-width: 0px;
+    border-spacing: 5px;
+    border-style: inset;
+    border-collapse: collapse;
+    background-color: #454545;
+}
+table.shiptable th {
+    background: #383838;
+    border-width: 1px;
+    padding: 3px;
+    border-style: inset;
+    border-color: #545454;
+    text-align: left;
+    color: #fff;
+    font-size: 14px;
+    padding: 5px 3px;
+}
+table.shiptable td {
+    font-size: small;
+    border-width: 1px;
+    padding: 3px;
+    border-style: inset;
+    border-color: #545454;
+}
+
+table.shiptable td img {
+    float: left;
+    margin-right: 10px;
+}
+
+table.shiptable td span {
+    line-height: 30px;
+}
+
+table.shiptable td img.padded {
+    margin-top: 2px;
+}
+
+table.shiptable td.highlight {
+    font-weight: bold;
+}
+
+/* any percent bar */
+div.percentbar {
+    border: 1px solid #000000;
+    width: 60px;
+    margin: 2px 5px 2px 0;
+    float: left;    
+}
+
+div.percentbar > div {
+    background-color: #1BAC2C;
+    height: 10px
+}
+
+/* hull damage bar */
+div.hulldamage {
+    border: 1px solid #000000;
+    width: 60px;
+    margin: 2px 5px 2px 0;
+    float: left;
+    background: #990000;
+}
+
+div.hulldamage > div {
+    background-color: #1BAC2C;
+    height: 10px
+}
+
+p.statsver{
+    text-align:right;
+    float:right;
+}
+
+/* TAB NAVIGATION */
+
+img.beveled{
+    border-top:1px solid #545454;
+    border-left:1px solid #545454;
+    border-right:1px solid #9b9b9b;
+    border-bottom:1px solid #9b9b9b;
+}
+
+#Tabs {
+    margin-left: 20px;
+    height: 14px;
+}
+
+#Tabs li {
+    float: left;
+    margin: 0 10px 0 0;
+    padding: 0;
+    list-style: none;
+    height: 30px;
+}
+
+#Tabs a,
+#Tabs span {
+    display: block;
+    float: left;
+    line-height: 34px;
+    font-weight: bold;
+}
+#Tabs a {
+    background: url(images/bg_tab.jpg) no-repeat;
+    padding: 0 0 0 18px;
+    color: #fff;
+    text-decoration: none;
+}
+#Tabs span {
+    background: url(images/bg_tab.jpg) right top no-repeat;
+    padding: 2px 18px 0 0;
+}
+
+#Tabs li:hover a,
+#Tabs li.active a{
+    background: url(images/bg_tab.jpg) 0 -42px no-repeat;
+    color: #000;
+}
+#Tabs li:hover span,
+#Tabs li.active span{
+    background: url(images/bg_tab.jpg) right -42px no-repeat;
+}
+
+
