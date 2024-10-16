@@ -219,7 +219,7 @@ foreach ($array11_out as $array11) {
         $datum=time();
         neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$besitzer,$lang['hostbodenkampf']['btruppen3'],array($name));
         neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$kolonisten_spieler,$lang['hostbodenkampf']['btruppen2'],array($name));
-        $zeiger_temp = $db->execute("UPDATE " . table_prefix . "planeten set leichtebt='0', 
+       $db->execute("UPDATE " . table_prefix . "planeten set leichtebt='0', 
                                                                              schwerebt='0', 
                                                                              kolonisten='0', 
                                                                              besitzer='0', 
@@ -230,7 +230,7 @@ foreach ($array11_out as $array11) {
                                                                              auto_vorrat='0', 
                                                                              logbuch='' where id='".$pid."'");
         if ($sternenbasis_id>=1) {
-            $zeiger_temp = $db->execute("UPDATE " . table_prefix . "sternenbasen set besitzer='0' where id='".$sternenbasis_id."'");
+            $db->execute("UPDATE " . table_prefix . "sternenbasen set besitzer='0' where id='".$sternenbasis_id."'");
         }
     }
     ////////////////////////////////////////////////////////////////
