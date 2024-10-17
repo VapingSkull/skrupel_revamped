@@ -1146,6 +1146,7 @@ if ($datensaetze>=1) {
                             $x=mt_rand(50,$umfang-100);
                             $y=mt_rand(50,$umfang-100);
                             $ok=2;
+                            
                             $nachbarn=0;
                             $zeiger2 ="SELECT count(*) as total from " . table_prefix . "planeten where sqrt( (x_pos-$x)*(x_pos-$x)+(x_pos-$x)*(x_pos-$x) )<=20 and spiel='".$spiel."'";                            
                             $nachbarn=$db->getOne($zeiger2);                            
@@ -1584,36 +1585,36 @@ $db->execute("DELETE FROM " . table_prefix . "huellen where spiel='".$spiel."' a
 $db->execute("UPDATE " . table_prefix . "sternenbasen set schiffbau_status='0',schiffbau_extra='' where spiel='".$spiel."'");
 ///////////////////////////////////////////////////////////////////////////////////////////////SCHIFFSBAU ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////GRAVITATION ANFANG
-$zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "schiffe where status<>2 and spiel='".$spiel."' order by id");
-$schiffanzahl = mysql_num_rows($zeiger2);
+$sql200 = "SELECT * FROM " . table_prefix . "schiffe use index (status,spiel) where status<>2 and spiel='".$spiel."' order by id";
+$rows200 = $db->execute($sql200);
+$schiffanzahl = $rows200->RecordCount();
 if ($schiffanzahl>=1) {
-    for  ($ir=0; $ir<$schiffanzahl;$ir++) {
-        $ok2 = mysql_data_seek($zeiger2,$ir);
-        $array2 = mysql_fetch_array($zeiger2);
-        $shid=$array2["id"];
-        $kox=$array2["kox"];
-        $koy=$array2["koy"];
-        $flug=$array2["flug"];
-        $zielid=$array2["zielid"];
-        $volk=$array2["volk"];
-        $bild_gross=$array2["bild_gross"];
-        $besitzer=$array2["besitzer"];
-        $name=$array2["name"];
+    $array200_out = $db->getArray($sql200);
+    foreach ($array200_out as $array200) {        
+        $shid=$array200["id"];
+        $kox=$array200["kox"];
+        $koy=$array200["koy"];
+        $flug=$array200["flug"];
+        $zielid=$array200["zielid"];
+        $volk=$array200["volk"];
+        $bild_gross=$array200["bild_gross"];
+        $besitzer=$array200["besitzer"];
+        $name=$array200["name"];
         $reichweite=13;
-        $zeiger = mysql_query("SELECT * FROM " . table_prefix . "planeten where (sqrt(((x_pos-$kox)*(x_pos-$kox))+((y_pos-$koy)*(y_pos-$koy)))<=$reichweite) and spiel=$spiel order by id");
-        $planetenanzahl = mysql_num_rows($zeiger);
+        $sql201 = "SELECT * FROM " . table_prefix . "planeten where (sqrt(((x_pos-".$kox.")*(x_pos-".$kox."))+((y_pos-".$koy.")*(y_pos-".$koy.")))<=".$reichweite.") and spiel='".$spiel."' order by id";
+        $rows201 = $db->execute($sql201);
+        $planetenanzahl = $rows201->RecordCount();
         if ($planetenanzahl>=1) {
-            for  ($i=0; $i<$planetenanzahl;$i++) {
-                $ok = mysql_data_seek($zeiger,$i);
-                $array = mysql_fetch_array($zeiger);
-                $pid=$array["id"];
-                $x_pos=$array["x_pos"];
-                $y_pos=$array["y_pos"];
+            $array201_out = $db->getArray($sql201);
+            foreach ($array201_out as $array201) {                
+                $pid=$array201["id"];
+                $x_pos=$array201["x_pos"];
+                $y_pos=$array201["y_pos"];
                 if ($pid==$zielid) {
                     neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['flug5'],array($name));
                     $db->execute("UPDATE " . table_prefix . "schiffe set flug=0 where id=$shid");
                 }
-                $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set kox=$x_pos,koy=$y_pos,status=2 where id=$shid");
+                $db->exeecute("UPDATE " . table_prefix . "schiffe set kox='".$x_pos."',koy='".$y_pos."',status='2' where id='".$shid."'");
             }
         }
     }
@@ -1621,45 +1622,50 @@ if ($schiffanzahl>=1) {
 ///////////////////////////////////////////////////////////////////////////////////////////////GRAVITATION ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////MINENFELDER ANFANG
 if($module[2]) {
-    $zeiger = mysql_query("SELECT crew,crewmax,masse,id,name,klasse,klasseid,volk,kox,koy,besitzer,bild_gross,status,flug,schaden,leminmax FROM " . table_prefix . "schiffe where status=1 and not (klasseid=1 and volk like 'unknown') and spiel=$spiel order by id");
-    $schiffanzahl = mysql_num_rows($zeiger);
+    $sql202 = "SELECT id,besitzer,status,name,klasse,klasseid,volk,kox,koy,flug,crew,crewmax,leminmax,schaden,masse,bild_gross FROM " . table_prefix . "schiffe use index (status,klasseid,volk,spiel) where status='1' and not (klasseid='1' and volk='unknown') and spiel='".$spiel."' order by id";
+    $rows202 = $db->execute($sql202);
+    $schiffanzahl = $rows202->RecordCount();
     if ($schiffanzahl>=1) {
-        for  ($i=0; $i<$schiffanzahl;$i++) {
-            $ok = mysql_data_seek($zeiger,$i);
-            $array = mysql_fetch_array($zeiger);
-            $shid=$array["id"];
-            $name=$array["name"];
-            $klasse=$array["klasse"];
-            $klasseid=$array["klasseid"];
-            $kox=$array["kox"];
-            $koy=$array["koy"];
-            $volk=$array["volk"];
-            $besitzer=$array["besitzer"];
-            $bild_gross=$array["bild_gross"];
-            $status=$array["status"];
-            $leminmax=$array["leminmax"];
-            $flug=$array["flug"];
-            $schaden=$array["schaden"];
-            $masse=$array["masse"];
-            $crew=$array["crew"];
-            $crewmax=$array["crewmax"];
+        $array202_out = $db->getArray($sql202);
+        foreach ($array202_out as $array202) {            
+            $shid=$array202["id"];
+            $name=$array202["name"];
+            $klasse=$array202["klasse"];
+            $klasseid=$array202["klasseid"];
+            $kox=$array202["kox"];
+            $koy=$array202["koy"];
+            $volk=$array202["volk"];
+            $besitzer=$array202["besitzer"];
+            $bild_gross=$array202["bild_gross"];
+            $status=$array202["status"];
+            $leminmax=$array202["leminmax"];
+            $flug=$array202["flug"];
+            $schaden=$array202["schaden"];
+            $masse=$array202["masse"];
+            $crew=$array202["crew"];
+            $crewmax=$array202["crewmax"];
             $reichweite=85;
             $minenanzahl=0;
-            $zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "anomalien where spiel=$spiel and art=5 and (sqrt(((x_pos-$kox)*(x_pos-$kox))+((y_pos-$koy)*(y_pos-$koy)))<=$reichweite) order by id");            
-            $datensaetze2 = mysql_num_rows($zeiger2);
+            $sql203 = "SELECT * FROM " . table_prefix . "anomalien where spiel='".$spiel."' and art='5' and (sqrt(((x_pos-".$kox.")*(x_pos-".$kox."))+((y_pos-".$koy.")*(y_pos-".$koy.")))<=".$reichweite.") order by id";
+            $rows203 = $db->execute($sql203);
+            $datensaetze2 = $rows203->RecordCount();
             if ($datensaetze2>=1) {
-                for  ($irt=0; $irt<$datensaetze2;$irt++) {
-                    $ok2 = mysql_data_seek($zeiger2,$irt);
-                    $array2 = mysql_fetch_array($zeiger2);
-                    $aid=$array2["id"];
-                    $x_pos=$array2["x_pos"];
-                    $y_pos=$array2["y_pos"];
-                    $mineextra=explode(":",$array2["extra"]);
+                $array203_out = $db->getArray($sql203);
+                foreach ($array203_out as $array203) {                    
+                    $aid=$array203["id"];
+                    $x_pos=$array203["x_pos"];
+                    $y_pos=$array203["y_pos"];
+                    $mineextra=explode(":",$array203["extra"]);
                     if( ($mineextra[0]==$besitzer) or
                         ($beziehung[$besitzer][$mineextra[0]]['status']==3) or
                         ($beziehung[$besitzer][$mineextra[0]]['status']==4) or
                         ($beziehung[$besitzer][$mineextra[0]]['status']==5))
-                    {} else {
+                    {
+                        /*
+                         * Weshalb wird hier ein else genutzt wenn es gar nichts zu tun gibt ?
+                         */
+                       
+                    } else {
                         if (intval($mineextra[1])>=$minenanzahl) {
                             $minenanzahl=intval($mineextra[1]);
                             $aanomalie[0]=$aid; // id
@@ -1669,20 +1675,18 @@ if($module[2]) {
                         }
                     }
                 }
-            }
-            //echo $minenanzahl.'<br>';
+            }            
             if ($minenanzahl>=1) {
                 $zufall=mt_rand(0,50);
                 $minentreffer=round($zufall*$minenanzahl/100);
-                //echo $minentreffer.':';
                 if ($minenanzahl==1) { $minentreffer=1; }
                 if ($minentreffer>=1) {
                     $aanomalie[2]=$aanomalie[2]-$minentreffer;
                     if ($aanomalie[2]<=0) {
-                        $db->execute("DELETE FROM " . table_prefix . "anomalien where spiel=$spiel and id=$aanomalie[0]");
+                        $db->execute("DELETE FROM " . table_prefix . "anomalien where spiel='".$spiel."' and id='".$aanomalie[0]."'");
                     } else {
                         $mineextra=$aanomalie[1].':'.$aanomalie[2].':'.$aanomalie[3];
-                        $db->execute("UPDATE " . table_prefix . "anomalien set extra='$mineextra' where spiel=$spiel and id=$aanomalie[0]");
+                        $db->execute("UPDATE " . table_prefix . "anomalien set extra='".$mineextra."' where spiel='".$spiel."' and id='".$aanomalie[0]."'");
                     }
                     $minen_schaden=$torpedoschaden["$aanomalie[3]"];
                     $minen_schaden_crew=$torpedoschadencrew["$aanomalie[3]"];                    
@@ -1693,12 +1697,12 @@ if($module[2]) {
                     $schaden_crewmen=floor($crewmax*$schaden_crew/100);
                     $sektork=sektor($kox,$koy);                    
                     if (($schaden>=100) or ($crew<1)) {
-                        $db->execute("DELETE FROM " . table_prefix . "schiffe where id=$shid and besitzer=$besitzer;");
-                        $db->execute("DELETE FROM " . table_prefix . "anomalien where art=3 and extra like 's:$shid:%'");
-                        $db->execute("UPDATE " . table_prefix . "schiffe set flug=0,warp=0,zielx=0,ziely=0,zielid=0 where flug in ('3','4') and zielid=$shid");
+                        $db->execute("DELETE FROM " . table_prefix . "schiffe where id='".$shid."' and besitzer='".$besitzer."'");
+                        $db->execute("DELETE FROM " . table_prefix . "anomalien where art='3' and extra like 's:".$shid.":%'");
+                        $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug in ('3','4') and zielid='".$shid."'");
                         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['minenfelder0'],array($name,$sektork));
                     } else {
-                        $db->execute("UPDATE " . table_prefix . "schiffe set crew=$crew,schaden=$schaden,scanner=0 where id=$shid and besitzer=$besitzer;");
+                        $db->execute("UPDATE " . table_prefix . "schiffe set crew='".$crew."', schaden='".$schaden."',scanner='0' where id='".$shid."' and besitzer='".$besitzer."'");
                         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['minenfelder1'],array($name,$sektork,$minentreffer,$schaden_rumpf,$schaden_crewmen));
                     }
                 }
