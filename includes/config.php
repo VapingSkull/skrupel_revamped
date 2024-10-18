@@ -3,29 +3,27 @@
 
 //Datenbankzugangsdaten
 
-$db_server=""; // Databaseserver
-$db_port="3306"; //Databaseport
-$db_login=""; // Databaseusername
-$db_password=""; // Databasepassword
+$db_server="localhost";
+$db_port="3306";
+$db_login="skrupel";
+$db_password="Nasen.ba1$";
 $db_name="skrupel";
 
 //Adminzugangsdaten
 
 $admin_login="admin";
-$admin_pass=""; // Adminpassword
+$admin_pass="Nasen.ba1$";
 
 //Absenderemail des Servers
 
-$absenderemail=""; // Aus kompatibilitätsgründen noch vorhanden
+$absenderemail="cash4read@gmx.de";
 
 date_default_timezone_set('Europe/Berlin');
 
 /////////////////////////////////////////////////////////////////////////////////
 
 //Tabellen
-/* 
- * Noch stehen die Tabellennamen hier, werden aber eigentlich nicht mehr gebraucht.
- */
+
 $skrupel_planeten='skrupel_planeten';
 $skrupel_spiele='skrupel_spiele';
 $skrupel_schiffe='skrupel_schiffe';
@@ -80,21 +78,21 @@ ini_set('error_log', 'e:/xampp/htdocs/logs/error.log');
  * 
  * Servername 
  */
-define ('servername', 'http://localhost/'); //for debugging
+define ('servername', 'http://entwicklung.fritz.box/'); //for debugging
 define ('image_dir' , servername . 'images/');
 define ('main_dir', $_SERVER["DOCUMENT_ROOT"] . '/');
-define ('extend_dir', main_dir . 'extend/'); // nur noch aus kompatiblität hier
-define ('daten_dir' , main_dir . 'daten/'); // nur noch aus kompatiblität hier
-define ('inhalt_dir' , main_dir . 'inhalt/'); // nur noch aus kompatiblität hier
-define ('lang_dir' , main_dir . 'lang/'); // nur noch aus kompatiblität hier
-define ('includes', main_dir . 'includes/'); // hier landen alle Dateien die von irgwelchen Skripten includiert werden
-define ('extensions' , main_dir . 'extend/'); // Extensions 
-define ('table_prefix', "skrupel_"); // hier kann man seinen Tabellenpräfix anpassen
+define ('extend_dir', main_dir . 'extend/');
+define ('daten_dir' , main_dir . 'daten/');
+define ('inhalt_dir' , main_dir . 'inhalt/');
+define ('lang_dir' , main_dir . 'lang/');
+define ('includes', main_dir . 'includes/');
+define ('extensions' , main_dir . 'extend/');
+define ('table_prefix', "skrupel_");
 define ('sprache', 'de');
 
-define ('sversion' , 'V0.1.0 Optimized Version &copy; by SkullCollector 2024'); //kann nach belieben geändert werden
+define ('sversion' , 'V0.1.0 Optimized Version &copy; by SkullCollector 2024');
 include(main_dir . 'libs/adodb/vendor/autoload.php');
-
+//include_once (main_dir . "libs/adodb/vendor/adodb/adodb-php/session/adodb-session2.php");
 $db = adoNewConnection('mysqli'); # eg. 'mysqli' or 'oci8'
 $db->debug = false;
 $db->connect($db_server, $db_login, $db_password, $db_name);
@@ -119,8 +117,4 @@ $params = array_merge(filter_struct_utf8(1, $_GET), filter_struct_utf8(1, $_POST
 
 $smarty->assign('sversion' , sversion);
 
-/*
- * $db , $smarty , $params werden zentral erreichbar gemacht. config.inc wird nur noch einmal aufgerufen werden müssen und das von der index.php aus. Somit ist alles wichtige erreichbar.
- * 
- */
 global $db,$smarty,$params;

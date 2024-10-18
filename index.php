@@ -15,8 +15,7 @@ $lang = get_phrasen('de', 'index');
 $smarty->assign('lang_out',$lang);
 
 
-if (isset($params)){
-    //compressed_output();
+if (isset($params)){    
     $zeiger = "SELECT version, extend, serial FROM " . table_prefix . "info";
     $array = $db->getRow($zeiger);
     $spiel_version = $array['version'];

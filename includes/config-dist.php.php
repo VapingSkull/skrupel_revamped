@@ -115,6 +115,9 @@ $smarty->debugging = true;
 $smarty->assign('image_dir', image_dir);
 $smarty->assign('servername', servername);
 include(main_dir . "includes/functions.inc.php");
+/* 
+ * sicheres zzusammenführen der Superglobals in ein global erreichbares ArrayS
+ */
 $params = array_merge(filter_struct_utf8(1, $_GET), filter_struct_utf8(1, $_POST));
 
 $smarty->assign('sversion' , sversion);
