@@ -1,5 +1,5 @@
 <?php
-Bis 1289 fertig
+Bis 1749 fertig
 /*
  * Wird nicht mehr benötigt da diese Functionen in die Zentral Functions integriert wurden.
  * 
@@ -41,7 +41,7 @@ for ($i=1; $i<=10; $i++){
 /*
  * Da wir nur die deutsche Sprache unterstützen lesen wir auch nur die Deutsche Sprache ein.
  */
-$lang = araay_merge(get_phrasen('de', 'host'), get_phrasen('de','spionage'), get_phrasen('de','hostraumkampf') , get_phrasen('de', 'hostbodenkampf'));
+$lang = array_merge(get_phrasen('de', 'host'), get_phrasen('de','spionage'), get_phrasen('de','hostraumkampf') , get_phrasen('de', 'hostbodenkampf'));
 ///////////////////////////////Sprachinclude(nur die benoetigten) Ende 
 /*
  * Sprachphrasen werden aus der Datenbank gezogen. Dies geht um ein vielfaches schneller und stehen sofort zur Verfügzung und müssen nicht noch zusammengestückelt werden.
@@ -60,7 +60,7 @@ $planetenerobertfehl=0;
 $db->execute("DELETE FROM " . table_prefix . "kampf  WHERE spiel='" . $spiel ."'");
 $db->execute("DELETE FROM " . table_prefix . "nebel  WHERE spiel='" . $spiel ."'");
 $db->execute("DELETE FROM " . table_prefix . "scan WHERE spiel='" . $spiel ."'");
-$db->execute("DELETE FROM " . table_prefix . "neuigkeiten WHERE sicher='0' AND spiel_id='" . $spiel . "' AND (art<=4 OR art=7 OR art=8)");
+$db->execute("DELETE FROM " . table_prefix . "neuigkeiten WHERE sicher='0' AND spiel_id='" . $spiel . "' AND  art in ('1','2','3','4','7','8')");
 ///////////////////////////////////////////////////////////////////////////////////////////////RASSENEIGENSCHAFTEN ANFANG
 /*
  * Sämtliche Daten wie Rassen , Waffen usw. werden in naher Zukunft in die Datenbank verschoben. Denn dieses zusammensetzen von Daten aus Dateien ist zu Zeitaufwendig und schwer überschaubar bei Fehlern.
@@ -1713,13 +1713,13 @@ if($module[2]) {
 ///////////////////////////////////////////////////////////////////////////////////////////////MINENFELDER ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////MINENFELDER SCHRUMPFEN ANFANG
 if($module[2]) {
-    $zeiger2 = mysql_query("SELECT id,extra,spiel FROM " . table_prefix . "anomalien where spiel=$spiel and art=5 order by id");
-    $datensaetze2 = mysql_num_rows($zeiger2);
+    $sql204 = "SELECT id,extra,spiel FROM " . table_prefix . "anomalien use index (spiel,art) where spiel='".$spiel."' and art='5' order by id";
+    $rows204 = $db->execute($sql204);
+    $datensaetze2 = $rows204->RecordCount();
     if ($datensaetze2>=1) {
-        for ($irt=0; $irt<$datensaetze2;$irt++) {
-            $ok2 = mysql_data_seek($zeiger2,$irt);
-            $array2 = mysql_fetch_array($zeiger2);
-            $aid=$array2["id"];
+        $array204_out = $db->getArray($sql204);
+        foreach ($array204_out as $array204) {            
+            $aid=$array204["id"];
             $mineextra=explode(":",$array2["extra"]);
             $aanomalie[0]=$aid; // id
             $aanomalie[1]=$mineextra[0]; // besitzer
@@ -1729,10 +1729,10 @@ if($module[2]) {
             if ($zufall<=80) {
                 $aanomalie[2]=$aanomalie[2]-1;
                 if ($aanomalie[2]<=0) {
-                    $db->execute("DELETE FROM " . table_prefix . "anomalien where spiel=$spiel and id=$aanomalie[0]");
+                    $db->execute("DELETE FROM " . table_prefix . "anomalien where spiel='".$spiel."' and id='".$aanomalie[0]."'");
                 } else {
                     $mineextra=$aanomalie[1].':'.$aanomalie[2].':'.$aanomalie[3];
-                    $db->execute("UPDATE " . table_prefix . "anomalien set extra='$mineextra' where spiel=$spiel and id=$aanomalie[0]");
+                    $db->execute("UPDATE " . table_prefix . "anomalien set extra='".$mineextra."' where spiel='".$spiel."' and id='".$aanomalie[0]."'");
                 }
             }
         }
@@ -1742,15 +1742,16 @@ if($module[2]) {
 ///////////////////////////////////////////////////////////////////////////////////////////////SPIONAGE ANFANG
 if($module[0]) {
     /*
-     * inc.host_spionage.php wurde überarbeitet
+     * inc.host_spionage.php wurde noch nicht überarbeitet
      * SkullCollector
      */
     include(includes .'inc.host_spionage.php');
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////SPIONAGE ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////SUBRAUMVERZERRUNG BETA ANFANG
-$zeiger = mysql_query("SELECT * FROM " . table_prefix . "schiffe where spezialmission=10 and spiel=$spiel order by id");
-$schiffanzahl = mysql_num_rows($zeiger);
+$sql205 = "SELECT * FROM " . table_prefix . "schiffe use index (spezialmission, spiel) where spezialmission='10' and spiel='".$spiel."' order by id";
+$rows205= $db->execute($sql205);
+$schiffanzahl = $rows205->RecordCount();
 if ($schiffanzahl>=1) {
     for ($i=0; $i<$schiffanzahl;$i++) {
         $ok = mysql_data_seek($zeiger,$i);
