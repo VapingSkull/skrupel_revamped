@@ -1,5 +1,5 @@
 <?php
-
+$langbkampf = get_phrasen('de', 'hostbodenkampf');
 $sql11_prep = "SELECT * FROM " . table_prefix . "planeten where kolonisten_spieler>=1 and ((kolonisten_new>=1) or (leichtebt_new>=1) or (schwerebt_new>=1)) and besitzer>=1 and spiel='" . $spiel . "' order by id";
 $array11_out = $db->getArray($sql11_prep);
 foreach ($array11_out as $array11) {    
@@ -26,9 +26,7 @@ foreach ($array11_out as $array11) {
     $kolonisten_spieler_stark=$r_eigenschaften[$rasse]['bodenangriff'];
     if (($native_id>=1) and ($native_kol>1) and ($native_fert_kampf>0)) {
         $besitzer_stark=round(($besitzer_stark*$native_fert_kampf)+0.5);
-    }
-    //$verteidiger=$kolonisten*$besitzer_stark;
-    //$angreifer=$kolonisten_new*$kolonisten_spieler_stark;
+    }    
     /////////////////////////////////////////////////////////////////
     $verteidiger_st=$besitzer_stark;
     $angreifer_st=$kolonisten_spieler_stark;
@@ -193,8 +191,8 @@ foreach ($array11_out as $array11) {
                                                               schwerebt_new='0' 
                                                               where id='".$pid."'");
         $datum=time();
-        neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$besitzer,$lang['hostbodenkampf']['btruppen1'],array($name));
-        neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$kolonisten_spieler,$lang['hostbodenkampf']['btruppen2'],array($name));
+        neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$besitzer,$langbkampf['hostbodenkampf']['btruppen1'],array($name));
+        neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$kolonisten_spieler,$langbkampf['hostbodenkampf']['btruppen2'],array($name));
     }
     if (($angreifer_kol>=1) or ($angreifer_leichtebt>=1) or ($angreifer_schwerebt>=1)) {
         $planetenerobert++;
@@ -212,14 +210,14 @@ foreach ($array11_out as $array11) {
         }
         $datum=time();
         $stat_kol_erobert[$kolonisten_spieler]++;
-        neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$besitzer,$lang['hostbodenkampf']['btruppen3'],array($name));
-        neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$kolonisten_spieler,$lang['hostbodenkampf']['btruppen4'],array($name));
+        neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$besitzer,$langbkampf['hostbodenkampf']['btruppen3'],array($name));
+        neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$kolonisten_spieler,$langbkampf['hostbodenkampf']['btruppen4'],array($name));
     }
     if (($angreifer_kol==0) and ($angreifer_leichtebt==0) and ($angreifer_schwerebt==0) and ($verteidiger_kol==0) and ($verteidiger_leichtebt==0) and ($verteidiger_schwerebt==0)) {
         $datum=time();
-        neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$besitzer,$lang['hostbodenkampf']['btruppen3'],array($name));
-        neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$kolonisten_spieler,$lang['hostbodenkampf']['btruppen2'],array($name));
-       $db->execute("UPDATE " . table_prefix . "planeten set leichtebt='0', 
+        neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$besitzer,$langbkampf['hostbodenkampf']['btruppen3'],array($name));
+        neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$kolonisten_spieler,$langbkampf['hostbodenkampf']['btruppen2'],array($name));
+        $zeiger_temp = $db->execute("UPDATE " . table_prefix . "planeten set leichtebt='0', 
                                                                              schwerebt='0', 
                                                                              kolonisten='0', 
                                                                              besitzer='0', 
@@ -230,7 +228,7 @@ foreach ($array11_out as $array11) {
                                                                              auto_vorrat='0', 
                                                                              logbuch='' where id='".$pid."'");
         if ($sternenbasis_id>=1) {
-            $db->execute("UPDATE " . table_prefix . "sternenbasen set besitzer='0' where id='".$sternenbasis_id."'");
+            $zeiger_temp = $db->execute("UPDATE " . table_prefix . "sternenbasen set besitzer='0' where id='".$sternenbasis_id."'");
         }
     }
     ////////////////////////////////////////////////////////////////
