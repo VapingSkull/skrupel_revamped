@@ -24,28 +24,9 @@ date_default_timezone_set('Europe/Berlin');
 
 //Tabellen
 /* 
- * Noch stehen die Tabellennamen hier, werden aber eigentlich nicht mehr gebraucht.
+ * Skrupel Tabellen entfernt. Werden nicht mehr in der Config benötigt.
  */
-$skrupel_planeten='skrupel_planeten';
-$skrupel_spiele='skrupel_spiele';
-$skrupel_schiffe='skrupel_schiffe';
-$skrupel_kampf='skrupel_kampf';
-$skrupel_user='skrupel_user';
-$skrupel_sternenbasen='skrupel_sternenbasen';
-$skrupel_neuigkeiten='skrupel_neuigkeiten';
-$skrupel_chat='skrupel_chat';
-$skrupel_forum_thema='skrupel_forum_thema';
-$skrupel_forum_beitrag='skrupel_forum_beitrag';
-$skrupel_huellen='skrupel_huellen';
-$skrupel_anomalien='skrupel_anomalien';
-$skrupel_nebel='skrupel_nebel';
-$skrupel_politik='skrupel_politik';
-$skrupel_politik_anfrage='skrupel_politik_anfrage';
-$skrupel_konplaene='skrupel_konplaene';
-$skrupel_info='skrupel_info';
-$skrupel_ordner='skrupel_ordner';
-$skrupel_scan='skrupel_scan';
-$skrupel_begegnung='skrupel_begegnung';
+
 
 
 /////////////////////////////////////////////////////////////////////////////////
