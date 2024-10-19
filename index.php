@@ -99,6 +99,7 @@ if (isset($params)){
                 $pass = $pass_f[0];                
             } else {                
                 $fehler = $lang['index']['falscheZugangsdaten'];
+                $smarty->assign('fehler',$fehler);
             }
         }
         $zeigersql = "SELECT * FROM " . table_prefix . "user WHERE nick='" . $login_f . "' and passwort='" . $pass . "' order by nick";
@@ -139,9 +140,11 @@ if (isset($params)){
                 $db->execute("UPDATE " . table_prefix . "user SET uid = '" . $uid . "' WHERE id= '" . $spieler_id ."'");
             } else {
                 $fehler = $lang['index']['spielnichtfuerdich'];
+                $smarty->assign('fehler',$fehler);
             }
         } else {
             $fehler = $lang['index']['falscheZugangsdaten'];
+            $smarty->assign('fehler',$fehler);
         }
         
     }
@@ -364,9 +367,6 @@ if (isset($params)){
                                     
                           <?php
                         } else {
-                          ?>
-                 
-                          <?php
                           echo $lang['index']['keinspiel'];
                         }
                         $smarty->display('index.tpl');
