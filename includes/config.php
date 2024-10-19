@@ -23,27 +23,10 @@ date_default_timezone_set('Europe/Berlin');
 /////////////////////////////////////////////////////////////////////////////////
 
 //Tabellen
+/* 
+ * Skrupel Tabellen entfernt. Werden nicht mehr in der Config benötigt.
+ */
 
-$skrupel_planeten='skrupel_planeten';
-$skrupel_spiele='skrupel_spiele';
-$skrupel_schiffe='skrupel_schiffe';
-$skrupel_kampf='skrupel_kampf';
-$skrupel_user='skrupel_user';
-$skrupel_sternenbasen='skrupel_sternenbasen';
-$skrupel_neuigkeiten='skrupel_neuigkeiten';
-$skrupel_chat='skrupel_chat';
-$skrupel_forum_thema='skrupel_forum_thema';
-$skrupel_forum_beitrag='skrupel_forum_beitrag';
-$skrupel_huellen='skrupel_huellen';
-$skrupel_anomalien='skrupel_anomalien';
-$skrupel_nebel='skrupel_nebel';
-$skrupel_politik='skrupel_politik';
-$skrupel_politik_anfrage='skrupel_politik_anfrage';
-$skrupel_konplaene='skrupel_konplaene';
-$skrupel_info='skrupel_info';
-$skrupel_ordner='skrupel_ordner';
-$skrupel_scan='skrupel_scan';
-$skrupel_begegnung='skrupel_begegnung';
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -92,7 +75,6 @@ define ('sprache', 'de');
 
 define ('sversion' , 'V0.1.0 Optimized Version &copy; by SkullCollector 2024');
 include(main_dir . 'libs/adodb/vendor/autoload.php');
-//include_once (main_dir . "libs/adodb/vendor/adodb/adodb-php/session/adodb-session2.php");
 $db = adoNewConnection('mysqli'); # eg. 'mysqli' or 'oci8'
 $db->debug = false;
 $db->connect($db_server, $db_login, $db_password, $db_name);
