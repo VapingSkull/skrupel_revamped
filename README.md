@@ -4,7 +4,7 @@ Fully Revamped Version of Skrupel (c) by Bernd Kantoks
 
 Dieses Skript befindet sich noch aktiv in der Umbauphase und ist so noch nicht nutzbar.
 
-Wenn es denn soweit ist die config.php im Ordner includes anpassen und im Anschluß das SQL in eine mysql Datenbank importieren.
+Wenn es denn soweit ist die config-dist.php im Ordner includes umbenennen zu config.php und anpassen und im Anschluß das SQL in eine mysql Datenbank importieren.
 
 Dann kann es losgehen. ;)
 
@@ -16,7 +16,7 @@ ADOdb 5.22.7
 
 beides is bereits enthalten im Ordner libs /
 
-Php in der Version 8.3.x
+Php in der Version 8.2.x
 
 Derzeit wird auf einem Apache Webserver entwickelt.  
 
