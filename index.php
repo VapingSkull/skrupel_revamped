@@ -100,6 +100,7 @@ if (isset($params)){
             } else {                
                 $fehler = $lang['index']['falscheZugangsdaten'];
                 $smarty->assign('fehler',$fehler);
+                $pass="";
             }
         }
         $zeigersql = "SELECT * FROM " . table_prefix . "user WHERE nick='" . $login_f . "' and passwort='" . $pass . "' order by nick";
@@ -362,20 +363,12 @@ if (isset($params)){
                                           
                                         }
                                       }
-                                      $smarty->assign('option' ,$option);
-                                      ?>
-                                    
-                          <?php
+                                      $smarty->assign('option' ,$option);                                      
                         } else {
                           echo $lang['index']['keinspiel'];
                         }
                         $smarty->display('index.tpl');
-        
-                 
-        
-  
-  }
-  
+  }  
 } else {
   ?>
   <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">

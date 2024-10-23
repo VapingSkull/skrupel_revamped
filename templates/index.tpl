@@ -97,7 +97,7 @@
 <body text="#000000" bgcolor="#000000" scroll="no" background="{$image_dir}hintergrund.gif" link="#000000" vlink="#000000" alink="#000000" leftmargin="0" rightmargin="0" topmargin="0" marginwidth="0" marginheight="0">
     <div class="top container">
         <center>{$fehler}</center>
-          <table  border="0" height="100%" cellspacing="0" cellpadding="0">
+        <center><table  border="0" height="100%" cellspacing="0" cellpadding="0">
               <tr>
               <td>
                 <table border="0" cellspacing="0" cellpadding="0" background="{$image_dir}login.gif">
@@ -165,6 +165,7 @@
               </td>
             </tr>
           </table>
+        </center>
     </div>               
         
            </body>
