@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Wird nicht mehr benötigt da diese Functionen in die Zentral Functions integriert wurden.
  * 
@@ -43,7 +44,7 @@ for ($i=1; $i<=10; $i++){
 $lang = get_phrasen('de', 'host');
 ///////////////////////////////Sprachinclude(nur die benoetigten) Ende 
 /*
- * Sprachphrasen werden aus der Datenbank gezogen. Dies geht um ein vielfaches schneller und stehen sofort zur Verfügzung und müssen nicht noch zusammengestückelt werden.
+ * Sprachphrasen werden aus der Datenbank gezogen. Dies geht um ein vielfaches schneller und stehen sofort zur Verfügung und müssen nicht noch zusammengestückelt werden.
  * SkullCollector
  */
 srand((double)microtime()*1000000);
@@ -2514,7 +2515,7 @@ if ($schiffanzahl>=1) {
             $rows221 = $db->execute($sql221);
             $planetenanzahl = $rows221->RecordCount();
             if ($planetenanzahl==1) {
-                $array221 = $db->getRow($sql221)1;
+                $array221 = $db->getRow($sql221);
                 $p_id=$array221["id"];
                 $osys_1=$array221["osys_1"];
                 $osys_2=$array221["osys_2"];
@@ -2668,11 +2669,11 @@ if ($schiffanzahl>=1) {
         /////////////////////////////////////////////////////////////////////////////////////////////VIRALER ANGRIFF ENDE
         /////////////////////////////////////////////////////////////////////////////////////////////TERRAFORMING ANFANG
         if (($spezialmission==5) and ($status==2)) {
-            $sql225 "SELECT * FROM " . table_prefix . "planeten where x_pos='".$kox."' and y_pos='".$koy."' and spiel='".$spiel."'";
+            $sql225 = "SELECT * FROM " . table_prefix . "planeten where x_pos='".$kox."' and y_pos='".$koy."' and spiel='".$spiel."'";
             $rows225 = $db->exceute($sql225);            
             $planetenanzahl = $rows225->RecordCount();
             if ($planetenanzahl==1) {
-                $array225 = $db->getRow($sql225)
+                $array225 = $db->getRow($sql225);
                 $p_id=$array225["id"];
                 $p_temp=$array225["temp"];
                 $p_name=$array225["name"];
@@ -2700,7 +2701,7 @@ if ($schiffanzahl>=1) {
                 $ok=1;
                 neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['sprungtor0']);
             }else{
-                $sql227 = "SELECT y_pos,x_pos,spiel from " . table_prefix . "anomalien where (sqrt(((x_pos-".$kox.")*(x_pos-".$kox."))+((y_pos-".$koy.")*(y_pos-".$koy.")))<=30) and spiel='".$spiel."'");
+                $sql227 = "SELECT y_pos,x_pos,spiel from " . table_prefix . "anomalien where (sqrt(((x_pos-".$kox.")*(x_pos-".$kox."))+((y_pos-".$koy.")*(y_pos-".$koy.")))<=30) and spiel='".$spiel."'";
                 $rows227 = $db->execute($sql227);
                 $a2anzahl = $rows227->RecordCont();
                 if ($a2anzahl>=1) {
@@ -3296,7 +3297,7 @@ $sql380 = "SELECT * FROM " . table_prefix . "planeten where besitzer>=1 and spie
 $rows380 = $db->execute($sql380);
 $planetenanzahl = $rows380->RecordCount();
 if ($planetenanzahl>=1) {
-    $array380_out = $rows380->getArray()
+    $array380_out = $rows380->getArray();
     foreach ($array380_out as $array380) {        
         $pid=$array380["id"];
         $name=$array380["name"];
