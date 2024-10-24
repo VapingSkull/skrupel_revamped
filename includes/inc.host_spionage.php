@@ -1,4 +1,8 @@
 <?php
+/*
+ * Sprachphrasen für die Spionage einlesen
+ */
+$langspio = get_phrasen('de','spionage');
 if($module[0]) {
     $temp_zielid = 0;
     //INIT
@@ -691,3 +695,4 @@ if($module[0]) {
         }
     }
 }
+unset($langspio);
