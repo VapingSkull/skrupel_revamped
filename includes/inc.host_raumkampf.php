@@ -1,11 +1,9 @@
 <?php
-if(count($sprachen) == 0) {
-    include(lang_dir.$language.'/lang.inc.host_raumkampf.php');
-} else {
-    foreach($sprachen as $sprache) {
-        include(lang_dir.$sprache.'/lang.inc.host_raumkampf.php');
-    }
-}
+/*
+ * Phrasen einlesen
+ */
+$langraum = get_phrasen('de','hostraumkampf');
+
 $zeiger = mysql_query("SELECT * FROM " . table_prefix . "schiffe where spiel='".$spiel."' order by aggro desc");
 $schiffanzahl = mysql_num_rows($zeiger);
 $checkstring=array();
@@ -797,7 +795,13 @@ if ($schiffanzahl>=1) {
                                                                     '".$aufzeichnung_projektile_1."',
                                                                     '".$aufzeichnung_projektile_2."',
                                                                     '".$aufzeichnung_hangar_1."',
-                                                                    '".$aufzeichnung_hangar_2."','".$aufzeichnung_schild_1."','".$aufzeichnung_schild_2."','".$aufzeichnung_schaden_1."','".$aufzeichnung_schaden_2."','".$aufzeichnung_crew_1."','".$aufzeichnung_crew_2."')");
+                                                                    '".$aufzeichnung_hangar_2."', 
+                                                                    '".$aufzeichnung_schild_1."', 
+                                                                    '".$aufzeichnung_schild_2."', 
+                                                                    '".$aufzeichnung_schaden_1."', 
+                                                                    '".$aufzeichnung_schaden_2."', 
+                                                                    '".$aufzeichnung_crew_1."', 
+                                                                    '".$aufzeichnung_crew_2."')");
                                         neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][8],array($name_2,$spielerfarbe[$besitzer],$name,$sektork,$shid,$shid_2,$datum));
                                         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][8],array($name,$spielerfarbe[$besitzer_2],$name_2,$sektork,$shid,$shid_2,$datum));
                                     } else {
@@ -817,7 +821,7 @@ if ($schiffanzahl>=1) {
                                     /*
                                      * End ?!
                                      */
-                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set kox='".$kox_new."',koy='".$koy_new."',crew='0',schaden='".schaden_2."',schild='".$schild_2."',projektile='".$projektile_2."',spezialmission='0',besitzer='".$besitzer."',fracht_leute='0',ordner='0',erfahrung='0',flug='0',warp='0',zielx='0',ziely='0',zielid='0',status='1' where id='".$shid_2."'");
+                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set kox='".$kox_new."',koy='".$koy_new."',crew='0',schaden='".$schaden_2."',schild='".$schild_2."',projektile='".$projektile_2."',spezialmission='0',besitzer='".$besitzer."',fracht_leute='0',ordner='0',erfahrung='0',flug='0',warp='0',zielx='0',ziely='0',zielid='0',status='1' where id='".$shid_2."'");
                                     $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0',routing_schritt='0',routing_status='0',routing_koord='',routing_id='',routing_mins='',routing_warp='0',routing_tank='0',routing_rohstoff='0' where flug in ('3','4') and zielid='".$shid_2."'");
                                     $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set crew='".$crew."',schaden='".$schaden."',schild='".$schild."',projektile='".$projektile."' where id='".$shid."' and besitzer='".$besitzer."'");
                                     if ($techlevel_2>=$techlevel) { $faktor=10; } else { $faktor=5; }
@@ -827,13 +831,51 @@ if ($schiffanzahl>=1) {
                                         $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set erfahrung=erfahrung+1 where erfahrung<5 and spiel='".$spiel."' and id='".$shid."' and besitzer='".$besitzer."'");
                                     }
                                     $stat_schlacht_sieg[$besitzer]++;
-                                    $zeiger_temp = mysql_query("INSERT INTO " . table_prefix . "kampf (spiel,art,schiff_id_1,schiff_id_2,name_1,name_2,rasse_1,rasse_2,bild_1,bild_2,datum,energetik_1,energetik_2,projektile_1,projektile_2,hangar_1,hangar_2,schild_1,schild_2,schaden_1,schaden_2,crew_1,crew_2) values 
-                                                               ('".$spiel."','1','".$shid."','".$shid_2."','".$name."','".$name_2."',
-                                                                '".$volk."','".$volk_2."','".$bild_klein."','".$bild_klein_2."',
-                                                                '".$datum."','".$aufzeichnung_energetik_1."','".$aufzeichnung_energetik_2."',
-                                                                '".$aufzeichnung_projektile_1."','".$aufzeichnung_projektile_2."','".$aufzeichnung_hangar_1."',
-                                                                '".$aufzeichnung_hangar_2."','".$aufzeichnung_schild_1."','".$aufzeichnung_schild_2."',
-                                                                '".$aufzeichnung_schaden_1."','".$aufzeichnung_schaden_2."','".$aufzeichnung_crew_1."','".$aufzeichnung_crew_2."')");
+                                    $zeiger_temp = mysql_query("INSERT INTO " . table_prefix . "kampf (spiel, 
+                                                                                                       art, 
+                                                                                                       schiff_id_1, 
+                                                                                                       schiff_id_2, 
+                                                                                                       name_1, 
+                                                                                                       name_2, 
+                                                                                                       rasse_1, 
+                                                                                                       rasse_2, 
+                                                                                                       bild_1, 
+                                                                                                       bild_2, 
+                                                                                                       datum, 
+                                                                                                       energetik_1, 
+                                                                                                       energetik_2, 
+                                                                                                       projektile_1, 
+                                                                                                       projektile_2, 
+                                                                                                       hangar_1, 
+                                                                                                       hangar_2, 
+                                                                                                       schild_1, 
+                                                                                                       schild_2, 
+                                                                                                       schaden_1, 
+                                                                                                       schaden_2, 
+                                                                                                       crew_1,crew_2) 
+                                                                                            values ('".$spiel."', 
+                                                                                                    '1', 
+                                                                                                    '".$shid."', 
+                                                                                                    '".$shid_2."', 
+                                                                                                    '".$name."', 
+                                                                                                    '".$name_2."', 
+                                                                                                    '".$volk."', 
+                                                                                                    '".$volk_2."', 
+                                                                                                    '".$bild_klein."', 
+                                                                                                    '".$bild_klein_2."', 
+                                                                                                    '".$datum."', 
+                                                                                                    '".$aufzeichnung_energetik_1."', 
+                                                                                                    '".$aufzeichnung_energetik_2."', 
+                                                                                                    '".$aufzeichnung_projektile_1."', 
+                                                                                                    '".$aufzeichnung_projektile_2."', 
+                                                                                                    '".$aufzeichnung_hangar_1."', 
+                                                                                                    '".$aufzeichnung_hangar_2."', 
+                                                                                                    '".$aufzeichnung_schild_1."', 
+                                                                                                    '".$aufzeichnung_schild_2."', 
+                                                                                                    '".$aufzeichnung_schaden_1."', 
+                                                                                                    '".$aufzeichnung_schaden_2."', 
+                                                                                                    '".$aufzeichnung_crew_1."', 
+                                                                                                    '".$aufzeichnung_crew_2."')");
                                     neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][2],array($name_2,$sektork,$spielerfarbe[$besitzer],$name,$shid,$shid_2,$datum));
                                     neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][3],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2,$shid,$shid_2,$datum));
                                 }
@@ -893,3 +935,4 @@ if ($schiffanzahl>=1) {
     }
 }
 $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set schild=100 where spiel='".$spiel."'");
+unset($langraum);
