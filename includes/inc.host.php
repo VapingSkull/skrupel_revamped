@@ -1,5 +1,4 @@
 <?php
-Bis 1895 fertig
 /*
  * Wird nicht mehr benötigt da diese Functionen in die Zentral Functions integriert wurden.
  * 
@@ -41,7 +40,7 @@ for ($i=1; $i<=10; $i++){
 /*
  * Da wir nur die deutsche Sprache unterstützen lesen wir auch nur die Deutsche Sprache ein.
  */
-$lang = array_merge(get_phrasen('de', 'host'), get_phrasen('de','spionage'), get_phrasen('de','hostraumkampf') , get_phrasen('de', 'hostbodenkampf'));
+$lang = get_phrasen('de', 'host');
 ///////////////////////////////Sprachinclude(nur die benoetigten) Ende 
 /*
  * Sprachphrasen werden aus der Datenbank gezogen. Dies geht um ein vielfaches schneller und stehen sofort zur Verfügzung und müssen nicht noch zusammengestückelt werden.
@@ -57,10 +56,10 @@ $neuebasen=0;
 $schiffevernichtet=0;
 $planetenerobert=0;
 $planetenerobertfehl=0;
-$db->execute("DELETE FROM " . table_prefix . "kampf  WHERE spiel='" . $spiel ."'");
-$db->execute("DELETE FROM " . table_prefix . "nebel  WHERE spiel='" . $spiel ."'");
-$db->execute("DELETE FROM " . table_prefix . "scan WHERE spiel='" . $spiel ."'");
-$db->execute("DELETE FROM " . table_prefix . "neuigkeiten WHERE sicher='0' AND spiel_id='" . $spiel . "' AND  art in ('1','2','3','4','7','8')");
+$db->execute("DELETE FROM " . table_prefix . "kampf  WHERE spiel='".$spiel."'");
+$db->execute("DELETE FROM " . table_prefix . "nebel  WHERE spiel='".$spiel."'");
+$db->execute("DELETE FROM " . table_prefix . "scan WHERE spiel='".$spiel."'");
+$db->execute("DELETE FROM " . table_prefix . "neuigkeiten WHERE sicher='0' AND spiel_id='".$spiel."' AND art in ('1','2','3','4','7','8')");
 ///////////////////////////////////////////////////////////////////////////////////////////////RASSENEIGENSCHAFTEN ANFANG
 /*
  * Sämtliche Daten wie Rassen , Waffen usw. werden in naher Zukunft in die Datenbank verschoben. Denn dieses zusammensetzen von Daten aus Dateien ist zu zeitaufwendig 
@@ -1895,53 +1894,51 @@ if ($schiffanzahl>=1) {
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////SCHIFF WEICHT PLANET AUS ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////SCHIFF WEICHT SCHIFF AUS ANFANG
-$zeiger = mysql_query("SELECT id,status,masse,besitzer,name,klasse,klasseid,kox,koy,volk,bild_gross FROM " . table_prefix . "schiffe where spiel=$spiel order by id");
-$schiffanzahl = mysql_num_rows($zeiger);
+$sql210 = "SELECT id,status,masse,besitzer,name,klasse,klasseid,kox,koy,volk,bild_gross FROM " . table_prefix . "schiffe use index (spiel) where spiel='".$spiel."' order by id";
+$rows210 = $db->execute($sql210);
+$schiffanzahl = $rows210->RecordCount();
 $checkstring="";
 if ($schiffanzahl>=1) {
-    for ($i=0; $i<$schiffanzahl;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
-        $shid=$array["id"];
-        $status=$array["status"];
-        $besitzer=$array["besitzer"];
-        $name=$array["name"];
-        $klasse=$array["klasse"];
-        $klasseid=$array["klasseid"];
-        $kox=$array["kox"];
-        $koy=$array["koy"];
-        $masse=$array["masse"];
-        $volk=$array["volk"];
-        $bild_gross=$array["bild_gross"];
+    $array210_out = $db->getArray($sql210);
+    foreach ($array210_out as $array210) {        
+        $shid=$array210["id"];
+        $status=$array210["status"];
+        $besitzer=$array210["besitzer"];
+        $name=$array210["name"];
+        $klasse=$array210["klasse"];
+        $klasseid=$array210["klasseid"];
+        $kox=$array210["kox"];
+        $koy=$array210["koy"];
+        $masse=$array210["masse"];
+        $volk=$array210["volk"];
+        $bild_gross=$array210["bild_gross"];
         $code=":::".$shid.":::";
         if (strstr($checkstring,$code)) {} else {
-            $gemeinsam=0;
-            $zeiger_temp = mysql_query("SELECT count(*) as gemeinsam FROM " . table_prefix . "schiffe where kox=$kox and koy=$koy and besitzer<>$besitzer and spiel=$spiel");
-            $array_temp = mysql_fetch_array($zeiger_temp);
-            $gemeinsam=$array_temp["gemeinsam"];
+            $gemeinsam=0;         
+            $sql210_temp = "SELECT count(*) as gemeinsam FROM " . table_prefix . "schiffe use index (kox,koy,besitzer,spiel) where kox='".$kox."' and koy='".$koy."' and besitzer<>".$besitzer." and spiel='".$spiel."'";            
+            $gemeinsam=$db->getOne($sql210_temp);
             if ($gemeinsam>=1) {
-                $zeiger2 = mysql_query("SELECT id,status,masse,besitzer,name,klasse,klasseid,kox,koy,volk,bild_gross FROM " . table_prefix . "schiffe where kox=$kox and koy=$koy and id<>$shid and besitzer<>$besitzer and spiel=$spiel");
-                for ($ihj=0; $ihj<$gemeinsam;$ihj++) {
-                    $ok2 = mysql_data_seek($zeiger2,$ihj);
+                $sql211 = "SELECT id,status,masse,besitzer,name,klasse,klasseid,kox,koy,volk,bild_gross FROM " . table_prefix . "schiffe use index (kox,koy,PRIMARY,besitzer,spiel) where kox='".$kox."' and koy='".$koy."' and id<>".$shid." and besitzer<>".$besitzer." and spiel='".$spiel."'";
+                $array211_out = $db->getArray($sql211);
+                foreach ($array211_out as $array211) {                   
                     $code=":::".$shid.":::";
-                    if (strstr($checkstring,$code)) {} else {
-                        $array2 = mysql_fetch_array($zeiger2);
-                        $shid_2=$array2["id"];
-                        $status_2=$array2["status"];
-                        $besitzer_2=$array2["besitzer"];
-                        $name_2=$array2["name"];
-                        $klasse_2=$array2["klasse"];
-                        $klasseid_2=$array2["klasseid"];
-                        $kox_2=$array2["kox"];
-                        $koy_2=$array2["koy"];
-                        $masse_2=$array2["masse"];
-                        $volk_2=$array2["volk"];
-                        $bild_gross_2=$array2["bild_gross"];
+                    if (strstr($checkstring,$code)) {                        
+                    } else {                       
+                        $shid_2=$array211["id"];
+                        $status_2=$array211["status"];
+                        $besitzer_2=$array211["besitzer"];
+                        $name_2=$array211["name"];
+                        $klasse_2=$array211["klasse"];
+                        $klasseid_2=$array211["klasseid"];
+                        $kox_2=$array211["kox"];
+                        $koy_2=$array211["koy"];
+                        $masse_2=$array211["masse"];
+                        $volk_2=$array211["volk"];
+                        $bild_gross_2=$array211["bild_gross"];
                         if ($status==2) {
                             $abstand=20;
-                            $zeiger3 = mysql_query("SELECT x_pos,y_pos,spiel,id,besitzer FROM " . table_prefix . "planeten where x_pos=$kox and y_pos=$koy and spiel=$spiel");
-                            $array3 = mysql_fetch_array($zeiger3);
-                            $p_besitzer=$array3["besitzer"];
+                            $sql211_temp = "SELECT besitzer FROM " . table_prefix . "planeten use index (x_pos,y_pos,spiel) where x_pos='".$kox."' and y_pos='".$koy."' and spiel='".$spiel."'";                            
+                            $p_besitzer=$db->getOne($sql211_temp);
                             if ($p_besitzer==$besitzer) { $springer=2; }
                             if ($p_besitzer==$besitzer_2) { $springer=1; }
                             if (($p_besitzer!=$besitzer) and ($p_besitzer!=$besitzer_2)) {
@@ -1971,11 +1968,11 @@ if ($schiffanzahl>=1) {
                         $koy=max(0,min($umfang,$koy+round(20*sin($alpha))));
                         $kox=max(0,min($umfang,$kox+round(20*cos($alpha))));
                         if ($springer==1) {
-                            $db->execute("UPDATE " . table_prefix . "schiffe set status=1,kox=$kox, koy=$koy where id=$shid and spiel=$spiel");
+                            $db->execute("UPDATE " . table_prefix . "schiffe set status='1',kox='".$kox."', koy='".$koy."' where id='".$shid."' and spiel='".$spiel."'");
                             neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['ausweichen1'],array($name,$spielerfarbe[$besitzer_2],$name_2));
                             $checkstring=$checkstring.":::".$shid.":::";
                         } else {
-                            $db->execute("UPDATE " . table_prefix . "schiffe set status=1,kox=$kox, koy=$koy where id=$shid_2 and spiel=$spiel");
+                            $db->execute("UPDATE " . table_prefix . "schiffe set status=1,kox='".$kox."', koy='".$koy."' where id='".$shid_2."' and spiel='".$spiel."'");
                             neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['host']['ausweichen1'],array($name_2,$spielerfarbe[$besitzer],$name));
                             $checkstring=$checkstring.":::".$shid_2.":::";
                         }
@@ -1987,52 +1984,51 @@ if ($schiffanzahl>=1) {
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////SCHIFF WEICHT SCHIFF AUS ENDE
 /////////////////////////////////////////////////////////////////////////////////////////////SPEZIALMISSIONEN ANFANG
-$zeiger = mysql_query("SELECT * FROM " . table_prefix . "schiffe where spezialmission>=1 and spiel=$spiel order by id");
-$schiffanzahl = mysql_num_rows($zeiger);
+$sql212 ="SELECT * FROM " . table_prefix . "schiffe use index (spezialmission,spiel) where spezialmission>=1 and spiel='".$spiel."' order by id";
+$rows212 = $db->execute($sql212);
+$schiffanzahl = $rows212->RecordCount();
 if ($schiffanzahl>=1) {
-    for ($i=0; $i<$schiffanzahl;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
-        $shid=$array["id"];
-        $name=$array["name"];
-        $masse=$array["masse"];
-        $klasse=$array["klasse"];
-        $antrieb=$array["antrieb"];
-        $klasseid=$array["klasseid"];
-        $kox=$array["kox"];
-        $koy=$array["koy"];
-        $volk=$array["volk"];
-        $besitzer=$array["besitzer"];
-        $bild_gross=$array["bild_gross"];
-        $frachtraum=$array["frachtraum"];
-        $lemin=$array["lemin"];
-        $leminmax=$array["leminmax"];
-        $crew=$array["crew"];
-        $crewmax=$array["crewmax"];
-        $flug=$array["flug"];
-        $schaden=$array["schaden"];
-        $leichtebt=$array["leichtebt"];
-        $schwerebt=$array["schwerebt"];
-        $erfahrung=$array["erfahrung"];
-        $energetik_stufe=$array["energetik_stufe"];
-        $energetik_anzahl=$array["energetik_anzahl"];
-        $projektile_stufe=$array["projektile_stufe"];
-        $projektile_anzahl=$array["projektile_anzahl"];
-        $projektile=$array["projektile"];
-        $hanger_anzahl=$array["hanger_anzahl"];
-        $sprungtorbauid=$array["sprungtorbauid"];
-        $fertigkeiten=$array["fertigkeiten"];
-        $spezialmission=$array["spezialmission"];
-        $status=$array["status"];
+    $array212_out = $db->getArray($sql212);
+    foreach ($array212_out as $array212) {       
+        $name=$array212["name"];
+        $masse=$array212["masse"];
+        $klasse=$array212["klasse"];
+        $antrieb=$array212["antrieb"];
+        $klasseid=$array212["klasseid"];
+        $kox=$array212["kox"];
+        $koy=$array212["koy"];
+        $volk=$array212["volk"];
+        $besitzer=$array212["besitzer"];
+        $bild_gross=$array212["bild_gross"];
+        $frachtraum=$array212["frachtraum"];
+        $lemin=$array212["lemin"];
+        $leminmax=$array212["leminmax"];
+        $crew=$array212["crew"];
+        $crewmax=$array212["crewmax"];
+        $flug=$array212["flug"];
+        $schaden=$array212["schaden"];
+        $leichtebt=$array212["leichtebt"];
+        $schwerebt=$array212["schwerebt"];
+        $erfahrung=$array212["erfahrung"];
+        $energetik_stufe=$array212["energetik_stufe"];
+        $energetik_anzahl=$array212["energetik_anzahl"];
+        $projektile_stufe=$array212["projektile_stufe"];
+        $projektile_anzahl=$array212["projektile_anzahl"];
+        $projektile=$array212["projektile"];
+        $hanger_anzahl=$array212["hanger_anzahl"];
+        $sprungtorbauid=$array212["sprungtorbauid"];
+        $fertigkeiten=$array212["fertigkeiten"];
+        $spezialmission=$array212["spezialmission"];
+        $status=$array212["status"];
         $extra = explode(":", trim($array['extra']));
-        $fracht_leute=$array["fracht_leute"];
-        $fracht_cantox=$array["fracht_cantox"];
-        $fracht_vorrat=$array["fracht_vorrat"];
-        $fracht_lemin=$array["lemin"];
-        $fracht_min1=$array["fracht_min1"];
-        $fracht_min2=$array["fracht_min2"];
-        $fracht_min3=$array["fracht_min3"];
-        $zusatzmodul=$array["zusatzmodul"];
+        $fracht_leute=$array212["fracht_leute"];
+        $fracht_cantox=$array212["fracht_cantox"];
+        $fracht_vorrat=$array212["fracht_vorrat"];
+        $fracht_lemin=$array212["lemin"];
+        $fracht_min1=$array212["fracht_min1"];
+        $fracht_min2=$array212["fracht_min2"];
+        $fracht_min3=$array212["fracht_min3"];
+        $zusatzmodul=$array212["zusatzmodul"];
         $frachtfrei=$frachtraum-$fracht_vorrat-$fracht_min1-$fracht_min2-$fracht_min3-floor($fracht_leute/100);
         $tankfrei=$leminmax-$fracht_lemin;
         $fert_sub_vorrat=intval(substr($fertigkeiten,0,2));
@@ -2070,17 +2066,17 @@ if ($schiffanzahl>=1) {
                 if ($erfolg>=1) {
                     $reichweite=100;
                     $minenanzahl=0;
-                    $zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "anomalien where spiel=$spiel and art=5 and (sqrt(((x_pos-$kox)*(x_pos-$kox))+((y_pos-$koy)*(y_pos-$koy)))<=$reichweite) order by id");
-                    $datensaetze2 = mysql_num_rows($zeiger2);
+                    $sql213 = "SELECT * FROM " . table_prefix . "anomalien where spiel='".$spiel."' and art='5' and (sqrt(((x_pos-".$kox.")*(x_pos-".$kox."))+((y_pos-".$koy.")*(y_pos-".$koy.")))<=".$reichweite.") order by id";
+                    $rows213 = $db->execute($sq213);
+                    $datensaetze2 = $rows213->RecordCount();
                     if ($datensaetze2>=1) {
-                        for ($irt=0; $irt<$datensaetze2;$irt++) {
-                            $ok2 = mysql_data_seek($zeiger2,$irt);
-                            $array2 = mysql_fetch_array($zeiger2);
-                            $aid=$array2["id"];
-                            $x_pos=$array2["x_pos"];
-                            $y_pos=$array2["y_pos"];
-                            $mineextra=explode(":",$array2["extra"]);
-                            if(    ($mineextra[0]==$besitzer) or
+                        $array213_out = $db->getArray($sql213);
+                        foreach ($array213_out as $array213) {                            
+                            $aid=$array213["id"];
+                            $x_pos=$array213["x_pos"];
+                            $y_pos=$array213["y_pos"];
+                            $mineextra=explode(":",$array213["extra"]);
+                            if(($mineextra[0]==$besitzer) or
                                 ($beziehung[$besitzer][$mineextra[0]]['status']==3) or
                                 ($beziehung[$besitzer][$mineextra[0]]['status']==4) or
                                 ($beziehung[$besitzer][$mineextra[0]]['status']==5))
@@ -2098,19 +2094,19 @@ if ($schiffanzahl>=1) {
                     if ($minenanzahl>=1) {
                         $aanomalie[2]=$aanomalie[2]-$erfolg;
                         if ($aanomalie[2]<=0) {
-                            $db->execute("DELETE FROM " . table_prefix . "anomalien where spiel=$spiel and id=$aanomalie[0]");
+                            $db->execute("DELETE FROM " . table_prefix . "anomalien where spiel='".$spiel."' and id='".$aanomalie[0]."'");
                             neuigkeiten(4,servername . "images/news/minenfeld.jpg",$besitzer,$lang['host']['minenfelder2'],array($name));
                             neuigkeiten(4,servername . "images/news/minenfeld.jpg",$aanomalie[1],$lang['host']['minenfelder3']);
                         } else {
                             neuigkeiten(4,servername . "images/news/minenfeld.jpg",$besitzer,$lang['host']['minenfelder4'],array($name,$erfolg));
                             $mineextra=$aanomalie[1].':'.$aanomalie[2].':'.$aanomalie[3];
-                            $db->execute("UPDATE " . table_prefix . "anomalien set extra='$mineextra' where spiel=$spiel and id=$aanomalie[0]");
+                            $db->execute("UPDATE " . table_prefix . "anomalien set extra='".$mineextra."' where spiel='".$spiel."' and id='".$aanomalie[0]."'");
                         }
                     }
                 }
             }else{
                 neuigkeiten(4,servername . "images/news/minenfeld.jpg",$besitzer,$lang['host']['minenfelder7'],array($name));
-                $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission=0 where id=$shid");
+                $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='0' where id='".$shid."'");
             }
         }
         /////////////////////////////////////////////////////////////////////////////////////////////MINENFELD RAEUMEN ENDE
@@ -2124,17 +2120,17 @@ if ($schiffanzahl>=1) {
                     $extra[2]=0;
                     $extra_neu = implode(":", $extra);
                     $mineextra=$besitzer.':'.$legen.':'.$projektile_stufe;
-                    $db->execute("UPDATE " . table_prefix . "schiffe set projektile=$projektile,spezialmission=0,extra='$extra_neu' where id=$shid");
-                    $db->execute("INSERT INTO " . table_prefix . "anomalien (art,x_pos,y_pos,extra,spiel) values (5,$kox,$koy,'$mineextra',$spiel);");
+                    $db->execute("UPDATE " . table_prefix . "schiffe set projektile='".$projektile."',spezialmission='0',extra='".$extra_neu."' where id='".$shid."'");
+                    $db->execute("INSERT INTO " . table_prefix . "anomalien (art,x_pos,y_pos,extra,spiel) values ('5','".$kox."','".$koy."','".$mineextra."','".$spiel."')");
                     neuigkeiten(4,servername . "images/news/minenfeld.jpg",$besitzer,$lang['host']['minenfelder5'],array($name,$legen));
                 } else {
                     $extra[2]=0;
                     $extra_neu = implode(":", $extra);
-                    $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission=0,extra='$extra_neu' where id=$shid");
+                    $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='0',extra='".$extra_neu."' where id='".$shid."'");
                 }
             }else{
                 neuigkeiten(4, servername . "images/news/minenfeld.jpg",$besitzer,$lang['host']['minenfelder6'],array($name));
-                $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set spezialmission=0 where id=$shid");
+                $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='0' where id='".$shid."'");
             }
         }
         /////////////////////////////////////////////////////////////////////////////////////////////MINENFELD LEGEN ENDE
@@ -2148,11 +2144,12 @@ if ($schiffanzahl>=1) {
             ) and ($status==2))
         {
             // Hole Planeten, um den das aktuelle Schiff gerade kreist
-            $query_ret=mysql_query( "SELECT * FROM " . table_prefix . "planeten WHERE x_pos=$kox and y_pos=$koy and spiel=$spiel;");
+            $sql214 = "SELECT * FROM " . table_prefix . "planeten use index (x_pos,y_pos,spiel) WHERE x_pos='".$kox."' and y_pos='".$koy."' and spiel='".$spiel."'";
+            $query_ret=$db->execute($sql214);
             // Mache nur was, wenn da auch nur ein Planet ist
-            if($query_ret && (mysql_num_rows($query_ret)==1) )
+            if($query_ret && ($query_ret->RecordCount()==1))
             {
-                $a_planet=mysql_fetch_array($query_ret);
+                $a_planet=$db->getRow($sql214);
                 $planet_id=$a_planet["id"];
             }
         }
@@ -2263,16 +2260,18 @@ if ($schiffanzahl>=1) {
                 and ($fert_sub_vorrat>=1)
                 and ( ($spezialmission==4) or ($spezialmission==27) ) )
         {
-            $max=floor($fracht_vorrat/$fert_sub_vorrat);
-            //$maxraum=floor($frachtfrei/($fert_sub_min1+$fert_sub_min2+$fert_sub_min3));
-            //if ($maxraum < $max) { $max=$maxraum; }
+            $max=floor($fracht_vorrat/$fert_sub_vorrat);           
             if (287<$max) {$max=287;}
             if ($max>=1) {
                 $vorrat_verbrauch=$max*$fert_sub_vorrat;
                 $min1_prod=$max*$fert_sub_min1;
                 $min2_prod=$max*$fert_sub_min2;
                 $min3_prod=$max*$fert_sub_min3;
-                $db->execute("UPDATE " . table_prefix . "schiffe set fracht_vorrat=fracht_vorrat-$vorrat_verbrauch,fracht_min1=fracht_min1+$min1_prod,fracht_min2=fracht_min2+$min2_prod,fracht_min3=fracht_min3+$min3_prod where id=$shid");
+                $db->execute("UPDATE " . table_prefix . "schiffe set fracht_vorrat=fracht_vorrat-".$vorrat_verbrauch.",
+                                                                     fracht_min1=fracht_min1+".$min1_prod.",
+                                                                     fracht_min2=fracht_min2+".$min2_prod.",
+                                                                     fracht_min3=fracht_min3+".$min3_prod." 
+                                                         where id='".$shid."'");
             }
         }
         /////////////////////////////////////////////////////////////////////////////////////////////SUBPARTIKELVERZERRUNG ENDE
@@ -2280,10 +2279,11 @@ if ($schiffanzahl>=1) {
         if (($spezialmission==20)and ($status==2)) {
             $zufall=mt_rand(1,100);
             if ($zufall<=$destabi) {
-                $zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "planeten where x_pos=$kox and y_pos=$koy and besitzer<>$besitzer and spiel=$spiel");
-                $planetenanzahl = mysql_num_rows($zeiger2);
+                $sql215 = "SELECT * FROM " . table_prefix . "planeten use index (x_pos,y_pos,besitzer,spiel) where x_pos='".$kox."' and y_pos='".$koy."' and besitzer<>".$besitzer." and spiel='".$spiel."'";
+                $rows215 = $db->execute($sql215);
+                $planetenanzahl = $rows215->RecordCount();
                 if ($planetenanzahl==1) {
-                    $array2 = mysql_fetch_array($zeiger2);
+                    $array2 = $db->getRow($sql215);
                     $p_id=$array2["id"];
                     $p_besitzer=$array2["besitzer"];
                     $p_name=$array2["name"];
@@ -2296,11 +2296,11 @@ if ($schiffanzahl>=1) {
                     if(($osys_1!=19) and ($osys_2!=19) and ($osys_3!=19) and ($osys_4!=19) and ($osys_5!=19) and ($osys_6!=19)){
                         if ($beziehung[$besitzer][$p_besitzer]['status']!=5) {
                             $sektork=sektor($kox,$koy);
-                            $db->execute("DELETE FROM " . table_prefix . "planeten where id=$p_id and besitzer=$p_besitzer;");
-                            $db->execute("DELETE FROM " . table_prefix . "anomalien where art=3 and extra like 'p:$p_id:%'");
-                            $db->execute("UPDATE " . table_prefix . "schiffe set flug=0,warp=0,zielx=0,ziely=0,zielid=0 where flug=2 and zielid=$p_id");
-                            $db->execute("UPDATE " . table_prefix . "schiffe set status=1 where kox=$kox and koy=$koy and spiel=$spiel");
-                            $db->execute("DELETE FROM " . table_prefix . "sternenbasen where x_pos=$kox and y_pos=$koy and spiel=$spiel");
+                            $db->execute("DELETE FROM " . table_prefix . "planeten where id='".$p_id."' and besitzer='".$p_besitzer."'");
+                            $db->execute("DELETE FROM " . table_prefix . "anomalien where art='3' and extra like 'p:".$p_id.":%'");
+                            $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug='2' and zielid='".$p_id."'");
+                            $db->execute("UPDATE " . table_prefix . "schiffe set status='1' where kox='".$kox."' and koy='".$koy."' and spiel='".$spiel."'");
+                            $db->execute("DELETE FROM " . table_prefix . "sternenbasen where x_pos='".$kox."' and y_pos='".$koy."' and spiel='".$spiel."'");
                             $suche=array('{1}','{2}');
                             $ersetzen=array($p_name,$sektork);
                             $text=str_replace($suche,$ersetzen,$text);
@@ -2329,7 +2329,7 @@ if ($schiffanzahl>=1) {
         if ($fracht_vorrat>=220 && ($spezialmission==19 || $spezialmission==28) && $s_eigenschaften[$besitzer]['rasse']==$volk) {
             $kolonistengebaut = 220*$cybern;
             $fracht_leute += $kolonistengebaut;
-            $db->execute("UPDATE " . table_prefix . "schiffe SET fracht_vorrat=fracht_vorrat-220, fracht_leute=fracht_leute+$kolonistengebaut WHERE id=$shid");
+            $db->execute("UPDATE " . table_prefix . "schiffe SET fracht_vorrat=fracht_vorrat-220, fracht_leute=fracht_leute+".$kolonistengebaut." WHERE id='".$shid."'");
         }
         /////////////////////////////////////////////////////////////////////////////////////////////CYBERRITTNIKK ENDE
         /////////////////////////////////////////////////////////////////////////////////////////////QUARKREORGANISATOR ANFANG
@@ -2358,16 +2358,21 @@ if ($schiffanzahl>=1) {
                 $min2_verbrauch=$max*$fert_quark_min2;
                 $min3_verbrauch=$max*$fert_quark_min3;
                 $lemin_prod=$max;
-                $db->execute("UPDATE " . table_prefix . "schiffe set fracht_vorrat=fracht_vorrat-$vorrat_verbrauch,fracht_min1=fracht_min1-$min1_verbrauch,fracht_min2=fracht_min2-$min2_verbrauch,fracht_min3=fracht_min3-$min3_verbrauch,lemin=lemin+$lemin_prod where id=$shid");
+                $db->execute("UPDATE " . table_prefix . "schiffe set fracht_vorrat=fracht_vorrat-".$vorrat_verbrauch.",
+                                                                     fracht_min1=fracht_min1-".$min1_verbrauch.",
+                                                                     fracht_min2=fracht_min2-".$min2_verbrauch.",
+                                                                     fracht_min3=fracht_min3-".$min3_verbrauch.",
+                                                                     lemin=lemin+".$lemin_prod." where id='".$shid."'");
             }
         }
         /////////////////////////////////////////////////////////////////////////////////////////////QUARKREORGANISATOR ENDE
         /////////////////////////////////////////////////////////////////////////////////////////////SCHIFF RECYCLEN ANFANG
         if (($spezialmission==2) and ($status==2)) {
-            $zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "planeten where x_pos=$kox and y_pos=$koy and besitzer=$besitzer and spiel=$spiel");
-            $planetenanzahl = mysql_num_rows($zeiger2);
+            $sql216 = "SELECT * FROM " . table_prefix . "planeten use index (x_pos,y_pos,besitzer,spiel) where x_pos='".$kox."' and y_pos='".$koy."' and besitzer='".$besitzer."' and spiel='".$spiel."'";
+            $rows216 = $db->execute($sql216);
+            $planetenanzahl = $rows216->RecordCount();
             if ($planetenanzahl==1) {
-                $array2 = mysql_fetch_array($zeiger2);
+                $array2 = $db->getRow($sql216);
                 $p_id=$array2["id"];
                 $p_sternenbasis=$array2["sternenbasis"];
                 $p_sternenbasis_id=$array2["sternenbasis_id"];
@@ -2400,11 +2405,18 @@ if ($schiffanzahl>=1) {
                             $neu_min3=round($schiffwert[8]/100*85);
                         }
                     }
-                    $db->execute("UPDATE " . table_prefix . "planeten set kolonisten=kolonisten+$fracht_leute,lemin=lemin+$fracht_lemin,min1=min1+$fracht_min1,min2=min2+$fracht_min2,min3=min3+$fracht_min3,vorrat=vorrat+$fracht_vorrat,cantox=cantox+$fracht_cantox where id=$p_id");
-                    $db->execute("UPDATE " . table_prefix . "planeten set min1=min1+$neu_min1,min2=min2+$neu_min2,min3=min3+$neu_min3 where id=$p_id");
-                    $db->execute("DELETE FROM " . table_prefix . "schiffe where id=$shid");
-                    $db->execute("DELETE FROM " . table_prefix . "anomalien where art=3 and extra like 's:$shid:%'");
-                    $db->execute("UPDATE " . table_prefix . "schiffe set flug=0,warp=0,zielx=0,ziely=0,zielid=0 where flug in ('3','4') and zielid=$shid");
+                    $db->execute("UPDATE " . table_prefix . "planeten set kolonisten=kolonisten+".$fracht_leute.", 
+                                                                          lemin=lemin+".$fracht_lemin.", 
+                                                                          min1=min1+".$fracht_min1.", 
+                                                                          min2=min2+".$fracht_min2.", 
+                                                                          min3=min3+".$fracht_min3.", 
+                                                                          vorrat=vorrat+".$fracht_vorrat.", 
+                                                                          cantox=cantox+".$fracht_cantox." 
+                                                            where id='".$p_id."'");
+                    $db->execute("UPDATE " . table_prefix . "planeten set min1=min1+".$neu_min1.",min2=min2+".$neu_min2.",min3=min3+".$neu_min3." where id='".$p_id."'");
+                    $db->execute("DELETE FROM " . table_prefix . "schiffe where id='".$shid."'");
+                    $db->execute("DELETE FROM " . table_prefix . "anomalien where art=3 and extra like 's:".$shid.":%'");
+                    $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug in ('3','4') and zielid='".$shid."'");
                     neuigkeiten(3,servername . "daten/$volk/bilder_basen/1.jpg",$besitzer,$lang['host']['recycle0'],array($name,$neu_min1,$neu_min2,$neu_min3));
                 }
             }
@@ -2413,10 +2425,15 @@ if ($schiffanzahl>=1) {
         /////////////////////////////////////////////////////////////////////////////////////////////SCHIFF REPARATUR ANFANG
         if (($spezialmission==14) and ($status==2) and ($schaden>=1)) {
             $reperatur=0;
-            $zeiger2 = mysql_query("SELECT id,x_pos,y_pos,besitzer,spiel,sternenbasis,sternenbasis_id,sternenbasis_art FROM " . table_prefix . "planeten where x_pos=$kox and y_pos=$koy and besitzer=$besitzer and spiel=$spiel");
-            $planetenanzahl = mysql_num_rows($zeiger2);
+            $sql217 = "SELECT id,x_pos,y_pos,besitzer,spiel,sternenbasis,sternenbasis_id,sternenbasis_art FROM " . table_prefix . "planeten use index (x_pos,y_pos,besitzer,spiel) 
+                                                                                                          where x_pos='".$kox."' 
+                                                                                                            and y_pos='".$koy."' 
+                                                                                                            and besitzer='".$besitzer."' 
+                                                                                                            and spiel='".$spiel."'";
+            $rows217 = $db->execute($sql217);
+            $planetenanzahl = $rows217->RecordCount();
             if ($planetenanzahl==1) {
-                $array2 = mysql_fetch_array($zeiger2);
+                $array2 = $db->getRow($sql217);
                 $p_id=$array2["id"];
                 $p_sternenbasis=$array2["sternenbasis"];
                 $p_sternenbasis_id=$array2["sternenbasis_id"];
@@ -2430,12 +2447,12 @@ if ($schiffanzahl>=1) {
                 if (($p_sternenbasis_id>=1) and ($p_sternenbasis_art==1)) {
                     $reperatur=19;
                 }
-                $zeiger3 = mysql_query("SELECT id,kox,koy,besitzer,fertigkeiten,status FROM " . table_prefix . "schiffe where besitzer=$besitzer and kox=$kox and koy=$koy and status=2 and spiel=$spiel order by id");
-                $schiffanzahl3 = mysql_num_rows($zeiger3);
+                $sql218 = "SELECT id,kox,koy,besitzer,fertigkeiten,status FROM " . table_prefix . "schiffe use index (besitzer,kox,koy,status,spiel) where besitzer='".$besitzer."' and kox='".$kox."' and koy='".$koy."' and status='2' and spiel='".$spiel."' order by id";
+                $rows218 = $db->execute($sql218);
+                $schiffanzahl3 = $rows218->RecordCount();
                 if ($schiffanzahl3>=1) {
-                    for ($ikk=0; $ikk<$schiffanzahl3;$ikk++) {
-                        $ok3 = mysql_data_seek($zeiger3,$ikk);
-                        $array3 = mysql_fetch_array($zeiger3);
+                    $array218_out = $db->getArray($sql218);
+                    foreach ($array218_out as $array3) {                        
                         $kox=$array3["kox"];
                         $koy=$array3["koy"];
                         $besitzer=$array3["besitzer"];
@@ -2448,10 +2465,10 @@ if ($schiffanzahl>=1) {
                 if ($reperatur>=1) {
                     $schaden=$schaden-$reperatur;
                     if ($schaden>=1) {
-                        $db->execute("UPDATE " . table_prefix . "schiffe set schaden=$schaden where id=$shid");
+                        $db->execute("UPDATE " . table_prefix . "schiffe set schaden='".$schaden."' where id='".$shid."'");
                     } else {
                         $schaden=0;
-                        $db->execute("UPDATE " . table_prefix . "schiffe set schaden=0 where id=$shid");
+                        $db->execute("UPDATE " . table_prefix . "schiffe set schaden=0 where id='".$shid."'");
                         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['reparatur0'],array($name));
                     }
                 }
@@ -2461,14 +2478,15 @@ if ($schiffanzahl>=1) {
         /////////////////////////////////////////////////////////////////////////////////////////////CREW ANHEUERN ANFANG
         if (($spezialmission==23) and ($status==2)) {
             $reperatur=0;
-            $zeiger2 = mysql_query("SELECT id,kolonisten,x_pos,y_pos,besitzer,spiel,sternenbasis,sternenbasis_id FROM " . table_prefix . "planeten where x_pos=$kox and y_pos=$koy and besitzer=$besitzer and spiel=$spiel");
-            $planetenanzahl = mysql_num_rows($zeiger2);
+            $sql220 = "SELECT id,kolonisten,x_pos,y_pos,besitzer,spiel,sternenbasis,sternenbasis_id FROM " . table_prefix . "planeten use index (x_pos,y_pos,besitzer,spiel) where x_pos='".$kox."' and y_pos='".$koy."' and besitzer='".$besitzer."' and spiel='".$spiel."'";
+            $rows220 = $db->execute($sql220);
+            $planetenanzahl = $rows220->RecordCount();
             if ($planetenanzahl==1) {
-                $array2 = mysql_fetch_array($zeiger2);
-                $p_id=$array2["id"];
-                $p_sternenbasis=$array2["sternenbasis"];
-                $p_sternenbasis_id=$array2["sternenbasis_id"];
-                $p_kolonisten=$array2["kolonisten"];
+                $array220 = $db->getRow($sql220);
+                $p_id=$array220["id"];
+                $p_sternenbasis=$array220["sternenbasis"];
+                $p_sternenbasis_id=$array220["sternenbasis_id"];
+                $p_kolonisten=$array220["kolonisten"];
                 if ($p_sternenbasis_id>=1) {
                     $leute_neu=intval($extra[1]);
                     if ($leute_neu>$p_kolonisten) { $leute_neu=$p_kolonisten; }
@@ -2476,8 +2494,11 @@ if ($schiffanzahl>=1) {
                     $crew=$crew+$leute_neu;
                     $extra[1]='';
                     $extra_neu = implode(":", $extra);
-                    $db->execute("UPDATE " . table_prefix . "schiffe set crew=$crew,extra='$extra_neu',spezialmission=0 where id=$shid");
-                    $db->execute("UPDATE " . table_prefix . "planeten set kolonisten=$p_kolonisten where id=$p_id");
+                    $db->execute("UPDATE " . table_prefix . "schiffe set crew='".$crew."', 
+                                                                         extra='".$extra_neu."', 
+                                                                         spezialmission='0' where id='".$shid."'");
+                    $db->execute("UPDATE " . table_prefix . "planeten set kolonisten='".$p_kolonisten."' where id='".$p_id."'");
+                    
                     if($crew==$crewmax){
                         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['crew0'],array($name,$leute_neu));
                     }else{
@@ -2489,54 +2510,56 @@ if ($schiffanzahl>=1) {
         /////////////////////////////////////////////////////////////////////////////////////////////CREW ANHEUERN ENDE
         /////////////////////////////////////////////////////////////////////////////////////////////TANKEN ANFANG
         if (($spezialmission==1) and ($status==2)) {
-            $zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "planeten where x_pos=$kox and y_pos=$koy and spiel=$spiel");
-            $planetenanzahl = mysql_num_rows($zeiger2);
+            $sql221 = "SELECT * FROM " . table_prefix . "planeten use index (x_pos,y_pos,spiel) where x_pos='".$kox."' and y_pos='".$koy."' and spiel='".$spiel."'";
+            $rows221 = $db->execute($sql221);
+            $planetenanzahl = $rows221->RecordCount();
             if ($planetenanzahl==1) {
-                $array2 = mysql_fetch_array($zeiger2);
-                $p_id=$array2["id"];
-                $osys_1=$array2["osys_1"];
-                $osys_2=$array2["osys_2"];
-                $osys_3=$array2["osys_3"];
-                $osys_4=$array2["osys_4"];
-                $osys_5=$array2["osys_5"];
-                $osys_6=$array2["osys_6"];
-                $p_lemin=$array2["lemin"];
-                $p_besitzer=$array2["besitzer"];
+                $array221 = $db->getRow($sql221)1;
+                $p_id=$array221["id"];
+                $osys_1=$array221["osys_1"];
+                $osys_2=$array221["osys_2"];
+                $osys_3=$array221["osys_3"];
+                $osys_4=$array221["osys_4"];
+                $osys_5=$array221["osys_5"];
+                $osys_6=$array221["osys_6"];
+                $p_lemin=$array221["lemin"];
+                $p_besitzer=$array221["besitzer"];
                 if((($osys_1==7) or ($osys_2==7) or ($osys_3==7) or ($osys_4==7) or ($osys_5==7)or ($osys_6==7))and($p_besitzer!=$besitzer)){
                     $p_lemin=max(0,($p_lemin-100));
                 }
                 $lemin_tanken=$leminmax-$lemin;
                 if ($lemin_tanken>$p_lemin) {$lemin_tanken=$p_lemin;}
-                $db->execute("UPDATE " . table_prefix . "planeten set lemin=lemin-$lemin_tanken where id=$p_id");
-                $db->execute("UPDATE " . table_prefix . "schiffe set lemin=lemin+$lemin_tanken where id=$shid");
+                $db->execute("UPDATE " . table_prefix . "planeten set lemin=lemin-".$lemin_tanken." where id='".$p_id."'");
+                $db->execute("UPDATE " . table_prefix . "schiffe set lemin=lemin+".$lemin_tanken." where id='".$shid."'");
             }
         }
         /////////////////////////////////////////////////////////////////////////////////////////////TANKEN ENDE
         /////////////////////////////////////////////////////////////////////////////////////////////PLANETENBOMBARDEMENT ANFANG
         if (($spezialmission==3) and ($status==2)) {
-            $zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "planeten where x_pos=$kox and y_pos=$koy and besitzer<>$besitzer and besitzer>=1 and spiel=$spiel");
-            $planetenanzahl = mysql_num_rows($zeiger2);
+            $sql222 = "SELECT * FROM " . table_prefix . "planeten use index (x_pos,y_pos,besitzer,spiel) where x_pos='".$kox."' and y_pos='".$koy."' and besitzer<>".$besitzer." and besitzer>=1 and spiel='".$spiel."'";
+            $rows222 = $db->execute($sql222);
+            $planetenanzahl = $rows222->RecordCount();
             if ($planetenanzahl==1) {
-                $array2 = mysql_fetch_array($zeiger2);
-                $p_id=$array2["id"];
-                $osys_1=$array2["osys_1"];
-                $osys_2=$array2["osys_2"];
-                $osys_3=$array2["osys_3"];
-                $osys_4=$array2["osys_4"];
-                $osys_5=$array2["osys_5"];
-                $osys_6=$array2["osys_6"];
-                $p_kolonisten=$array2["kolonisten"];
-                $p_minen=$array2["minen"];
-                $p_fabriken=$array2["fabriken"];
-                $p_abwehr=$array2["abwehr"];
-                $p_name=$array2["name"];
-                $p_bild=$array2["bild"];
-                $p_klasse=$array2["klasse"];
-                $p_besitzer=$array2["besitzer"];
-                $native_id=$array2["native_id"];
-                $native_abgabe=$array2["native_abgabe"];
-                $native_fert=$array2["native_fert"];
-                $native_kol=$array2["native_kol"];
+                $array222 = $db->getRow($sql222);
+                $p_id=$array222["id"];
+                $osys_1=$array222["osys_1"];
+                $osys_2=$array222["osys_2"];
+                $osys_3=$array222["osys_3"];
+                $osys_4=$array222["osys_4"];
+                $osys_5=$array222["osys_5"];
+                $osys_6=$array222["osys_6"];
+                $p_kolonisten=$array222["kolonisten"];
+                $p_minen=$array222["minen"];
+                $p_fabriken=$array222["fabriken"];
+                $p_abwehr=$array222["abwehr"];
+                $p_name=$array222["name"];
+                $p_bild=$array222["bild"];
+                $p_klasse=$array222["klasse"];
+                $p_besitzer=$array222["besitzer"];
+                $native_id=$array222["native_id"];
+                $native_abgabe=$array222["native_abgabe"];
+                $native_fert=$array222["native_fert"];
+                $native_kol=$array222["native_kol"];
                 $native_fert_schutz=intval(substr($native_fert,21,2));
                 if ($beziehung[$besitzer][$p_besitzer]['status']!=5) {
                     $maxcol=100;
@@ -2564,7 +2587,7 @@ if ($schiffanzahl>=1) {
                     $vernichtet_minen=round($p_minen/100*$prozent_minen);
                     $vernichtet_fabriken=round($p_fabriken/100*$prozent_fabriken);
                     $vernichtet_abwehr=round($p_abwehr/100*$prozent_abwehr);
-                    $db->execute("UPDATE " . table_prefix . "planeten set kolonisten=$p_kolonisten,minen=minen-$vernichtet_minen,fabriken=fabriken-$vernichtet_fabriken,abwehr=abwehr-$vernichtet_abwehr where id=$p_id");
+                    $db->execute("UPDATE " . table_prefix . "planeten set kolonisten='".$p_kolonisten."',minen=minen-".$vernichtet_minen.",fabriken=fabriken-".$vernichtet_fabriken.",abwehr=abwehr-".$vernichtet_abwehr." where id='".$p_id."'");
                     neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['bombardement0'],array($name,$p_name,$vernichtet_minen,$prozent_minen,$vernichtet_fabriken,$prozent_fabriken,$vernichtet_abwehr,$prozent_abwehr,$vernichtet_kolonisten,$prozent_kolonisten));
                     neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$p_besitzer,$lang['host']['bombardement1'],array($p_name,$vernichtet_minen,$prozent_minen,$vernichtet_fabriken,$prozent_fabriken,$vernichtet_abwehr,$prozent_abwehr,$vernichtet_kolonisten,$prozent_kolonisten));
                 }
@@ -2573,27 +2596,28 @@ if ($schiffanzahl>=1) {
         /////////////////////////////////////////////////////////////////////////////////////////////PLANETENBOMBARDEMENT ENDE
         /////////////////////////////////////////////////////////////////////////////////////////////VIRALER ANGRIFF ANFANG
         if (($spezialmission==17) and ($status==2)) {
-            $zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "planeten where x_pos=$kox and y_pos=$koy and besitzer<>$besitzer and besitzer>=1 and spiel=$spiel");
-            $planetenanzahl = mysql_num_rows($zeiger2);
+            $sql223 = "SELECT * FROM " . table_prefix . "planeten use index (x_pos,y_pos,besitzer,spiel) where x_pos='".$kox."' and y_pos='".$koy."' and besitzer<>".$besitzer." and besitzer>=1 and spiel='".$spiel."'";
+            $rows223 = $db->execute($sql223);
+            $planetenanzahl = $rows223->RecordCount();
             if ($planetenanzahl==1) {
-                $array2 = mysql_fetch_array($zeiger2);
-                $p_id=$array2["id"];
-                $p_kolonisten=$array2["kolonisten"];
-                $p_name=$array2["name"];
-                $p_bild=$array2["bild"];
-                $p_klasse=$array2["klasse"];
-                $p_besitzer=$array2["besitzer"];
-                $osys_1=$array2["osys_1"];
-                $osys_2=$array2["osys_2"];
-                $osys_3=$array2["osys_3"];
-                $osys_4=$array2["osys_4"];
-                $osys_5=$array2["osys_5"];
-                $osys_6=$array2["osys_6"];
+                $array223 = $db->getRow($sql223);
+                $p_id=$array223["id"];
+                $p_kolonisten=$array223["kolonisten"];
+                $p_name=$array223["name"];
+                $p_bild=$array223["bild"];
+                $p_klasse=$array223["klasse"];
+                $p_besitzer=$array223["besitzer"];
+                $osys_1=$array223["osys_1"];
+                $osys_2=$array223["osys_2"];
+                $osys_3=$array223["osys_3"];
+                $osys_4=$array223["osys_4"];
+                $osys_5=$array223["osys_5"];
+                $osys_6=$array223["osys_6"];
                 if(($osys_1!=20) and ($osys_2!=20) and ($osys_3!=20) and ($osys_4!=20) and ($osys_5!=20) and ($osys_6!=20)){
                     if ($beziehung[$besitzer][$p_besitzer]['status']!=5) {
                         $prozent_kolonisten=mt_rand($viralmin,$viralmax);
                         $vernichtet_kolonisten=round($p_kolonisten/100*$prozent_kolonisten);
-                        $db->execute("UPDATE " . table_prefix . "planeten set kolonisten=kolonisten-$vernichtet_kolonisten where id=$p_id");
+                        $db->execute("UPDATE " . table_prefix . "planeten set kolonisten=kolonisten-".$vernichtet_kolonisten." where id='".$p_id."'");
                         neuigkeiten(2,servername . "images/news/epedemie.jpg",$besitzer,$lang['host']['viral0'],array($name,$p_name,$vernichtet_kolonisten,$prozent_kolonisten));
                         neuigkeiten(1,servername . "images/news/epedemie.jpg",$p_besitzer,$lang['host']['viral1'],array($p_name,$vernichtet_kolonisten,$prozent_kolonisten));
                     }
@@ -2604,28 +2628,30 @@ if ($schiffanzahl>=1) {
             }
         }
         if (($spezialmission==18) and ($status==2)) {
-            $zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "planeten where x_pos=$kox and y_pos=$koy and native_id>=1 and native_kol>0 and spiel=$spiel");
-            $planetenanzahl = mysql_num_rows($zeiger2);
+            $sql224 = "SELECT * FROM " . table_prefix . "planeten use index (x_pos,y_pos,native_id,native_kol) where x_pos='".$kox."' and y_pos='".$koy."' and native_id>=1 and native_kol>0 and spiel='".$spiel."'";
+            $rows224 = $db->execute($sql224);
+            
+            $planetenanzahl = $rows224->RecordCount();
             if ($planetenanzahl==1) {
-                $array2 = mysql_fetch_array($zeiger2);
-                $p_id=$array2["id"];
-                $p_name=$array2["name"];
-                $p_bild=$array2["bild"];
-                $p_klasse=$array2["klasse"];
-                $native_id=$array2["native_id"];
-                $native_kol=$array2["native_kol"];
-                $p_besitzer=$array2["besitzer"];
-                $osys_1=$array2["osys_1"];
-                $osys_2=$array2["osys_2"];
-                $osys_3=$array2["osys_3"];
-                $osys_4=$array2["osys_4"];
-                $osys_5=$array2["osys_5"];
-                $osys_6=$array2["osys_6"];
+                $array224 = $db->getRow($sql224);
+                $p_id=$array224["id"];
+                $p_name=$array224["name"];
+                $p_bild=$array224["bild"];
+                $p_klasse=$array224["klasse"];
+                $native_id=$array224["native_id"];
+                $native_kol=$array224["native_kol"];
+                $p_besitzer=$array224["besitzer"];
+                $osys_1=$array224["osys_1"];
+                $osys_2=$array224["osys_2"];
+                $osys_3=$array224["osys_3"];
+                $osys_4=$array224["osys_4"];
+                $osys_5=$array224["osys_5"];
+                $osys_6=$array224["osys_6"];
                 if(($osys_1!=20) and ($osys_2!=20) and ($osys_3!=20) and ($osys_4!=20) and ($osys_5!=20) and ($osys_6!=20)){
                     if ($beziehung[$besitzer][$p_besitzer]['status']!=5) {
                         $prozent_native=mt_rand($viralmin,$viralmax);
                         $vernichtet_native=round($native_kol/100*$prozent_native);
-                        $db->execute("UPDATE " . table_prefix . "planeten set native_kol=native_kol-$vernichtet_native where id=$p_id");
+                        $db->execute("UPDATE " . table_prefix . "planeten set native_kol=native_kol-".$vernichtet_native." where id='".$p_id."'");
                         neuigkeiten(2,servername . "images/news/epedemie.jpg",$besitzer,$lang['host']['viral2'],array($name,$p_name,$vernichtet_native,$prozent_native));
                         if ($p_besitzer>=1) {
                             neuigkeiten(1,servername . "images/news/epedemie.jpg",$p_besitzer,$lang['host']['viral3'],array($p_name,$vernichtet_native,$prozent_native));
@@ -2642,13 +2668,14 @@ if ($schiffanzahl>=1) {
         /////////////////////////////////////////////////////////////////////////////////////////////VIRALER ANGRIFF ENDE
         /////////////////////////////////////////////////////////////////////////////////////////////TERRAFORMING ANFANG
         if (($spezialmission==5) and ($status==2)) {
-            $zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "planeten where x_pos=$kox and y_pos=$koy and spiel=$spiel");
-            $planetenanzahl = mysql_num_rows($zeiger2);
+            $sql225 "SELECT * FROM " . table_prefix . "planeten where x_pos='".$kox."' and y_pos='".$koy."' and spiel='".$spiel."'";
+            $rows225 = $db->exceute($sql225);            
+            $planetenanzahl = $rows225->RecordCount();
             if ($planetenanzahl==1) {
-                $array2 = mysql_fetch_array($zeiger2);
-                $p_id=$array2["id"];
-                $p_temp=$array2["temp"];
-                $p_name=$array2["name"];
+                $array225 = $db->getRow($sql225)
+                $p_id=$array225["id"];
+                $p_temp=$array225["temp"];
+                $p_name=$array225["name"];
                 if ($fert_terra_warm>=1) {
                     $p_temp=$p_temp+$fert_terra_warm;
                     $tempschreib=$p_temp-35;
@@ -2659,21 +2686,23 @@ if ($schiffanzahl>=1) {
                     $tempschreib=$p_temp-35;
                     neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['terraforming1'],array($p_name,$fert_terra_kalt,$tempschreib));
                 }
-                $db->execute("UPDATE " . table_prefix . "planeten set temp=$p_temp where id=$p_id");
+                $db->execute("UPDATE " . table_prefix . "planeten set temp='".$p_temp."' where id='".$p_id."'");
             }
         }
         /////////////////////////////////////////////////////////////////////////////////////////////TERRAFORMING ENDE
         /////////////////////////////////////////////////////////////////////////////////////////////SPRUNGTOR ANFANG
         if (($spezialmission==13) and ($status==1) and ($flug==0)) {
             $ok=2;
-            $zeiger2 = mysql_query("SELECT y_pos,x_pos,spiel from " . table_prefix . "planeten where (sqrt(((x_pos-$kox)*(x_pos-$kox))+((y_pos-$koy)*(y_pos-$koy)))<=30) and spiel=$spiel");
-            $p2anzahl = mysql_num_rows($zeiger2);
+            $sql226 = "SELECT y_pos,x_pos,spiel from " . table_prefix . "planeten where (sqrt(((x_pos-".$kox.")*(x_pos-".$kox."))+((y_pos-".$koy.")*(y_pos-".$koy.")))<=30) and spiel='".$spiel."'";
+            $rows226 = $db->execute($sql226);
+            $p2anzahl = $rows226->RecordCount();
             if ($p2anzahl>=1) {
                 $ok=1;
                 neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['sprungtor0']);
             }else{
-                $zeiger2 = mysql_query("SELECT y_pos,x_pos,spiel from " . table_prefix . "anomalien where (sqrt(((x_pos-$kox)*(x_pos-$kox))+((y_pos-$koy)*(y_pos-$koy)))<=30) and spiel=$spiel");
-                $a2anzahl = mysql_num_rows($zeiger2);
+                $sql227 = "SELECT y_pos,x_pos,spiel from " . table_prefix . "anomalien where (sqrt(((x_pos-".$kox.")*(x_pos-".$kox."))+((y_pos-".$koy.")*(y_pos-".$koy.")))<=30) and spiel='".$spiel."'");
+                $rows227 = $db->execute($sql227);
+                $a2anzahl = $rows227->RecordCont();
                 if ($a2anzahl>=1) {
                     $ok=1;
                     neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['sprungtor1']);
@@ -2685,29 +2714,32 @@ if ($schiffanzahl>=1) {
                 }
             }
             if ($ok==2) {
-                $db->execute("UPDATE " . table_prefix . "schiffe set fracht_min1=fracht_min1-$fert_sprungtorbau_min1,fracht_min2=fracht_min2-$fert_sprungtorbau_min2,fracht_min3=fracht_min3-$fert_sprungtorbau_min3,lemin=lemin-$fert_sprungtorbau_lemin where id=$shid");
+                $db->execute("UPDATE " . table_prefix . "schiffe set fracht_min1=fracht_min1-".$fert_sprungtorbau_min1.", 
+                                                                     fracht_min2=fracht_min2-".$fert_sprungtorbau_min2.", 
+                                                                     fracht_min3=fracht_min3-".$fert_sprungtorbau_min3.", 
+                                                                     lemin=lemin-".$fert_sprungtorbau_lemin." where id='".$shid."'");
                 if ($sprungtorbauid>=1) {
-                    $zeiger_temp = mysql_query("SELECT * FROM " . table_prefix . "anomalien where id=$sprungtorbauid");
-                    $array_temp = mysql_fetch_array($zeiger_temp);
+                    $sql_temp = "SELECT * FROM " . table_prefix . "anomalien where id='".$sprungtorbauid."'";
+                    $array_temp = $db->getRow($sql_temp);
                     $aid=$array_temp["id"];
                     $x_pos_eins=$array_temp["x_pos"];
                     $y_pos_eins=$array_temp["y_pos"];
                     $extra=$sprungtorbauid.":".$x_pos_eins.":".$y_pos_eins;
-                    $db->execute("INSERT INTO " . table_prefix . "anomalien (art,x_pos,y_pos,extra,spiel) values (2,$kox,$koy,'$extra',$spiel);");
-                    $zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "anomalien where x_pos=$kox and y_pos=$koy and spiel=$spiel");
-                    $array = mysql_fetch_array($zeiger2);
-                    $aid_zwei=$array["id"];
-                    $x_pos_zwei=$array["x_pos"];
-                    $y_pos_zwei=$array["y_pos"];
+                    $db->execute("INSERT INTO " . table_prefix . "anomalien (art,x_pos,y_pos,extra,spiel) values ('2','".$kox."','".$koy."','".$extra."','".$spiel."')");
+                    $sql228 = "SELECT * FROM " . table_prefix . "anomalien where x_pos='".$kox."' and y_pos='".$koy."' and spiel='".$spiel."'";
+                    $array228 = $db->getRow($sql228);
+                    $aid_zwei=$array228["id"];
+                    $x_pos_zwei=$array228["x_pos"];
+                    $y_pos_zwei=$array228["y_pos"];
                     $extra=$aid_zwei.":".$x_pos_zwei.":".$y_pos_zwei;
-                    $db->execute("UPDATE " . table_prefix . "anomalien set extra='$extra' where id=$sprungtorbauid;");
-                    $db->execute("UPDATE " . table_prefix . "schiffe set sprungtorbauid=0,spezialmission=0 where id=$shid");
+                    $db->execute("UPDATE " . table_prefix . "anomalien set extra='".$extra."' where id='".$sprungtorbauid."'");
+                    $db->execute("UPDATE " . table_prefix . "schiffe set sprungtorbauid='0',spezialmission='0' where id='".$shid."'");
                     neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['sprungtor3']);
                 } else {
-                    $db->execute("INSERT INTO " . table_prefix . "anomalien (art,x_pos,y_pos,spiel) values (2,$kox,$koy,$spiel);");
-                    $tempsql = "SELECT id FROM " . table_prefix . "anomalien where x_pos=$kox and y_pos=$koy and spiel=$spiel";
+                    $db->execute("INSERT INTO " . table_prefix . "anomalien (art,x_pos,y_pos,spiel) values ('2','".$kox."','".$koy."','".$spiel."')");
+                    $tempsql = "SELECT id FROM " . table_prefix . "anomalien where x_pos='".$kox."' and y_pos='".$koy."' and spiel='".$spiel."'";
                     $aid=$db->geOne($tempsql);
-                    $db->execute("UPDATE " . table_prefix . "schiffe set sprungtorbauid=$aid,spezialmission=0 where id=$shid");
+                    $db->execute("UPDATE " . table_prefix . "schiffe set sprungtorbauid='".$aid."',spezialmission='0' where id='".$shid."'");
                     neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['sprungtor4']);
                 }
             }
@@ -2716,19 +2748,19 @@ if ($schiffanzahl>=1) {
         /////////////////////////////////////////////////////////////////////////////////////////////Akademieausbildung Anfang
         if(($spezialmission>71) and ($spezialmission<77) and ($masse<100)){
             if($flug==0){
-                $zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "planeten where besitzer=$spieler and spiel=$spiel and x_pos=$kox and y_pos=$koy");
-                $planeten_anzahl = mysql_num_rows($zeiger2);
+                $sql230 = "SELECT * FROM " . table_prefix . "planeten use index (besitzer,spiel,x_pos,y_pos) where besitzer='".$spieler."' and spiel='".$spiel."' and x_pos='".$kox."' and y_pos='".$koy."'";
+                $rows230 = $db->execute($sql230);
+                $planeten_anzahl = $rows230->RecordCount();
                 $fert_akademie=0;
-                if($planeten_anzahl==1){
-                    $ok = mysql_data_seek($zeiger2,0);
-                    $array2 = mysql_fetch_array($zeiger2);
-                    $osys_1=$array2["osys_1"];
-                    $osys_2=$array2["osys_2"];
-                    $osys_3=$array2["osys_3"];
-                    $osys_4=$array2["osys_4"];
-                    $osys_5=$array2["osys_5"];
-                    $osys_6=$array2["osys_6"];
-                    $sternenbasis_art=$array2["sternenbasis_art"];
+                if($planeten_anzahl==1){                    
+                    $array230 = $db->getRow($sql230);
+                    $osys_1=$array230["osys_1"];
+                    $osys_2=$array230["osys_2"];
+                    $osys_3=$array230["osys_3"];
+                    $osys_4=$array230["osys_4"];
+                    $osys_5=$array230["osys_5"];
+                    $osys_6=$array230["osys_6"];
+                    $sternenbasis_art=$array230["sternenbasis_art"];
                     if((($osys_1==16) or ($osys_2==16) or ($osys_3==16) or ($osys_4==16) or ($osys_5==16) or ($osys_6==16))and($sternenbasis_art==2)and$erfahrung<5){
                         $fert_akademie=1;
                     }
@@ -2741,11 +2773,17 @@ if ($schiffanzahl>=1) {
                     }
                     if($fert_akademie==1){
                         if($spezialmission==72 and $fracht_cantox>=100 and $fracht_vorrat>=10 and $fracht_lemin>=50){
-                            $db->execute("UPDATE " . table_prefix . "schiffe set fracht_cantox=fracht_cantox-100,fracht_vorrat=fracht_vorrat-10,lemin=lemin-50,erfahrung=erfahrung+1,spezialmission=0 where id=$shid and erfahrung<5 and spiel=$spiel");
+                            $db->execute("UPDATE " . table_prefix . "schiffe set fracht_cantox=fracht_cantox-100, 
+                                                                                 fracht_vorrat=fracht_vorrat-10, 
+                                                                                 lemin=lemin-50, 
+                                                                                 erfahrung=erfahrung+1, 
+                                                                                 spezialmission='0' 
+                                                                     where id='".$shid."' and erfahrung<5 and spiel='".$spiel."'");
+                            
                             neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['akademie2'],array($name));
                         }elseif($spezialmission>72 and $spezialmission<77){
                             $spezialmission--;
-                            $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission=$spezialmission where id=$shid and spiel=$spiel");
+                            $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='".$spezialmission."' where id='".$shid."' and spiel='".$spiel."'");
                             if($spezialmission>72){
                                 neuigkeiten(2, servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['akademie0'],array($name,$spezialmission-71));
                             }else{
@@ -2755,7 +2793,7 @@ if ($schiffanzahl>=1) {
                     }
                 }
             }else{
-                $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission=0 where id=$shid and spiel=$spiel");
+                $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='0' where id='".$shid."' and spiel='".$spiel."'");
                 neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['akademie3'],array($name));
             }
         }
@@ -2763,92 +2801,92 @@ if ($schiffanzahl>=1) {
     }
 }
 /////////////////////////////////////////////////////////////////////////////////////////////TARNFELD ANFANG
-$db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld=1 where spezialmission=8 and spiel=$spiel");
+$db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld='1' where spezialmission='8' and spiel='".$spiel."'");
 if($module[0]) {
-    $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld=0 where spezialmission<>8 and !(volk='unknown' and klasseid=1) and spiel=$spiel");
-    $zeiger = mysql_query("SELECT * FROM " . table_prefix . "schiffe where tarnfeld=1 and !(volk='unknown' and klasseid=1) and spiel=$spiel order by id");
+    $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld='0' where spezialmission<>8 and !(volk='unknown' and klasseid='1') and spiel='".$spiel."'");
+    $sql235 = "SELECT * FROM " . table_prefix . "schiffe where tarnfeld='1' and !(volk='unknown' and klasseid='1') and spiel='".$spiel."' order by id";
 }else {
-    $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld=0 where spezialmission<>8 and spiel=$spiel");
-    $zeiger = mysql_query("SELECT * FROM " . table_prefix . "schiffe where tarnfeld=1 and spiel=$spiel order by id");
+    $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld='0' where spezialmission<>8 and spiel='".$spiel."'");        
+    $sql235 = "SELECT * FROM " . table_prefix . "schiffe where tarnfeld='1' and spiel='".$spiel."' order by id";
 }
-$schiffanzahl = mysql_num_rows($zeiger);
+$rows235 = $db->execute($sql235);
+$schiffanzahl = $rows235->RecordCount();
 if ($schiffanzahl>=1) {
-    for ($i=0; $i<$schiffanzahl;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
-        $shid=$array["id"];
-        $masse=$array["masse"];
-        $fracht_min2=$array["fracht_min2"];
+    $array_out235 = $db->getArray($sql235);
+    foreach ($array235_out as $array235) {       
+        $shid=$array235["id"];
+        $masse=$array235["masse"];
+        $fracht_min2=$array235["fracht_min2"];
         $min2_brauch=round(($masse/100)+0.5);
         if ($min2_brauch<=$fracht_min2) {
             $fracht_min2=$fracht_min2-$min2_brauch;
-            $db->execute("UPDATE " . table_prefix . "schiffe set fracht_min2=$fracht_min2 where id=$shid");
+            $db->execute("UPDATE " . table_prefix . "schiffe set fracht_min2='".$fracht_min2."' where id='".$shid."'");
         } else {
-            $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld=0 where id=$shid");
+            $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld='0' where id='".$shid."'");
         }
     }
 }
-$zeiger = mysql_query("SELECT name,volk,besitzer,bild_gross,id,tarnfeld,spiel,antrieb FROM " . table_prefix . "schiffe where tarnfeld=1 and spiel=$spiel and antrieb=7 order by id");
-$schiffanzahl = mysql_num_rows($zeiger);
+$sql240 = "SELECT name,volk,besitzer,bild_gross,id,tarnfeld,spiel,antrieb FROM " . table_prefix . "schiffe where tarnfeld='1' and spiel='".$spiel."' and antrieb='7' order by id";
+$rows240 = $db->execute($sql240);
+$schiffanzahl = $rows240->RecordCount();
 if ($schiffanzahl>=1) {
-    for ($i=0; $i<$schiffanzahl;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
-        $shid=$array["id"];
-        $name=$array["name"];
-        $volk=$array["volk"];
-        $besitzer=$array["besitzer"];
-        $bild_gross=$array["bild_gross"];
+    $array240_out = $db->getArray($sql240);
+    foreach ($array240_out as $array240) {        
+        $shid=$array240["id"];
+        $name=$array240["name"];
+        $volk=$array240["volk"];
+        $besitzer=$array240["besitzer"];
+        $bild_gross=$array240["bild_gross"];
         $zuzahl=mt_rand(1,100);
         if ($zuzahl<=19) {
-            $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld=0 where id=$shid");
+            $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld='0' where id='".$shid."'");
         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['tarnfeld0'],array($name));
         }
     }
 }
-$zeiger = mysql_query("SELECT id,spiel,antrieb,antrieb_anzahl,kox,koy FROM " . table_prefix . "schiffe where spiel=$spiel and antrieb=3 order by id");
-$schiffanzahl = mysql_num_rows($zeiger);
+$sql250 = "SELECT id,spiel,antrieb,antrieb_anzahl,kox,koy FROM " . table_prefix . "schiffe where spiel='".$spiel."' and antrieb='3' order by id";
+$rows250 = $db->execute($sql250);
+$schiffanzahl = $rows250->RecordCount();
 if ($schiffanzahl>=1) {
-    for ($i=0; $i<$schiffanzahl;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
-        $shid=$array["id"];
-        $kox=$array["kox"];
-        $koy=$array["koy"];
-        $antrieb_anzahl=$array["antrieb_anzahl"];
+    $array250_out = $db->getArray($sql250);
+    foreach ($array250_out as $array250) {        
+        $shid=$array250["id"];
+        $kox=$array250["kox"];
+        $koy=$array250["koy"];
+        $antrieb_anzahl=$array250["antrieb_anzahl"];
         $zuzahl=mt_rand(1,100);
         if ($zuzahl<=($antrieb_anzahl*2)) {
             neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['drugun2'],array($name));
             $reichweite=117;
             if($module[0]) {
-                $zeiger_temp = mysql_query("SELECT id, besitzer, name, volk, bild_gross FROM " . table_prefix . "schiffe where (sqrt(((kox-$kox)*(kox-$kox))+((koy-$koy)*(koy-$koy)))<=$reichweite) and tarnfeld=1 and antrieb<>2 and spiel=$spiel order by id");
-                $treffschiff = mysql_num_rows($zeiger_temp);
+                $sql260 = "SELECT id, besitzer, name, volk, bild_gross FROM " . table_prefix . "schiffe where (sqrt(((kox-".$kox.")*(kox-".$kox."))+((koy-".$koy.")*(koy-".$koy.")))<=".$reichweite.") and tarnfeld='1' and antrieb<>2 and spiel='".$spiel."' order by id";
+                $rows260 = $db->execute($sql260);
+                $treffschiff = $rows260->RecordCount();
                 if ($treffschiff>=1) {
-                    for ($k=0; $k<$treffschiff;$k++) {
-                        $ok2 = mysql_data_seek($zeiger_temp,$k);
-                        $array_temp = mysql_fetch_array($zeiger_temp);
-                        $t_shid=$array_temp["id"];
-                        $t_besitzer=$array_temp["besitzer"];
-                        $t_name=$array_temp["name"];
-                        $t_volk=$array_temp["volk"];
-                        $t_bild_gross=$array_temp["bild_gross"];
-                        $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld=0 where id=$t_shid and spiel=$spiel");
+                    $array260_out = $db->getArray($sql260);
+                    foreach ($array260_out as $array260) {                        
+                        $t_shid=$array260["id"];
+                        $t_besitzer=$array260["besitzer"];
+                        $t_name=$array260["name"];
+                        $t_volk=$array260["volk"];
+                        $t_bild_gross=$array260["bild_gross"];
+                        $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld=0 where id='".$t_shid."' and spiel='".$spiel."'");
                         neuigkeiten(2,servername . "daten/$t_volk/bilder_schiffe/$t_bild_gross",$t_besitzer,$lang['host']['drugun0'],array($t_name));
                     }
                 }
                 //spion tarner nur dekrementieren
-                $zeiger = mysql_query("SELECT id,tarnfeld, besitzer, name, volk, bild_gross FROM " . table_prefix . "schiffe where (sqrt(((kox-$kox)*(kox-$kox))+((koy-$koy)*(koy-$koy)))<=$reichweite) and volk='unknown' and klasseid=1 and spiel=$spiel");
-                $schiffanzahl = mysql_num_rows($zeiger);
+                $sql270 = "SELECT id,tarnfeld, besitzer, name, volk, bild_gross FROM " . table_prefix . "schiffe where (sqrt(((kox-$kox)*(kox-$kox))+((koy-$koy)*(koy-$koy)))<=$reichweite) and volk='unknown' and klasseid='1' and spiel='".$spiel."'";
+                $rows270 = $db->execute($sql270);
+                $schiffanzahl = $rows270->RecordCount();
                 if($schiffanzahl>=1) {
-                    for($i=0; $i<$schiffanzahl;$i++) {
-                        $ok = mysql_data_seek($zeiger,$i);
-                        $array = mysql_fetch_array($zeiger);
-                        $t_shid=$array["id"];
-                        $t_besitzer=$array_temp["besitzer"];
-                        $t_name=$array_temp["name"];
-                        $t_volk=$array_temp["volk"];
-                        $t_bild_gross=$array_temp["bild_gross"];
-                        $tarnfeld=$array["tarnfeld"];
+                    $array270_out = $db->getArray($sql270);
+                    foreach($array270_out as $array270) {                        
+                        $t_shid=$array270["id"];
+                        $t_besitzer=$array270["besitzer"];
+                        $t_name=$array270["name"];
+                        $t_volk=$array270["volk"];
+                        $t_bild_gross=$array270["bild_gross"];
+                        $tarnfeld=$array270["tarnfeld"];
                         $tarnfeld--;
                         if($tarnfeld<=0) {
                             $tarnfeld = 0;
@@ -2856,106 +2894,107 @@ if ($schiffanzahl>=1) {
                         }else{
                             neuigkeiten(2, servername . "daten/$t_volk/bilder_schiffe/$t_bild_gross",$t_besitzer,$lang['host']['drugun0'],array($t_name));
                         }
-                        $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld=$tarnfeld where id=$t_shid");
+                        $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld='".$tarnfeld."' where id='".$t_shid."'");
                     }
                 }
             }else {
-                $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld=0 where (sqrt(((kox-$kox)*(kox-$kox))+((koy-$koy)*(koy-$koy)))<=$reichweite) and spiel=$spiel and tarnfeld=1");
+                $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld=0 where (sqrt(((kox-$kox)*(kox-$kox))+((koy-$koy)*(koy-$koy)))<=$reichweite) and spiel='".$spiel."' and tarnfeld='1'");
             }
         }
     }
 }
-$db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld=1 where antrieb=2 and spiel=$spiel");
+$db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld='1' where antrieb='2' and spiel='".$spiel."'");
 /////////////////////////////////////////////////////////////////////////////////////////////TARNFELD ENDE
 /////////////////////////////////////////////////////////////////////////////////////////////DRUGUNVERZERRER ANFANG
-$zeiger = mysql_query("SELECT fracht_leute,id,name,klasse,kox,koy,volk,besitzer,bild_gross,crew,leichtebt,schwerebt,zusatzmodul,spezialmission,status FROM " . table_prefix . "schiffe where spezialmission=30 and zusatzmodul=6 and status=2 and spiel=$spiel order by id");
-$schiffanzahl = mysql_num_rows($zeiger);
+$sql280 = "SELECT fracht_leute,id,name,klasse,kox,koy,volk,besitzer,bild_gross,crew,leichtebt,schwerebt,zusatzmodul,spezialmission,status FROM " . table_prefix . "schiffe use index (spezialmission,zusatzmodul,status,spiel) where spezialmission='30' and zusatzmodul='6' and status='2' and spiel='".$spiel."' order by id";
+$rows280 = $db->execute($sql280);
+$schiffanzahl = $rows280->RecordCount();
 if ($schiffanzahl>=1) {
-    for  ($i=0; $i<$schiffanzahl;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
-        $shid=$array["id"];
-        $name=$array["name"];
-        $klasse=$array["klasse"];
-        $kox=$array["kox"];
-        $koy=$array["koy"];
-        $volk=$array["volk"];
-        $besitzer=$array["besitzer"];
-        $bild_gross=$array["bild_gross"];
-        $crew=$array["crew"];
-        $leichtebt=$array["leichtebt"];
-        $schwerebt=$array["schwerebt"];
-        $zusatzmodul=$array["zusatzmodul"];
-        $spezialmission=$array["spezialmission"];
-        $status=$array["status"];
-        $fracht_leute=$array["fracht_leute"];
+    $array280_out = $db->getArray($sql280);
+    foreach ($array280_out as $array280) {        
+        $shid=$array280["id"];
+        $name=$array280["name"];
+        $klasse=$array280["klasse"];
+        $kox=$array280["kox"];
+        $koy=$array280["koy"];
+        $volk=$array280["volk"];
+        $besitzer=$array280["besitzer"];
+        $bild_gross=$array280["bild_gross"];
+        $crew=$array280["crew"];
+        $leichtebt=$array280["leichtebt"];
+        $schwerebt=$array280["schwerebt"];
+        $zusatzmodul=$array280["zusatzmodul"];
+        $spezialmission=$array280["spezialmission"];
+        $status=$array280["status"];
+        $fracht_leute=$array280["fracht_leute"];
         $zufall=rand(1,100);
         if ($zufall<=67) {
             $reichweite=round($masse/2);
             neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['drugun5'],array($name,$reichweite));
-            $zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "planeten where x_pos=$kox and y_pos=$koy and besitzer=$besitzer and spiel=$spiel");
-            $planetenanzahl = mysql_num_rows($zeiger2);
+            $sql290 = "SELECT * FROM " . table_prefix . "planeten use index (x_pos,y_pos,besitzer,spiel) where x_pos='".$kox."' and y_pos='".$koy."' and besitzer='".$besitzer."' and spiel='".$spiel."'";           
+            $rows290 = $db->execute($sql290);
+            $planetenanzahl = $rows290->RecordCount();
             if ($planetenanzahl==1) {
-                $array2 = mysql_fetch_array($zeiger2);
-                $p_id=$array2["id"];
-                $p_kolonisten=$array2["kolonisten"];
-                $p_leichtebt=$array2["leichtebt"];
-                $p_schwerebt=$array2["schwerebt"];
+                $array290 = $db->getRow($sql290);
+                $p_id=$array290["id"];
+                $p_kolonisten=$array290["kolonisten"];
+                $p_leichtebt=$array290["leichtebt"];
+                $p_schwerebt=$array290["schwerebt"];
                 $p_kolonisten=$p_kolonisten+$crew+$fracht_leute;
                 $p_leichtebt+=$leichtebt;
                 $p_schwerebt+=$schwerebt;
-                $db->execute("UPDATE " . table_prefix . "planeten set kolonisten=$p_kolonisten,leichtebt=$p_leichtebt,schwererbt=$p_schwerebt where x_pos=$kox and y_pos=$koy and besitzer=$besitzer and spiel=$spiel");
-                $zeiger_temp = mysql_query("SELECT id,tarnfeld, besitzer, name, volk, bild_gross FROM " . table_prefix . "schiffe where (sqrt(((kox-$kox)*(kox-$kox))+((koy-$koy)*(koy-$koy)))<=$reichweite) and tarnfeld>0 and spiel=$spiel order by id");
-                $treffschiff = mysql_num_rows($zeiger_temp);
+                $db->execute("UPDATE " . table_prefix . "planeten set kolonisten='".$p_kolonisten."',leichtebt='".$p_leichtebt."',schwererbt='".$p_schwerebt."' where x_pos='".$kox."' and y_pos='".$koy."' and besitzer='".$besitzer."' and spiel='".$spiel."'");
+                $sql300 = "SELECT id,tarnfeld, besitzer, name, volk, bild_gross FROM " . table_prefix . "schiffe where (sqrt(((kox-$kox)*(kox-$kox))+((koy-$koy)*(koy-$koy)))<=$reichweite) and tarnfeld>0 and spiel='".$spiel."' order by id";
+                $rows300 = $db->execute($sql300);
+                $treffschiff = $rows300->RecordCount();
                 if ($treffschiff>=1) {
-                    for($i=0; $i<$treffschiff;$i++) {
-                        $ok = mysql_data_seek($zeiger,$i);
-                        $array = mysql_fetch_array($zeiger);
-                        $t_shid=$array["id"];
-                        $t_besitzer=$array_temp["besitzer"];
-                        $t_name=$array_temp["name"];
-                        $t_volk=$array_temp["volk"];
-                        $t_bild_gross=$array_temp["bild_gross"];
-                        $tarnfeld=$array["tarnfeld"];
+                    $array300_out = $db->getArray($sql300);
+                    foreach($array300_out as $array300) {                        
+                        $t_shid=$array300["id"];
+                        $t_besitzer=$array300["besitzer"];
+                        $t_name=$array300["name"];
+                        $t_volk=$array300["volk"];
+                        $t_bild_gross=$array300["bild_gross"];
+                        $tarnfeld=$array300["tarnfeld"];
                         $tarnfeld--;
                         if($tarnfeld==0){
                             neuigkeiten(2,servername . "daten/$t_volk/bilder_schiffe/$t_bild_gross",$t_besitzer,$lang['host']['drugun3'],array($t_name));
                         }else{
                             neuigkeiten(2,servername . "daten/$t_volk/bilder_schiffe/$t_bild_gross",$t_besitzer,$lang['host']['drugun4'],array($t_name));
                         }
-                        $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld=$tarnfeld where id=$t_shid");
+                        $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld='".$tarnfeld."' where id='".$t_shid."'");
                     }
                 }
             }
-            $db->execute("DELETE FROM " . table_prefix . "schiffe where id=$shid");
-            $db->execute("DELETE FROM " . table_prefix . "anomalien where art=3 and extra like 's:$shid:%'");
-            $db->execute("UPDATE " . table_prefix . "schiffe set flug=0,warp=0,zielx=0,ziely=0,zielid=0 where flug in ('3','4') and zielid=$shid");
+            $db->execute("DELETE FROM " . table_prefix . "schiffe where id='".$shid."'");
+            $db->execute("DELETE FROM " . table_prefix . "anomalien where art='3' and extra like 's:".$shid.":%'");
+            $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug in ('3','4') and zielid='".$shid."'");
         }
     }
 }
 /////////////////////////////////////////////////////////////////////////////////////////////DRUGUNVERZERRER ENDE
 /////////////////////////////////////////////////////////////////////////////////////////////SENSORPHALANX UND LABOR ANFANG
-$db->execute("UPDATE " . table_prefix . "schiffe set scanner=0 where spezialmission<>11 and spezialmission<>12 and spiel=$spiel");
-$db->execute("UPDATE " . table_prefix . "schiffe set scanner=1 where spezialmission=11 and spiel=$spiel");
-$db->execute("UPDATE " . table_prefix . "schiffe set scanner=2 where spezialmission=12 and spiel=$spiel");
+$db->execute("UPDATE " . table_prefix . "schiffe set scanner='0' where spezialmission<>11 and spezialmission<>12 and spiel='".$spiel."'");
+$db->execute("UPDATE " . table_prefix . "schiffe set scanner='1' where spezialmission='11' and spiel='".$spiel."'");
+$db->execute("UPDATE " . table_prefix . "schiffe set scanner='2' where spezialmission='12' and spiel='".$spiel."'");
 /////////////////////////////////////////////////////////////////////////////////////////////SENSORPHALANX UND LABOR ENDE
 /////////////////////////////////////////////////////////////////////////////////////////////SPEZIALMISSIONEN ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////PLANETEN ANFANG
 ///////////////////////////////////////////////////////////////////////////////////////////////KOLONISTEN UND TRUPPEN SCHRUMPFEN ANFANG
-$zeiger = mysql_query("SELECT id,name,bild,sternenbasis_id,kolonisten,besitzer,spiel,leichtebt,schwerebt,vorrat FROM " . table_prefix . "planeten where besitzer>=1 and kolonisten<1000 and spiel=$spiel order by id");
-$planetenanzahl = mysql_num_rows($zeiger);
+$sql310 = "SELECT id,name,bild,sternenbasis_id,kolonisten,besitzer,spiel,leichtebt,schwerebt,vorrat FROM " . table_prefix . "planeten where besitzer>=1 and kolonisten<1000 and spiel='".$spiel."' order by id";
+$rows310 = $db->execute($sql310);
+$planetenanzahl = $rows310->RecordCount();
 if ($planetenanzahl>=1) {
-    for ($i=0; $i<$planetenanzahl;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
-        $pid=$array["id"];
-        $name=$array["name"];
-        $bild=$array["bild"];
-        $sternenbasis_id=$array["sternenbasis_id"];
-        $leichtebt=$array["leichtebt"];
-        $schwerebt=$array["schwerebt"];
-        $vorrat=$array["vorrat"];
-        $kolonisten=$array["kolonisten"];
+    $array310_out = $db->getArray($sql310);
+    foreach ($array310_out as $array310) {        
+        $pid=$array310["id"];
+        $name=$array310["name"];
+        $bild=$array310["bild"];
+        $sternenbasis_id=$array310["sternenbasis_id"];
+        $leichtebt=$array310["leichtebt"];
+        $schwerebt=$array310["schwerebt"];
+        $vorrat=$array310["vorrat"];
+        $kolonisten=$array310["kolonisten"];
         $kolonisten=$kolonisten-mt_rand(50,200);
         if ($kolonisten<1) {
             $weg=0;
@@ -2981,38 +3020,48 @@ if ($planetenanzahl>=1) {
                 }
             }
             if ($weg==1) {
-                $db->execute("UPDATE " . table_prefix . "planeten set leichtebt=0,schwerebt=0,kolonisten=0,besitzer=0,auto_minen=0,auto_fabriken=0,abwehr=0,auto_abwehr=0,auto_vorrat=0,vorrat=0,logbuch='' where id=$pid");
+                $db->execute("UPDATE " . table_prefix . "planeten set leichtebt='0',schwerebt='0',kolonisten='0',besitzer='0',auto_minen='0',auto_fabriken='0',abwehr='0',auto_abwehr='0',auto_vorrat='0',vorrat='0',logbuch='' where id='".$pid."'");
                 if ($sternenbasis_id>=1) {
-                    $db->execute("UPDATE " . table_prefix . "sternenbasen set besitzer=0 where id=$sternenbasis_id");
+                    $db->execute("UPDATE " . table_prefix . "sternenbasen set besitzer='0' where id='".$sternenbasis_id."'");
                 }
             } else {
-                $db->execute("UPDATE " . table_prefix . "planeten set vorrat=$vorrat,leichtebt=$leichtebt,schwerebt=$schwerebt where id=$pid");
+                $db->execute("UPDATE " . table_prefix . "planeten set vorrat='".$vorrat."',leichtebt='".$leichtebt."',schwerebt='".$schwerebt."' where id='".$pid."'");
             }
         } else {
-            $db->execute("update " . table_prefix . "planeten set kolonisten=$kolonisten where id=$pid");
+            $db->execute("update " . table_prefix . "planeten set kolonisten='".$kolonisten."' where id='".$pid."'");
         }
     }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////KOLONISTEN SCHRUMPFEN ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////PLANETEN NEU BESETZEN ANFANG
-$zeiger = mysql_query("SELECT * FROM " . table_prefix . "planeten where besitzer=0 and (kolonisten_new>0 or leichtebt_new>0 or schwerebt>0) and spiel=$spiel order by id");
-$planetenanzahl = mysql_num_rows($zeiger);
+$sql320 = "SELECT * FROM " . table_prefix . "planeten use index (besitzer,spiel) where besitzer='0' and (kolonisten_new>0 or leichtebt_new>0 or schwerebt>0) and spiel='".$spiel."' order by id";
+$rows320 = $db->execute($sql320);
+$planetenanzahl = $rows320->RecordCount();
 if ($planetenanzahl>=1) {
-    for ($i=0; $i<$planetenanzahl;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
-        $pid=$array["id"];
-        $name=$array["name"];
-        $bild=$array["bild"];
-        $klasse=$array["klasse"];
-        $kolonisten=$array["kolonisten"];
-        $kolonisten_new=$array["kolonisten_new"];
-        $kolonisten_spieler=$array["kolonisten_spieler"];
-        $leichtebt_new=$array["leichtebt_new"];
-        $schwerebt_new=$array["schwerebt_new"];
-        $sternenbasis_id=$array["sternenbasis_id"];
-        $db->execute("update " . table_prefix . "planeten set leichtebt=$leichtebt_new,schwerebt=$schwerebt_new,leichtebt_new=0,schwerebt_new=0,besitzer=$kolonisten_spieler,kolonisten=$kolonisten_new,kolonisten_new=0,kolonisten_spieler=0 where id=$pid");
-        if ($sternenbasis_id>=1) { $db->execute("UPDATE " . table_prefix . "sternenbasen set besitzer=$kolonisten_spieler where id=$sternenbasis_id;"); }
+    $array320_out = $db->getArray($sql320);
+    foreach ($array320_out as $array320) {        
+        $pid=$array320["id"];
+        $name=$array320["name"];
+        $bild=$array320["bild"];
+        $klasse=$array320["klasse"];
+        $kolonisten=$array320["kolonisten"];
+        $kolonisten_new=$array320["kolonisten_new"];
+        $kolonisten_spieler=$array320["kolonisten_spieler"];
+        $leichtebt_new=$array320["leichtebt_new"];
+        $schwerebt_new=$array320["schwerebt_new"];
+        $sternenbasis_id=$array320["sternenbasis_id"];
+        $db->execute("update " . table_prefix . "planeten set leichtebt='".$leichtebt_new."', 
+                                                              schwerebt='".$schwerebt_new."', 
+                                                              leichtebt_new='0', 
+                                                              schwerebt_new='0', 
+                                                              besitzer='".$kolonisten_spieler."', 
+                                                              kolonisten='".$kolonisten_new."', 
+                                                              kolonisten_new='0',
+                                                              kolonisten_spieler='0'
+                                                       where id='".$pid."'");
+        if ($sternenbasis_id>=1) { 
+            $db->execute("UPDATE " . table_prefix . "sternenbasen set besitzer='".$kolonisten_spieler."' where id='".$sternenbasis_id."'");
+        }
         if ($kolonisten_new>0) {
             $neuekolonie++;
             neuigkeiten(1, servername . "images/planeten/$klasse"."_"."$bild.jpg",$kolonisten_spieler,$lang['host']['besetzen0'],array($name));
@@ -3025,13 +3074,13 @@ if ($planetenanzahl>=1) {
 ///////////////////////////////////////////////////////////////////////////////////////////////GROSSER METEORITEN ANFANG
 $meteor=mt_rand(1,200);
 if ($meteor==1) {
-    $zeiger = mysql_query("SELECT id,spiel,besitzer,name,x_pos,y_pos,sternenbasis FROM " . table_prefix . "planeten where spiel=$spiel and sternenbasis=0 order by rand() limit 0,1");
-    $array = mysql_fetch_array($zeiger);
-    $pid=$array["id"];
-    $name=$array["name"];
-    $besitzer=$array["besitzer"];
-    $x_pos=$array["x_pos"];
-    $y_pos=$array["y_pos"];
+    $sql330 = "SELECT id,spiel,besitzer,name,x_pos,y_pos,sternenbasis FROM " . table_prefix . "planeten where spiel='".$spiel."' and sternenbasis='0' order by rand() limit 0,1";
+    $array330 = $db->getRow($sql330);
+    $pid=$array330["id"];
+    $name=$array330["name"];
+    $besitzer=$array330["besitzer"];
+    $x_pos=$array330["x_pos"];
+    $y_pos=$array330["y_pos"];
     $rohstoff_met=mt_rand(7500,10000);
     $rohstoffe[0]=mt_rand(0,$rohstoff_met);
     $rohstoffe[1]=mt_rand(0,($rohstoff_met-$rohstoffe[0]));
@@ -3043,13 +3092,51 @@ if ($meteor==1) {
     $min2=$rohstoffe[2];
     $min3=$rohstoffe[3];
     if ($besitzer>=1) {
-        $db->execute("UPDATE " . table_prefix . "planeten set planet_lemin=planet_lemin+$lemin,planet_min1=planet_min1+$min1,planet_min2=planet_min2+$min2,planet_min3=planet_min3+$min3,native_id=0,native_name ='',native_art=0,native_art_name='',native_abgabe=0,native_bild='',native_text='',native_fert='',native_kol=0,kolonisten=0,besitzer=0,minen=0,vorrat=0,cantox=0,auto_minen=0,fabriken=0,auto_fabriken=0,abwehr=0,auto_abwehr=0,auto_vorrat=0,logbuch='' where id=$pid");
+        $db->execute("UPDATE " . table_prefix . "planeten set planet_lemin=planet_lemin+".$lemin.", 
+                                                              planet_min1=planet_min1+".$min1.", 
+                                                              planet_min2=planet_min2+".$min2.", 
+                                                              planet_min3=planet_min3+".$min3.", 
+                                                              native_id='0', 
+                                                              native_name ='', 
+                                                              native_art='0', 
+                                                              native_art_name='', 
+                                                              native_abgabe='0', 
+                                                              native_bild='', 
+                                                              native_text='', 
+                                                              native_fert='', 
+                                                              native_kol='0', 
+                                                              kolonisten='0', 
+                                                              besitzer='0', 
+                                                              minen='0', 
+                                                              vorrat='0', 
+                                                              cantox='0', 
+                                                              auto_minen='0', 
+                                                              fabriken='0', 
+                                                              auto_fabriken='0', 
+                                                              abwehr='0', 
+                                                              auto_abwehr='0', 
+                                                              auto_vorrat='0', 
+                                                              logbuch='' 
+                                                 where id='".$pid."'");
         for ($k=1;$k<11;$k++) {
             if (($spieler_id_c[$k]>=1) and ($spieler_raus_c[$k]!=1) and ($besitzer!=$k)) { neuigkeiten(4,servername . "images/news/meteor_gross.jpg",$k,$lang['host']['meteoriten0'],array($name,$x_pos,$y_pos,$rohstoffe[0],$rohstoffe[2],$rohstoffe[1],$rohstoffe[3])); }
         }
         neuigkeiten(4, servername . "images/news/meteor_gross.jpg",$besitzer,$lang['host']['meteoriten1'],array($name,$x_pos,$y_pos,$rohstoffe[0],$rohstoffe[2],$rohstoffe[1],$rohstoffe[3]));
     } else {
-        $db->execute("UPDATE " . table_prefix . "planeten set planet_lemin=planet_lemin+$lemin,planet_min1=planet_min1+$min1,planet_min2=planet_min2+$min2,planet_min3=planet_min3+$min3,native_id=0,native_name ='',native_art=0,native_art_name='',native_abgabe=0,native_bild='',native_text='',native_fert='',native_kol=0 where id=$pid");
+        $db->execute("UPDATE " . table_prefix . "planeten set planet_lemin=planet_lemin+".$lemin.", 
+                                                              planet_min1=planet_min1+".$min1.", 
+                                                              planet_min2=planet_min2+".$min2.", 
+                                                              planet_min3=planet_min3+".$min3.", 
+                                                              native_id='0', 
+                                                              native_name ='', 
+                                                              native_art='0', 
+                                                              native_art_name='', 
+                                                              native_abgabe='0', 
+                                                              native_bild='', 
+                                                              native_text='', 
+                                                              native_fert='', 
+                                                              native_kol='0' 
+                                                  where id='".$pid."'");
         for ($k=1;$k<11;$k++) {
             if (($spieler_id_c[$k]>=1) and ($spieler_raus_c[$k]!=1)) { neuigkeiten(4,servername . "images/news/meteor_gross.jpg",$k,$lang['host']['meteoriten0'],array($name,$x_pos,$y_pos,$rohstoffe[0],$rohstoffe[2],$rohstoffe[1],$rohstoffe[3])); }
         }
@@ -3059,8 +3146,8 @@ if ($meteor==1) {
 ///////////////////////////////////////////////////////////////////////////////////////////////KLEINE METEORITEN ANFANG
 $meteore=mt_rand(0,15);
 for ($i=0; $i<$meteore;$i++) {
-    $zeiger = mysql_query("SELECT id,spiel,besitzer,name,lemin,min1,min2,min3 FROM " . table_prefix . "planeten where spiel=$spiel order by rand() limit 0,1");
-    $array = mysql_fetch_array($zeiger);
+    $sql340 = "SELECT id,spiel,besitzer,name,lemin,min1,min2,min3 FROM " . table_prefix . "planeten use index (spiel) where spiel='".$spiel."' order by rand() limit 0,1";
+    $array = $db->getRow($sql340);
     $pid=$array["id"];
     $name=$array["name"];
     $besitzer=$array["besitzer"];
@@ -3078,7 +3165,7 @@ for ($i=0; $i<$meteore;$i++) {
     $min1=$min1+$rohstoffe[1];
     $min2=$min2+$rohstoffe[2];
     $min3=$min3+$rohstoffe[3];
-    $db->execute("UPDATE " . table_prefix . "planeten set lemin=$lemin,min1=$min1,min2=$min2,min3=$min3 where id=$pid");
+    $db->execute("UPDATE " . table_prefix . "planeten set lemin='".$lemin."',min1='".$min1."',min2='".$min2."',min3='".$min3."' where id='".$pid."'");
     if ($besitzer>=1) {
         neuigkeiten(2, servername . "images/news/meteor_klein.jpg",$besitzer,$lang['host']['meteoriten2'],array($name,$rohstoffe[0],$rohstoffe[2],$rohstoffe[1],$rohstoffe[3]));
     }
@@ -3086,24 +3173,24 @@ for ($i=0; $i<$meteore;$i++) {
 ///////////////////////////////////////////////////////////////////////////////////////////////KLEINE METEORITEN ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////PIRATEN ANFANG
 if (($piraten_mitte>=1) or ($piraten_aussen>=1)) {
-    $zeiger = mysql_query("SELECT zusatzmodul,spiel,id,erfahrung,energetik_anzahl,projektile_anzahl,hanger_anzahl,kox,koy,besitzer,status,name,fracht_cantox,fracht_vorrat,fracht_min1,fracht_min2,fracht_min3,techlevel FROM " . table_prefix . "schiffe where status<>2 and techlevel>3 and energetik_anzahl=0 and projektile_anzahl=0 and hanger_anzahl=0 and spiel=$spiel order by id");
-    $schiffanzahl = mysql_num_rows($zeiger);
+    $sql350 = "SELECT zusatzmodul,spiel,id,erfahrung,energetik_anzahl,projektile_anzahl,hanger_anzahl,kox,koy,besitzer,status,name,fracht_cantox,fracht_vorrat,fracht_min1,fracht_min2,fracht_min3,techlevel FROM " . table_prefix . "schiffe use index (status, spiel) where status<>2 and techlevel>3 and energetik_anzahl='0' and projektile_anzahl='0' and hanger_anzahl='0' and spiel='".$spiel."' order by id";
+    $rows350 = $db->execute($sql350);
+    $schiffanzahl = $rows350->RecordCount();
     if ($schiffanzahl>=1) {
-        for ($i=0; $i<$schiffanzahl;$i++) {
-            $ok = mysql_data_seek($zeiger,$i);
-            $array = mysql_fetch_array($zeiger);
-            $shid=$array["id"];
-            $kox=$array["kox"];
-            $koy=$array["koy"];
-            $fracht_min1=$array["fracht_min1"];
-            $fracht_min2=$array["fracht_min2"];
-            $fracht_min3=$array["fracht_min3"];
-            $fracht_cantox=$array["fracht_cantox"];
-            $fracht_vorrat=$array["fracht_vorrat"];
-            $besitzer=$array["besitzer"];
-            $name=$array["name"];
-            $erfahrung=$array["erfahrung"];
-            $zusatzmodul=$array["zusatzmodul"];
+        $array350_out = $db->getArray($sql350);
+        foreach ($array350_out as $array350) {            
+            $shid=$array350["id"];
+            $kox=$array350["kox"];
+            $koy=$array350["koy"];
+            $fracht_min1=$array350["fracht_min1"];
+            $fracht_min2=$array350["fracht_min2"];
+            $fracht_min3=$array350["fracht_min3"];
+            $fracht_cantox=$array350["fracht_cantox"];
+            $fracht_vorrat=$array350["fracht_vorrat"];
+            $besitzer=$array350["besitzer"];
+            $name=$array350["name"];
+            $erfahrung=$array350["erfahrung"];
+            $zusatzmodul=$array350["zusatzmodul"];
             if (($fracht_min1>=1) or ($fracht_min2>=1) or ($fracht_min3>=1) or ($fracht_cantox>=1) or ($fracht_vorrat>=1)) {
                 $abstand=(sqrt(((($umfang/2)-$kox)*(($umfang/2)-$kox))+((($umfang/2)-$koy)*(($umfang/2)-$koy))));
                 $wahrscheinlichkeit=0;
@@ -3122,14 +3209,16 @@ if (($piraten_mitte>=1) or ($piraten_aussen>=1)) {
                 if ($piraten_aussen==$piraten_mitte) { $wahrscheinlichkeit=$piraten_aussen; }
                 $wahrscheinlichkeit=$wahrscheinlichkeit-($erfahrung*5);
                 $tech_stark=0;
-                $zeiger2 = mysql_query("SELECT techlevel,spiel,id,energetik_anzahl,projektile_anzahl,hanger_anzahl,kox,koy,besitzer,flug,zielid FROM " . table_prefix . "schiffe where flug=4 and zielid=$shid and kox=$kox and koy=$koy and (energetik_anzahl>=1 or projektile_anzahl>=1 or hanger_anzahl>=1) and spiel=$spiel order by id");
-                $schiffanzahl2 = mysql_num_rows($zeiger2);
+                $sql360 = "SELECT techlevel,spiel,id,energetik_anzahl,projektile_anzahl,hanger_anzahl,kox,koy,besitzer,flug,zielid FROM " . table_prefix . "schiffe use index (flug,zielid,kox,kloy,spiel) where flug='4' and zielid='".$shid."' and kox='".$kox."' and koy='".$koy."' and (energetik_anzahl>=1 or projektile_anzahl>=1 or hanger_anzahl>=1) and spiel='".$spiel."' order by id";
+                $rows360 = $db->execute($sql360);
+                $schiffanzahl2 = $rows360->RecordCount();
                 if ($schiffanzahl2>=1) {
-                    for ($i2=0; $i2<$schiffanzahl;$i2++) {
-                        $ok2 = mysql_data_seek($zeiger2,$i2);
-                        $array2 = mysql_fetch_array($zeiger2);
+                    $arra360_out  = $db->getArray($sql360);
+                    foreach ($array360_out as $array360) {
                         $techlevel=$array2["techlevel"];
-                        if ($techlevel>$tech_stark) {$tech_stark=$techlevel;}
+                        if ($techlevel>$tech_stark) {
+                            $tech_stark=$techlevel;                            
+                        }
                     }
                 }
                 if ($tech_stark>=1) {$wahrscheinlichkeit=$wahrscheinlichkeit-($tech_stark*$tech_stark);}
@@ -3159,7 +3248,12 @@ if (($piraten_mitte>=1) or ($piraten_aussen>=1)) {
                         $fracht_cantox_weg=ceil($prozente[3]*$fracht_cantox/100);
                         $fracht_vorrat_weg=ceil($prozente[4]*$fracht_vorrat/100);
                         if (($fracht_min1_weg>=1) or ($fracht_min2_weg>=1) or ($fracht_min3_weg>=1) or ($fracht_cantox_weg>=1) or ($fracht_vorrat_weg>=1)) {
-                            $db->execute("UPDATE " . table_prefix . "schiffe set fracht_min1=fracht_min1-$fracht_min1_weg,fracht_min2=fracht_min2-$fracht_min2_weg,fracht_min3=fracht_min3-$fracht_min3_weg,fracht_cantox=fracht_cantox-$fracht_cantox_weg,fracht_vorrat=fracht_vorrat-$fracht_vorrat_weg where id=$shid");
+                            $db->execute("UPDATE " . table_prefix . "schiffe set fracht_min1=fracht_min1-".$fracht_min1_weg.", 
+                                                                                 fracht_min2=fracht_min2-".$fracht_min2_weg.", 
+                                                                                 fracht_min3=fracht_min3-".$fracht_min3_weg.", 
+                                                                                 fracht_cantox=fracht_cantox-".$fracht_cantox_weg.", 
+                                                                                 fracht_vorrat=fracht_vorrat-".$fracht_vorrat_weg." 
+                                                                    where id='".$shid."'");
                             neuigkeiten(1,servername . "images/news/piraten.jpg",$besitzer,$lang['host']['piraten0'],array($name,$fracht_cantox_weg,$fracht_vorrat_weg,$fracht_min1_weg,$fracht_min2_weg,$fracht_min3_weg));
                         }
                     } else {
@@ -3179,9 +3273,8 @@ if (($piraten_mitte>=1) or ($piraten_aussen>=1)) {
 $bonus=18;
 for ($zaehler=1;$zaehler<=10;$zaehler++) {
     if ($spieler_id_c[$zaehler]>=1) {
-        $zeiger = mysql_query("SELECT count(*) as total FROM " . table_prefix . "planeten where besitzer=$zaehler and spiel=$spiel");
-        $array = mysql_fetch_array($zeiger);
-        $spieler_planetenanzahl[$zaehler]=$array["total"];
+        $sql370 = "SELECT count(*) as total FROM " . table_prefix . "planeten where besitzer='".$zaehler."' and spiel='".$spiel."'";        
+        $spieler_planetenanzahl[$zaehler]=$db->getOne($sql370);
         $spieler_handelbonus[$zaehler]=100;
     }
 }
@@ -3199,66 +3292,66 @@ for ($zaehler=1;$zaehler<=10;$zaehler++) {
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////HANDELSABKOMMEN ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////PLANETEN START
-$zeiger = mysql_query("SELECT * FROM " . table_prefix . "planeten where besitzer>=1 and spiel=$spiel order by id");
-$planetenanzahl = mysql_num_rows($zeiger);
+$sql380 = "SELECT * FROM " . table_prefix . "planeten where besitzer>=1 and spiel='".$spiel."' order by id";
+$rows380 = $db->execute($sql380);
+$planetenanzahl = $rows380->RecordCount();
 if ($planetenanzahl>=1) {
-    for ($i=0; $i<$planetenanzahl;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
-        $pid=$array["id"];
-        $name=$array["name"];
-        $x_pos=$array["x_pos"];
-        $y_pos=$array["y_pos"];
-        $bild=$array["bild"];
-        $temp=$array["temp"];
-        $klasse=$array["klasse"];
-        $minen=$array["minen"];
-        $cantox=$array["cantox"];
-        $vorrat=$array["vorrat"];
-        $fabriken=$array["fabriken"];
-        $abwehr=$array["abwehr"];
-        $besitzer=$array["besitzer"];
-        $leichtebt=$array["leichtebt"];
-        $schwerebt=$array["schwerebt"];
-        $leichtebt_bau=$array["leichtebt_bau"];
-        $schwerebt_bau=$array["schwerebt_bau"];
-        $auto_minen=$array["auto_minen"];
-        $auto_fabriken=$array["auto_fabriken"];
-        $auto_vorrat=$array["auto_vorrat"];
-        $auto_abwehr=$array["auto_abwehr"];
-        $kolonisten=$array["kolonisten"];
-        $lemin=$array["lemin"];
-        $min1=$array["min1"];
-        $min2=$array["min2"];
-        $min3=$array["min3"];
-        $artefakt=$array["artefakt"];
-        $planet_lemin=$array["planet_lemin"];
-        $planet_min1=$array["planet_min1"];
-        $planet_min2=$array["planet_min2"];
-        $planet_min3=$array["planet_min3"];
-        $konz_lemin=$array["konz_lemin"];
-        $konz_min1=$array["konz_min1"];
-        $konz_min2=$array["konz_min2"];
-        $konz_min3=$array["konz_min3"];
-        $native_id=$array["native_id"];
-        $native_abgabe=$array["native_abgabe"];
-        $native_fert=$array["native_fert"];
-        $native_kol=$array["native_kol"];
-        $native_art=$array["native_art"];
-        $osys_anzahl=$array["osys_anzahl"];
-        $osys_1=$array["osys_1"];
-        $osys_2=$array["osys_2"];
-        $osys_3=$array["osys_3"];
-        $osys_4=$array["osys_4"];
-        $osys_5=$array["osys_5"];
-        $osys_6=$array["osys_6"];
+    $array380_out = $rows380->getArray()
+    foreach ($array380_out as $array380) {        
+        $pid=$array380["id"];
+        $name=$array380["name"];
+        $x_pos=$array380["x_pos"];
+        $y_pos=$array380["y_pos"];
+        $bild=$array380["bild"];
+        $temp=$array380["temp"];
+        $klasse=$array380["klasse"];
+        $minen=$array380["minen"];
+        $cantox=$array380["cantox"];
+        $vorrat=$array380["vorrat"];
+        $fabriken=$array380["fabriken"];
+        $abwehr=$array380["abwehr"];
+        $besitzer=$array380["besitzer"];
+        $leichtebt=$array380["leichtebt"];
+        $schwerebt=$array380["schwerebt"];
+        $leichtebt_bau=$array380["leichtebt_bau"];
+        $schwerebt_bau=$array380["schwerebt_bau"];
+        $auto_minen=$array380["auto_minen"];
+        $auto_fabriken=$array380["auto_fabriken"];
+        $auto_vorrat=$array380["auto_vorrat"];
+        $auto_abwehr=$array380["auto_abwehr"];
+        $kolonisten=$array380["kolonisten"];
+        $lemin=$array380["lemin"];
+        $min1=$array380["min1"];
+        $min2=$array380["min2"];
+        $min3=$array380["min3"];
+        $artefakt=$array380["artefakt"];
+        $planet_lemin=$array380["planet_lemin"];
+        $planet_min1=$array380["planet_min1"];
+        $planet_min2=$array380["planet_min2"];
+        $planet_min3=$array380["planet_min3"];
+        $konz_lemin=$array380["konz_lemin"];
+        $konz_min1=$array380["konz_min1"];
+        $konz_min2=$array380["konz_min2"];
+        $konz_min3=$array380["konz_min3"];
+        $native_id=$array380["native_id"];
+        $native_abgabe=$array380["native_abgabe"];
+        $native_fert=$array380["native_fert"];
+        $native_kol=$array380["native_kol"];
+        $native_art=$array380["native_art"];
+        $osys_anzahl=$array380["osys_anzahl"];
+        $osys_1=$array380["osys_1"];
+        $osys_2=$array380["osys_2"];
+        $osys_3=$array380["osys_3"];
+        $osys_4=$array380["osys_4"];
+        $osys_5=$array380["osys_5"];
+        $osys_6=$array380["osys_6"];
         $osys = array();
-        $osys[1]=$array["osys_1"];
-        $osys[2]=$array["osys_2"];
-        $osys[3]=$array["osys_3"];
-        $osys[4]=$array["osys_4"];
-        $osys[5]=$array["osys_5"];
-        $osys[6]=$array["osys_6"];
+        $osys[1]=$array380["osys_1"];
+        $osys[2]=$array380["osys_2"];
+        $osys[3]=$array380["osys_3"];
+        $osys[4]=$array380["osys_4"];
+        $osys[5]=$array380["osys_5"];
+        $osys[6]=$array380["osys_6"];
         $native_fert_minen=intval(substr($native_fert,0,3))/100;
         $native_fert_fabriken=intval(substr($native_fert,3,3))/100;
         $native_fert_wachstum=intval(substr($native_fert,23,3))/100;
@@ -3282,46 +3375,46 @@ if ($planetenanzahl>=1) {
         }
         if (($native_id>=1) and ($native_kol>1) and ($native_fert_prod_vorrat>0)) {
             $vorrat=$vorrat+round($native_kol/10000*$native_fert_prod_vorrat);
-            $db->execute("UPDATE " . table_prefix . "planeten set vorrat=$vorrat where id=$pid");
+            $db->execute("UPDATE " . table_prefix . "planeten set vorrat='".$vorrat."' where id='".$pid."'");                
         }
         if (($native_id>=1) and ($native_kol>1) and ($native_fert_prod_lemin>0)) {
             $lemin=$lemin+round($native_kol/10000*$native_fert_prod_lemin);
-            $db->execute("UPDATE " . table_prefix . "planeten set lemin=$lemin where id=$pid");
+            $db->execute("UPDATE " . table_prefix . "planeten set lemin='".$lemin."' where id='".$pid."'");
         }
         $zufall=mt_rand(1,100);
         if ($zufall<=18) {
             if ($artefakt==1) {
-                $db->execute("UPDATE " . table_prefix . "planeten set artefakt=0 where id=$pid");
+                $db->execute("UPDATE " . table_prefix . "planeten set artefakt='0' where id='".$pid."'");
                 $zufall2=mt_rand(500,1500);
                 $planet_lemin=$planet_lemin+$zufall2;
-                $db->execute("UPDATE " . table_prefix . "planeten set planet_lemin=$planet_lemin where id=$pid");
+                $db->execute("UPDATE " . table_prefix . "planeten set planet_lemin='".$planet_lemin."' where id='".$pid."'");
                 neuigkeiten(1,servername. "images/news/vorkommen_lemin.jpg",$besitzer,$lang['host']['mineralader'],array($name,'Lemin'));
             }
             if ($artefakt==2) {
-                $db->execute("UPDATE " . table_prefix . "planeten set artefakt=0 where id=$pid");
+                $db->execute("UPDATE " . table_prefix . "planeten set artefakt='0' where id='".$pid."'");
                 $zufall2=mt_rand(500,1500);
                 $planet_min1=$planet_min1+$zufall2;
-                $db->execute("UPDATE " . table_prefix . "planeten set planet_min1=$planet_min1 where id=$pid");
+                $db->execute("UPDATE " . table_prefix . "planeten set planet_min1='".$planet_min1."' where id='".$pid."'");
                 neuigkeiten(1,servername. "images/news/vorkommen_min1.jpg",$besitzer,$lang['host']['mineralader'],array($name,'Baxterium'));
             }
             if ($artefakt==3) {
-                $db->execute("UPDATE " . table_prefix . "planeten set artefakt=0 where id=$pid");
+                $db->execute("UPDATE " . table_prefix . "planeten set artefakt='0' where id='".$pid."'");
                 $zufall2=mt_rand(500,1500);
                 $planet_min2=$planet_min2+$zufall2;
-                $db->execute("UPDATE " . table_prefix . "planeten set planet_min2=$planet_min2 where id=$pid");
+                $db->execute("UPDATE " . table_prefix . "planeten set planet_min2='".$planet_min2."' where id='".$pid."'");
                 neuigkeiten(1,servername. "images/news/vorkommen_min2.jpg",$besitzer,$lang['host']['mineralader'],array($name,'Rennurbin'));
             }
             if ($artefakt==4) {
                 $db->execute("UPDATE " . table_prefix . "planeten set artefakt=0 where id=$pid");
                 $zufall2=mt_rand(500,1500);
                 $planet_min3=$planet_min3+$zufall2;
-                $db->execute("UPDATE " . table_prefix . "planeten set planet_min3=$planet_min3 where id=$pid");
+                $db->execute("UPDATE " . table_prefix . "planeten set planet_min3='".$planet_min3."' where id='".$pid."'");
                 neuigkeiten(1,servername. "images/news/vorkommen_min3.jpg",$besitzer,$lang['host']['mineralader'],array($name,'Vomisaan'));
             }
         }
         if ($zufall<=33) {
             if (($artefakt==6) and ($osys_anzahl<6)) {
-                $db->execute("UPDATE " . table_prefix . "planeten set artefakt=0 where id=$pid");
+                $db->execute("UPDATE " . table_prefix . "planeten set artefakt='0' where id='".$pid."'");
                 $osys_anzahl++;
                 $osys[$osys_anzahl]=14;
                 if ($osys_anzahl==1) { $osys_1==14;$spalte='osys_1'; }
@@ -3330,13 +3423,13 @@ if ($planetenanzahl>=1) {
                 if ($osys_anzahl==4) { $osys_4==14;$spalte='osys_4'; }
                 if ($osys_anzahl==5) { $osys_5==14;$spalte='osys_5'; }
                 if ($osys_anzahl==6) { $osys_6==14;$spalte='osys_6'; }
-                $db->execute("UPDATE " . table_prefix . "planeten set $spalte=14,osys_anzahl=$osys_anzahl where id=$pid");
+                $db->execute("UPDATE " . table_prefix . "planeten set ".$spalte."='14',osys_anzahl='".$osys_anzahl."' where id='".$pid."'");
                 neuigkeiten(1,servername. "images/news/wetterstation.jpg",$besitzer,$lang['host']['wetterstation'],array($name));
             }
         }
         if ($zufall<=50) {
             if ($artefakt==5) {
-                $db->execute("UPDATE " . table_prefix . "planeten set artefakt=0 where id=$pid");
+                $db->execute("UPDATE " . table_prefix . "planeten set artefakt='0' where id='".$pid."'");
                 $zufall2=mt_rand(2000,10000);
                 $kolonisten=$kolonisten+$zufall2;
                 $db->execute("UPDATE " . table_prefix . "planeten set kolonisten=$kolonisten where id=$pid");
@@ -3364,19 +3457,19 @@ if ($planetenanzahl>=1) {
                     } else {
                         $temp=$r_eigenschaften[$rasse]['temperatur'];
                     }
-                $db->execute("UPDATE " . table_prefix . "planeten set temp=$temp where id=$pid");
+                $db->execute("UPDATE " . table_prefix . "planeten set temp='".$temp."' where id='".$pid."'");
             }
         }
         //BAUEN VON BODENTRUPPEN ANFANG
         if (($leichtebt_bau>=1) or ($schwerebt_bau>=1)) {
             $leichtebt=$leichtebt+$leichtebt_bau;
             $schwerebt=$schwerebt+$schwerebt_bau;
-            $db->execute("UPDATE " . table_prefix . "planeten set leichtebt=$leichtebt,leichtebt_bau=0,schwerebt=$schwerebt,schwerebt_bau=0 where id=$pid");
+            $db->execute("UPDATE " . table_prefix . "planeten set leichtebt='".$leichtebt."',leichtebt_bau='0',schwerebt='".$schwerebt."',schwerebt_bau='0' where id='".$pid."'");
         }
         //BAUEN VON BODENTRUPPEN ENDE
         //SCHIFFE IM ORBIT TARNEN ANFANG
         if (($osys_1==5) or ($osys_2==5) or ($osys_3==5) or ($osys_4==5) or ($osys_5==5) or ($osys_6==5)) {
-            $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld=1 where status=2 and kox=$x_pos and koy=$y_pos and spiel=$spiel");
+            $db->execute("UPDATE " . table_prefix . "schiffe set tarnfeld='1' where status='2' and kox='".$x_pos."' and koy='".$y_pos."' and spiel=$spiel");
         }
         //SCHIFFE IM ORBIT TARNEN ENDE
         //NATIVE ANFANG KAMPF
@@ -3400,7 +3493,7 @@ if ($planetenanzahl>=1) {
                 $leichtebt=0;
                 $schwerebt=0;
             }
-            $db->execute("UPDATE " . table_prefix . "planeten set native_kol=$native_kol,kolonisten=$kolonisten,leichtebt=$leichtebt,schwerebt=$schwerebt where id=$pid");
+            $db->execute("UPDATE " . table_prefix . "planeten set native_kol='".$native_kol."',kolonisten='".$kolonisten."',leichtebt='".$leichtebt."',schwerebt='".$schwerebt."' where id=$pid");
         }
         //NATIVE ENDE KAMPF
         $Bankbonus=1;
@@ -3410,13 +3503,12 @@ if ($planetenanzahl>=1) {
         //NATIVE ANGRIFFSWARNUNG ANFANG
         if (($native_id>=1) and ($native_kol>1) and ($native_fert_angriffswarnung==1)) {
             $anzahl_angreifer=0;
-            $zeiger_temp = mysql_query("SELECT id,besitzer FROM " . table_prefix . "schiffe where flug=2 and zielid=$pid and besitzer!=$besitzer");
-            $anzahl_temp = mysql_num_rows($zeiger_temp);
+            $sql390 = "SELECT besitzer FROM " . table_prefix . "schiffe use index (flug,zielid,besitzer) where flug='2' and zielid='".$pid."' and besitzer!='".$besitzer."'";
+            $rows390 = $db->execute($sql390);
+            $anzahl_temp = $rows390->RecordCount();
             if ($anzahl_temp>0) {
-                for ($zaehler=0; $zaehler<$anzahl_temp; $zaehler++) {
-                    $ok = mysql_data_seek($zeiger_temp,$zaehler);
-                    $array_temp = mysql_fetch_array($zeiger_temp);
-                    $s_besitzer = $array_temp["besitzer"];
+                for ($zaehler=0; $zaehler<$anzahl_temp; $zaehler++) {                                        
+                    $s_besitzer = $db->getOne($sql390);
                     if ($beziehung[$besitzer][$s_besitzer]['status']<2) {
                         $anzahl_angreifer++;
                     }
@@ -3437,7 +3529,7 @@ if ($planetenanzahl>=1) {
             } else {
                 $native_kol=round(($native_kol*0.01745)+$native_kol);
             }
-            $db->execute("UPDATE " . table_prefix . "planeten set native_kol=$native_kol where id=$pid");
+            $db->execute("UPDATE " . table_prefix . "planeten set native_kol='".$native_kol."' where id='".$pid."'");
         }
         if (($native_id>=1) and ($native_kol>1)) {
             $cantox=$cantox+round($native_kol*0.008*$native_abgabe*$Bankbonus);
@@ -3452,7 +3544,7 @@ if ($planetenanzahl>=1) {
                     $kolonisten=$kolonisten+$ueberlauf;
                     $native_kol=$native_kol-$ueberlauf;
                     if ($native_kol==0) {$native_id=0;}
-                    $db->execute("UPDATE " . table_prefix . "planeten set kolonisten=$kolonisten,native_id=$native_id,native_kol=$native_kol where id=$pid");
+                    $db->execute("UPDATE " . table_prefix . "planeten set kolonisten='".$kolonisten."',native_id='".$native_id."',native_kol='".$native_kol."' where id='".$pid."'");
                 }
             }
         }
@@ -3468,7 +3560,7 @@ if ($planetenanzahl>=1) {
                 if($native_id>0 && $native_kol>1 && $native_fert_wachstum>0) { $wachstum *= $native_fert_wachstum; }
                 if($osys_1==6 or $osys_2==6 or $osys_3==6 or $osys_4==6 or $osys_5==6 or $osys_6==6){$wachstum=0.1+$wachstum;}
                 $kolonisten=round(($kolonisten/10*$wachstum)+$kolonisten);
-                $db->execute("UPDATE " . table_prefix . "planeten set kolonisten=$kolonisten where id=$pid");
+                $db->execute("UPDATE " . table_prefix . "planeten set kolonisten='".$kolonisten."' where id='".$pid."'");
             }
         }
         $cantox=$cantox+round($kolonisten*0.008*$r_eigenschaften[$rasse]['steuern']*$spieler_handelbonus[$besitzer]*$Bankbonus);
@@ -3486,7 +3578,7 @@ if ($planetenanzahl>=1) {
             $vorrat_klau=round($vorrat_neu/100*mt_rand(30,80));
         }
         $vorrat=$vorrat+$vorrat_neu-$vorrat_klau;
-        $db->execute("update " . table_prefix . "planeten set vorrat=$vorrat where id=$pid");
+        $db->execute("update " . table_prefix . "planeten set vorrat='".$vorrat."' where id='".$pid."'");
         //FABRIKEN BAUEN VORRAT ENDE
         //MINEN PRODUZIEREN ANFANG
         if ($minen>0) {
@@ -3539,7 +3631,15 @@ if ($planetenanzahl>=1) {
                 $min3=$min3+$min3_neu-$mineral_klau;
                 $planet_min3=$planet_min3-$min3_neu;
                 //Vormissan Ende
-                $db->execute("UPDATE " . table_prefix . "planeten set lemin=$lemin,min1=$min1,min2=$min2,min3=$min3,planet_lemin=$planet_lemin,planet_min1=$planet_min1,planet_min2=$planet_min2,planet_min3=$planet_min3 where id=$pid");
+                $db->execute("UPDATE " . table_prefix . "planeten set lemin='".$lemin."', 
+                                                                      min1='".$min1."', 
+                                                                      min2='".$min2."', 
+                                                                      min3='".$min3."', 
+                                                                      planet_lemin='".$planet_lemin."', 
+                                                                      planet_min1='".$planet_min1."', 
+                                                                      planet_min2='".$planet_min2."', 
+                                                                      planet_min3='".$planet_min3."' 
+                                                        where id='".$pid."'");
             }
         }
         //MINEN PRODUZIEREN ENDE
@@ -3555,7 +3655,11 @@ if ($planetenanzahl>=1) {
             $max_vorrat=$vorrat;
             if ($max_cantox<=$max_vorrat) { $max_bau=$max_cantox; }
             if ($max_vorrat<=$max_cantox) { $max_bau=$max_vorrat; }
-            if (($kolonisten/100)<=100) { $max_col=floor($kolonisten/100)+$metro_fabriken_plus; } else { $max_col=100+floor(sqrt($kolonisten/100))+$metro_fabriken_plus; }
+            if (($kolonisten/100)<=100) { 
+                $max_col=floor($kolonisten/100)+$metro_fabriken_plus;                 
+            } else { 
+                $max_col=100+floor(sqrt($kolonisten/100))+$metro_fabriken_plus;                 
+            }
             $max_fabriken=$fabriken+$max_bau;
             if ($max_fabriken>$max_col) {
                 $max_fabriken = $max_col;
@@ -3568,24 +3672,39 @@ if ($planetenanzahl>=1) {
             $fabriken=$fabriken+$max_bau;
             $cantox=$cantox-($max_bau*3);
             $vorrat=$vorrat-$max_bau;
-            $db->execute("update " . table_prefix . "planeten set fabriken=$fabriken,cantox=$cantox,vorrat=$vorrat where id=$pid");
+            $db->execute("update " . table_prefix . "planeten set fabriken='".$fabriken."',cantox='".$cantox."',vorrat='".$vorrat."' where id='".$pid."'");
         }
         //AUTOMATISCHES FABRIKENBAUEN ENDE
         //FABRIKENABBAU ANFANG
-        if (($kolonisten/100)<=100) { $max_col=floor($kolonisten/100)+$metro_fabriken_plus; } else { $max_col=100+floor(sqrt($kolonisten/100))+$metro_fabriken_plus; }
+        if (($kolonisten/100)<=100) { 
+            $max_col=floor($kolonisten/100)+$metro_fabriken_plus;             
+        } else { 
+            $max_col=100+floor(sqrt($kolonisten/100))+$metro_fabriken_plus;             
+        }
         if ($fabriken>$max_col) {
             $prozent=round($fabriken-($fabriken/10));
-        if ($prozent>$max_col) { $fabriken=$prozent; } else { $fabriken=$max_col; }
-            $db->execute("update " . table_prefix . "planeten set fabriken=$fabriken where id=$pid");
+        if ($prozent>$max_col) { 
+            $fabriken=$prozent;             
+        } else { $fabriken=$max_col;         
+        }
+            $db->execute("update " . table_prefix . "planeten set fabriken='".$fabriken."' where id='".$pid."'");
         }
         //FABRIKENABBAU ENDE
         //AUTOMATISCHES MINENBAUEN ANFANG
         if ($auto_minen==1) {
             $max_cantox=floor($cantox/4);
             $max_vorrat=$vorrat;
-            if ($max_cantox<=$max_vorrat) { $max_bau=$max_cantox; }
-            if ($max_vorrat<=$max_cantox) { $max_bau=$max_vorrat; }
-            if (($kolonisten/100)<=200) { $max_col=floor($kolonisten/100)+$metro_minen_plus; } else { $max_col=200+floor(sqrt($kolonisten/100))+$metro_minen_plus; }
+            if ($max_cantox<=$max_vorrat) { 
+                $max_bau=$max_cantox;                 
+            }
+            if ($max_vorrat<=$max_cantox) { 
+                $max_bau=$max_vorrat;                 
+            }
+            if (($kolonisten/100)<=200) { 
+                $max_col=floor($kolonisten/100)+$metro_minen_plus;                 
+            } else { 
+                $max_col=200+floor(sqrt($kolonisten/100))+$metro_minen_plus;                 
+            }
             $max_minen=$minen+$max_bau;
             if ($max_minen>$max_col) {
                 $max_minen = $max_col;
@@ -3598,15 +3717,23 @@ if ($planetenanzahl>=1) {
             $minen=$minen+$max_bau;
             $cantox=$cantox-($max_bau*4);
             $vorrat=$vorrat-$max_bau;
-            $db->execute("update " . table_prefix . "planeten set minen=$minen,cantox=$cantox,vorrat=$vorrat where id=$pid");
+            $db->execute("update " . table_prefix . "planeten set minen='".$minen."',cantox='".$cantox."',vorrat='".$vorrat."' where id='".$pid."'");
         }
         //AUTOMATISCHES MINENBAUEN ENDE
         //MINENABBAU ANFANG
-        if (($kolonisten/100)<=200) { $max_col=floor($kolonisten/100)+$metro_minen_plus; } else { $max_col=200+floor(sqrt($kolonisten/100))+$metro_minen_plus; }
+        if (($kolonisten/100)<=200) { 
+            $max_col=floor($kolonisten/100)+$metro_minen_plus;             
+        } else { 
+            $max_col=200+floor(sqrt($kolonisten/100))+$metro_minen_plus;            
+        }
         if ($minen>$max_col) {
             $prozent=round($minen-($minen/10));
-            if ($prozent>$max_col) { $minen=$prozent; } else { $minen=$max_col; }
-            $db->execute("update " . table_prefix . "planeten set minen=$minen where id=$pid");
+            if ($prozent>$max_col) { 
+                $minen=$prozent;                 
+            } else { 
+                $minen=$max_col;                 
+            }
+            $db->execute("update " . table_prefix . "planeten set minen='".$minen."' where id='".$pid."'");
         }
         //MINENABBAU ENDE
         //AUTOMATISCHES ABWEHRANLAGENBAUEN ANFANG
@@ -3629,7 +3756,7 @@ if ($planetenanzahl>=1) {
             $abwehr=$abwehr+$max_bau;
             $cantox=$cantox-($max_bau*10);
             $vorrat=$vorrat-$max_bau;
-            $db->execute("update " . table_prefix . "planeten set abwehr=$abwehr,cantox=$cantox,vorrat=$vorrat where id=$pid");
+            $db->execute("update " . table_prefix . "planeten set abwehr='".$abwehr."',cantox='".$cantox."',vorrat='".$vorrat."' where id='".$pid."'");
         }
         //AUTOMATISCHES ABWEHRANLAGENBAUEN ENDE
         //ABWEHRANLAGENABBAU ANFANG
@@ -3638,33 +3765,33 @@ if ($planetenanzahl>=1) {
         if ($abwehr>$max_col) {
             $prozent=round($abwehr-($abwehr/10));
             if ($prozent>$max_col) { $abwehr=$prozent; } else { $abwehr=$max_col; }
-            $db->execute("update " . table_prefix . "planeten set abwehr=$abwehr where id=$pid");
+            $db->execute("update " . table_prefix . "planeten set abwehr='".$abwehr."' where id='".$pid."'");
         }
         //ABWEHRANLAGENABBAU ENDE
         //AUTOMATISCHER VORRATVERKAUF ANFANG
         if ($auto_vorrat==1) {
             $cantox=$cantox+$vorrat;
             $vorrat=0;
-            $db->execute("update " . table_prefix . "planeten set vorrat=$vorrat,cantox=$cantox where id=$pid");
+            $db->execute("update " . table_prefix . "planeten set vorrat='".$vorrat."',cantox='".$cantox."' where id='".$pid."'");
         }
         //AUTOMATISCHER VORRATVERKAUF ENDE
     }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////PLANETEN ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////ROUTEBEAMEN ANFANG
-$zeiger = mysql_query("SELECT * FROM " . table_prefix . "schiffe where status=2 and routing_status=2 and spiel=$spiel order by id");
-$schiffanzahl = mysql_num_rows($zeiger);
+$sql400 = "SELECT * FROM " . table_prefix . "schiffe use index (status,routing_status,spiel) where status='2' and routing_status='2' and spiel='".$spiel."' order by id";
+$rows400 = $db->execute($sql400);
+$schiffanzahl = $rows400->RecordCount();
 if ($schiffanzahl>=1) {
-    for ($i=0; $i<$schiffanzahl;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
-        $shid=$array["id"];
-        $besitzer=$array["besitzer"];
-        $routing_id=$array["routing_id"];
-        $routing_tank=$array["routing_tank"];
-        $routing_schritt=$array["routing_schritt"];
-        $routing_mins=$array["routing_mins"];
-        $routing_rohstoff=(int)$array["routing_rohstoff"];
+    $array400_out = $rows400->getArray();
+    foreach ($array400_out as $array400) {        
+        $shid=$array400["id"];
+        $besitzer=$array400["besitzer"];
+        $routing_id=$array400["routing_id"];
+        $routing_tank=$array400["routing_tank"];
+        $routing_schritt=$array400["routing_schritt"];
+        $routing_mins=$array400["routing_mins"];
+        $routing_rohstoff=$array400["routing_rohstoff"];
         $routing_id_temp=explode(":",$routing_id);
         $zid=$routing_id_temp[$routing_schritt];
         $routing_mins_temp=explode(":",$routing_mins);
@@ -3679,19 +3806,19 @@ if ($schiffanzahl>=1) {
         $r_option[7]=(int)substr($mins,18,4);
         $mins_lemin=substr($mins,2,1);
         $voll_laden=substr($mins,6,1);
-        $r_fracht[0]=(int)$array["fracht_cantox"];
-        $r_fracht[1]=(int)$array["fracht_vorrat"];
-        $r_fracht[2]=(int)$array["fracht_min1"];
-        $r_fracht[3]=(int)$array["fracht_min2"];
-        $r_fracht[4]=(int)$array["fracht_min3"];
-        $r_fracht[5]=(int)$array["fracht_leute"];
-        $r_fracht[6]=(int)$array["leichtebt"];
-        $r_fracht[7]=(int)$array["schwerebt"];
-        $fracht_lemin=$array["lemin"];
-        $frachtraum=$array["frachtraum"];
-        $leminmax=$array["leminmax"];
-        $kox=$array["kox"];
-        $koy=$array["koy"];
+        $r_fracht[0]=$array400["fracht_cantox"];
+        $r_fracht[1]=$array400["fracht_vorrat"];
+        $r_fracht[2]=$array400["fracht_min1"];
+        $r_fracht[3]=$array400["fracht_min2"];
+        $r_fracht[4]=$array400["fracht_min3"];
+        $r_fracht[5]=$array400["fracht_leute"];
+        $r_fracht[6]=$array400["leichtebt"];
+        $r_fracht[7]=$array400["schwerebt"];
+        $fracht_lemin=$array400["lemin"];
+        $frachtraum=$array400["frachtraum"];
+        $leminmax=$array400["leminmax"];
+        $kox=$array400["kox"];
+        $koy=$array400["koy"];
         $r_faktor[0]=0; //cantox
         $r_faktor[1]=100; //vorrat
         $r_faktor[2]=100; //bax
@@ -3705,20 +3832,21 @@ if ($schiffanzahl>=1) {
         for($zaehler=0;$zaehler<8;$zaehler++){
             $freiraum-=$r_fracht[$zaehler]*$r_faktor[$zaehler];
         }
-        $zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "planeten where x_pos=$kox and y_pos=$koy and besitzer=$besitzer and id=$zid and spiel=$spiel");
-        $planetenanzahl = mysql_num_rows($zeiger2);
+        $sql410 = "SELECT * FROM " . table_prefix . "planeten use index (x_pos,y_pos,besitzer,spiel) where x_pos='".$kox."' and y_pos='".$koy."' and besitzer='".$besitzer."' and id='".$zid."' and spiel='".$spiel."'";
+        $rows410 = $db->execute($sql410);
+        $planetenanzahl = $rows410->RecordCount();
         if ($planetenanzahl==1) {
-            $array2 = mysql_fetch_array($zeiger2);
+            $array2 = $rows410->getArray();
             $p_id=$array2["id"];
             $p_lemin=$array2["lemin"];
-            $r_planet[0]=(int)$array2["cantox"];
-            $r_planet[1]=(int)$array2["vorrat"];
-            $r_planet[2]=(int)$array2["min1"];
-            $r_planet[3]=(int)$array2["min2"];
-            $r_planet[4]=(int)$array2["min3"];
-            $r_planet[5]=(int)$array2["kolonisten"];
-            $r_planet[6]=(int)$array2["leichtebt"];
-            $r_planet[7]=(int)$array2["schwerebt"];
+            $r_planet[0]=$array2["cantox"];
+            $r_planet[1]=$array2["vorrat"];
+            $r_planet[2]=$array2["min1"];
+            $r_planet[3]=$array2["min2"];
+            $r_planet[4]=$array2["min3"];
+            $r_planet[5]=$array2["kolonisten"];
+            $r_planet[6]=$array2["leichtebt"];
+            $r_planet[7]=$array2["schwerebt"];
             //ausladen
             for($zaehler=0;$zaehler<8;$zaehler++){
                 if ($r_option[$zaehler]==2) {
@@ -3817,7 +3945,16 @@ if ($schiffanzahl>=1) {
             $s_kol=$r_planet[5];
             $s_lbt=$r_planet[6];
             $s_sbt=$r_planet[7];
-            $db->execute("UPDATE " . table_prefix . "planeten set lemin=$p_lemin,cantox=$s_cantox,vorrat=$s_vorrat,min1=$s_bax,min2=$s_ren,min3=$s_vor,kolonisten=$s_kol,leichtebt=$s_lbt,schwerebt=$s_sbt where id=$p_id");
+            $db->execute("UPDATE " . table_prefix . "planeten set lemin='".$p_lemin."', 
+                                                                  cantox='".$s_cantox."', 
+                                                                  vorrat='".$s_vorrat."', 
+                                                                  min1='".$s_bax."', 
+                                                                  min2='".$s_ren."', 
+                                                                  min3='".$s_vor."', 
+                                                                  kolonisten='".$s_kol."', 
+                                                                  leichtebt='".$s_lbt."', 
+                                                                  schwerebt='".$s_sbt."' 
+                                                     where id='".$p_id."'");
             $s_cantox=$r_fracht[0];
             $s_vorrat=$r_fracht[1];
             $s_bax=$r_fracht[2];
@@ -3826,60 +3963,73 @@ if ($schiffanzahl>=1) {
             $s_kol=$r_fracht[5];
             $s_lbt=$r_fracht[6];
             $s_sbt=$r_fracht[7];
-            $db->execute("UPDATE " . table_prefix . "schiffe set fracht_leute=$s_kol,leichtebt=$s_lbt,schwerebt=$s_sbt,lemin=$fracht_lemin,fracht_vorrat=$s_vorrat,fracht_cantox=$s_cantox,fracht_min1=$s_bax,fracht_min2=$s_ren,fracht_min3=$s_vor where id=$shid");
+            $db->execute("UPDATE " . table_prefix . "schiffe set fracht_leute='".$s_kol."', 
+                                                                 leichtebt='".$s_lbt."', 
+                                                                 schwerebt='".$s_sbt."', 
+                                                                 lemin='".$fracht_lemin."', 
+                                                                 fracht_vorrat='".$s_vorrat."', 
+                                                                 fracht_cantox='".$s_cantox."', 
+                                                                 fracht_min1='".$s_bax."', 
+                                                                 fracht_min2='".$s_ren."', 
+                                                                 fracht_min3='".$s_vor."' 
+                                                    where id='".$shid."'");
         }
     }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////ROUTEBEAMEN ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////TRAKTORSTRAHL UEBERPRUEFEN ANFANG
-$zeiger = mysql_query("SELECT id,traktor_id,kox,koy,besitzer,spezialmission,spiel FROM " . table_prefix . "schiffe where spezialmission=21 and spiel=$spiel order by id");
-$schiffanzahl = mysql_num_rows($zeiger);
+$sql420 = "SELECT id,traktor_id,kox,koy,besitzer,spezialmission,spiel FROM " . table_prefix . "schiffe use index (spezialmission,spiel) where spezialmission='21' and spiel='".$spiel."' order by id";
+$rows420 = $db->execute($sql420);
+$schiffanzahl = $rows420->RecordCount();
 if ($schiffanzahl>=1) {
-    for ($i=0; $i<$schiffanzahl;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
-        $shid=$array["id"];
-        $traktor_id=$array["traktor_id"];
-        $kox=$array["kox"];
-        $koy=$array["koy"];
-        $besitzer=$array["besitzer"];
-        $zeiger2 = mysql_query("SELECT id,kox,koy,besitzer,spiel FROM " . table_prefix . "schiffe where id=$traktor_id and kox=$kox and koy=$koy and spiel=$spiel");
-        $datensaetze = mysql_num_rows($zeiger2);
+    $array420_out = $rows420->getArray();
+    foreach ($array420_out as $array420) {                
+        $shid=$array420["id"];
+        $traktor_id=$array420["traktor_id"];
+        $kox=$array420["kox"];
+        $koy=$array420["koy"];
+        $besitzer=$array420["besitzer"];
+        $sql430 = "SELECT id,kox,koy,besitzer,spiel FROM " . table_prefix . "schiffe use index (kox,koy,spiel) where id='".$traktor_id."' and kox='".$kox."' and koy='".$koy."' and spiel='".$spiel."'";
+        $rows430 = $db->execute($sql430);
+        $datensaetze = $rows430->RecordCount();
         if (!$datensaetze==1) {
-            $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission=0,traktor_id=0 where id=$shid and spiel=$spiel");
+            $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='0',traktor_id='0' where id='".$shid."' and spiel='".$spiel."'");
         }
     }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////TRAKTORSTRAHL UEBERPRUEFEN ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////POLITIKENDE ANFANG
-$db->execute("DELETE FROM " . table_prefix . "politik where optionen=1 and spiel=$spiel");
-$db->execute("UPDATE " . table_prefix . "politik set optionen=optionen-1 where optionen>1 and spiel=$spiel");
+$db->execute("DELETE FROM " . table_prefix . "politik where optionen='1' and spiel='".$spiel."'");
+$db->execute("UPDATE " . table_prefix . "politik set optionen=optionen-1 where optionen>1 and spiel='".$spiel."'");
 ///////////////////////////////////////////////////////////////////////////////////////////////POLITIKENDE ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////PLASMASTURM VERSCHWINDEN ANFANG
-$zeiger = mysql_query("SELECT * FROM " . table_prefix . "anomalien where spiel=$spiel and (art=4 or art=6) order by id");
-$datensaetze = mysql_num_rows($zeiger);
+$sql440 = "SELECT * FROM " . table_prefix . "anomalien use index (spiel,art) where spiel='".$spiel."' and art in ('4','6') order by id";
+$rows440 = $db ->execute($sql440);
+$datensaetze = $rows440->RecordCount();
 if ($datensaetze>=1) {
-    for ($i=0; $i<$datensaetze;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
-        $aid=$array["id"];
-        $art=$array["art"];
-        $zeit=$array["extra"];
+    $array440_out = $$rows440->getArray();
+    foreach ($array440_out as $array440) {        
+        $aid=$array440["id"];
+        $art=$array440["art"];
+        $zeit=$array440["extra"];
         $zeit--;
         if ($zeit>=1) {
-            $db->execute("UPDATE " . table_prefix . "anomalien set extra='$zeit' where id=$aid");
+            $db->execute("UPDATE " . table_prefix . "anomalien set extra='".$zeit."' where id='".$aid."'");
         } else {
             if($zeit==0){
-                $db->execute("DELETE FROM " . table_prefix . "anomalien where id=$aid");
-            }else{}
+                $db->execute("DELETE FROM " . table_prefix . "anomalien where id='".$aid."'");
+            }else{
+                /*
+                 * Auch hier wieder ein else ohne Funktion ?
+                 */
+            }
         }
     }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////PLASMASTURM VERSCHWINDEN ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////PLASMASTURM ENSTEHUNG ANFANG
-$zeiger = mysql_query("SELECT count(*) as total FROM " . table_prefix . "anomalien where art=6 and spiel=$spiel");
-$array = mysql_fetch_array($zeiger);
-$sturm=$array["total"];
+$sql450 = "SELECT count(*) as total FROM " . table_prefix . "anomalien where art='6' and spiel='".$spiel."'";
+$sturm=$db->getOne($sql450);
 $zufall=mt_rand(1,100);
 if (($sturm<$plasma_max) and ($zufall<=$plasma_wahr)) {
     $x=mt_rand(1,(($umfang-310)/10));
@@ -3890,11 +4040,11 @@ if (($sturm<$plasma_max) and ($zufall<=$plasma_wahr)) {
             $abstand=round(sqrt(((15-$i)*(15-$i))+((15-$j)*(15-$j))));
             $zufall=mt_rand(1,100);
             if($zufall<=(100-($abstand*5))){
-                $zeiger2 = mysql_query("SELECT extra from " . table_prefix . "anomalien where x_pos=($x+$i)*10 and y_pos=($y+$j)*10 and art=4 and spiel=$spiel");
-                $reihen = mysql_num_rows($zeiger2);
-                if($reihen>=1){
-                    $array2=mysql_fetch_array($zeiger2);
-                    $zeit=$array2["extra"];
+                $sql460 = "SELECT extra from " . table_prefix . "anomalien use index (x_pos,y_pos,art,spiel) where x_pos=(".$x."+".$i.")*10 and y_pos=(".$y."+".$j.")*10 and art='4' and spiel='".$spiel."'";
+                $rows460 = $db->execute($sql460);
+                $reihen = $rows460->RecordCount();
+                if($reihen>=1){                    
+                    $zeit=$db->getOne($sql460);
                     if($zeit==-1){
                     }else{
                         $runden=mt_rand(3,$plasma_lang);
@@ -3933,37 +4083,38 @@ $besitzer_recht[10]='0000000001';
 include(includes . 'inc.host_nebel.php');
 ///////////////////////////////////////////////////////////////////////////////////////////////NEBELSEKTOREN ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////TARNER VERFOLGEN ANFANG
-$zeiger = mysql_query("SELECT besitzer,zielid,id FROM " . table_prefix . "schiffe where flug=3 and spiel=$spiel order by id");
-$schiffanzahl = mysql_num_rows($zeiger);
+$sql500 = "SELECT besitzer,zielid,id FROM " . table_prefix . "schiffe use index (flug,spiel) where flug='3' and spiel='".$spiel."' order by id";
+$rows500 = $db->execute($sql500);
+$schiffanzahl = $rows500->RecordCount();
 if ($schiffanzahl>=1) {
-    for ($i=0; $i<$schiffanzahl;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
-        $ssid=$array["id"];
-        $besitzer=$array["besitzer"];
-        $zielid=$array["zielid"];
+    $array500_out = $rows500->getArray();
+    foreach ($array500_out as $array500) {        
+        $ssid=$array500["id"];
+        $besitzer=$array500["besitzer"];
+        $zielid=$array500["zielid"];
         $spalte='sicht_'.$besitzer.'_beta';
-        $zeiger2 = mysql_query("SELECT id FROM " . table_prefix . "schiffe where id=$zielid and tarnfeld>=1 and $spalte=0");
-        $zielanzahl = mysql_num_rows($zeiger2);
+        $sql510 = "SELECT id FROM " . table_prefix . "schiffe where id='".$zielid."' and tarnfeld>=1 and ".$spalte."='0'";
+        $rows510 = $db->execute($sql510);
+        $zielanzahl = $rows510->RecordCount();
         if ($zielanzahl==1) {
-            $db->execute("update " . table_prefix . "schiffe set flug=0,zielx=0,ziely=0,zielid=0 where id=$ssid");
+            $db->execute("update " . table_prefix . "schiffe set flug='0',zielx='0',ziely='0',zielid='0' where id='".$ssid."'");
         }
     }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////TARNER VERFOLGEN ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////MINEN SICHTBAR ANFANG
 if ($module[2]) {
-    $db->execute("UPDATE " . table_prefix . "anomalien set sicht='0000000000' where (art=5) and spiel=$spiel");
-    $zeiger = mysql_query("SELECT * FROM " . table_prefix . "anomalien where spiel=$spiel and art=5 order by id");
-    $datensaetze = mysql_num_rows($zeiger);
+    $db->execute("UPDATE " . table_prefix . "anomalien set sicht='0000000000' where (art='5') and spiel='".$spiel."'");
+    $sql520 = "SELECT * FROM " . table_prefix . "anomalien use index (spiel,art) where spiel='".$spiel."' and art='5' order by id";
+    $rows520 = $db->execute($sql520);
+    $datensaetze = $rows520->RecordCount();
     if ($datensaetze>=1) {
-        for ($i=0; $i<$datensaetze;$i++) {
-            $ok = mysql_data_seek($zeiger,$i);
-            $array = mysql_fetch_array($zeiger);
-            $aid=$array["id"];
-            $kox=$array["x_pos"];
-            $koy=$array["y_pos"];
-            $extra=$array["extra"];
+        $array520_out = $rows520->getArray();
+        foreach ($array530_aout as $array530) {            
+            $aid=$array530["id"];
+            $kox=$array530["x_pos"];
+            $koy=$array530["y_pos"];
+            $extra=$array530["extra"];
             $extrab=explode(":",$extra);
             $sicht='0000000000';
             for ($xn=1;$xn<=10;$xn++) {
@@ -3975,7 +4126,7 @@ if ($module[2]) {
             }
             /////////////////////
              $reichweite=161;
-            $zeiger_temp1 = "SELECT kox,koy,id,scanner,spiel,besitzer FROM " . table_prefix . "schiffe where besitzer!='".$extrab[0]."' and (sqrt(((kox-".$kox.")*(kox-".$kox."))+((koy-".$koy.")*(koy-".$koy.")))<=".$reichweite.") and spiel='".$spiel."' order by id";
+            $zeiger_temp1 = "SELECT kox,koy,id,scanner,spiel,besitzer FROM " . table_prefix . "schiffe use index (besitzer,spiel) where besitzer!='".$extrab[0]."' and (sqrt(((kox-".$kox.")*(kox-".$kox."))+((koy-".$koy.")*(koy-".$koy.")))<=".$reichweite.") and spiel='".$spiel."' order by id";
             $rows_temp1 = $db->execute($zeiger_temp1);
             $scanschiff = $rows_temp1->RecordCount();
             if ($scanschiff>=1) {
@@ -4045,7 +4196,7 @@ if ($planetenanzahl>=1) {
         $spieler_basen_c[$besitzer]=$spieler_basen_c[$besitzer]+10;
     }
 }
-$zeiger4 = "SELECT id,besitzer,techlevel,spiel FROM " . table_prefix . "schiffe where spiel='".$spiel."' and besitzer>=1 order by id";
+$zeiger4 = "SELECT id,besitzer,techlevel,spiel FROM " . table_prefix . "schiffe use index (spiel,besitzer) where spiel='".$spiel."' and besitzer>=1 order by id";
 $rows4 = $db->execute($zeiger4);
 $planetenanzahl = $rows4->RecordCount();
 if ($planetenanzahl>=1) {
@@ -4108,7 +4259,7 @@ for ($m=1;$m<11;$m++) {
         /*
          * Verstehe nicht weshalb hier Felder wie besitzer und spiel selected werden obwohl nur die id benötig wird . Abfrage geändert
          */
-        $zeiger3 = "SELECT id FROM " . table_prefix . "sternenbasen where besitzer='".$m."' and spiel='".$spiel."' order by id";
+        $zeiger3 = "SELECT id FROM " . table_prefix . "sternenbasen use index(besitzer,spiel) where besitzer='".$m."' and spiel='".$spiel."' order by id";
         $rows3 = $db->execute($zeiger3);
         $basenanzahl = $rows3->RecordCount();
         if ($basenanzahl>=1) {
@@ -4120,7 +4271,7 @@ for ($m=1;$m<11;$m++) {
         }
         $db->execute("UPDATE " . table_prefix . "sternenbasen set besitzer='0' where besitzer='".$m."' and spiel='".$spiel."'");
         
-        $zeiger2 = "SELECT * FROM " . table_prefix . "schiffe where besitzer='".$m."' and spiel='".$spiel."'";
+        $zeiger2 = "SELECT * FROM " . table_prefix . "schiffe use index (besitzer,spiel) where besitzer='".$m."' and spiel='".$spiel."'";
         $rows2 = $db->execute($zeiger2);
         $schiffanzahl = $rows2->RecordCount();
         if ($schiffanzahl>=1) {
@@ -4238,7 +4389,7 @@ if ($ziel_id==5) {
     for ($k=1;$k<11;$k++) {
         $spieler_ziel_t_c[$k]=0;
     }
-    $zeiger1 = "SELECT status,spiel,id,besitzer,fracht_min3 FROM " . table_prefix . "schiffe where status<>2 and spiel='".$spiel."' order by id";
+    $zeiger1 = "SELECT status,spiel,id,besitzer,fracht_min3 FROM " . table_prefix . "schiffe use index (status,spiel) where status<>2 and spiel='".$spiel."' order by id";
     $rows1 = $db->execute($zeiger1);
     $schiffanzahl = $rows1->RecordCount();
     if ($schiffanzahl>=1) {
@@ -4342,7 +4493,9 @@ $aktuell=time();
 $db->execute("INSERT INTO " . table_prefix ."chat (spiel,datum,text,an,von,farbe) values ('" . $spiel . "','" . $aktuell ."','" . $nachricht ."','0','System','000000')");
 
 ///////////////////////////////////////////////////////////////////////////////////////////////MOVIEGIF OPTIONAL ANFANG
-
+/*
+ * shot.php angepasst
+ */
 if ((@file_exists(extend_dir . "moviegif")) and (intval(substr($spiel_extend,0,1))==1)) {
     include(extend_dir.'moviegif/shot.php');
 }
