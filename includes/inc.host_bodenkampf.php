@@ -1,5 +1,6 @@
 <?php
 $langbkampf = get_phrasen('de', 'hostbodenkampf');
+
 $sql11_prep = "SELECT * FROM " . table_prefix . "planeten where kolonisten_spieler>=1 and ((kolonisten_new>=1) or (leichtebt_new>=1) or (schwerebt_new>=1)) and besitzer>=1 and spiel='" . $spiel . "' order by id";
 $array11_out = $db->getArray($sql11_prep);
 foreach ($array11_out as $array11) {    
@@ -217,7 +218,7 @@ foreach ($array11_out as $array11) {
         $datum=time();
         neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$besitzer,$langbkampf['hostbodenkampf']['btruppen3'],array($name));
         neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$kolonisten_spieler,$langbkampf['hostbodenkampf']['btruppen2'],array($name));
-        $zeiger_temp = $db->execute("UPDATE " . table_prefix . "planeten set leichtebt='0', 
+        $db->execute("UPDATE " . table_prefix . "planeten set leichtebt='0', 
                                                                              schwerebt='0', 
                                                                              kolonisten='0', 
                                                                              besitzer='0', 
@@ -236,3 +237,7 @@ foreach ($array11_out as $array11) {
 /*
  * Sämtliche Datenbank Querys angepasst und Sprachvariablen aus der Datenbank integriert.
  */
+/*
+ * Speicher des Lang Arrays wieder freigeben.
+ */
+unset($langbkampf);
