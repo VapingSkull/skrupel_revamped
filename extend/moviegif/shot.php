@@ -43,12 +43,12 @@ Imagecopy($bild,$hintergrundbild,0,0,0,0,$breite_komplett,$hoehe_komplett);
 
 ////////aktuelle karte einfuegen
 
-$zeiger = @mysql_query("SELECT * FROM skrupel_spiele where id=$spiel");
-$datensaetze = @mysql_num_rows($zeiger);
+$sql600 = "SELECT * FROM skrupel_spiele use index (PRIMARY) where id='".$spiel."'";
+$rows600 = $db->execute($sql600);
+$datensaetze = $rows600->RecordCount();
 
 if ($datensaetze==1) {
-
-	$array = @mysql_fetch_array($zeiger);
+	$array = $db->getRow($sql600);
 	$umfang=$array['umfang'];
 	$spiel_runde=$array['runde'];
 	$spiel_name=$array['name'];
@@ -67,25 +67,23 @@ for ($n=1;$n<=$sektoranzahl;$n++) {
 
 ////////schiffe und planeten ziehen
 
-$zeiger_planeten = @mysql_query("SELECT id,x_pos,y_pos,besitzer,sternenbasis FROM skrupel_planeten where spiel=$spiel order by id");
-$datensaetze_planeten = @mysql_num_rows($zeiger_planeten);
+$zeiger_planeten = "SELECT id,x_pos,y_pos,besitzer,sternenbasis FROM " . table_prefix ."planeten use index (spiel) where spiel='".$spiel."' order by id";
+$rows_planeten = $db->execute($zeiger_planeten);
+$datensaetze_planeten = $rows_planeten->RecordCount();
 
-$zeiger_schiffe = @mysql_query("SELECT volk,bild_klein,masse,kox_old,koy_old,klasse,schaden,antrieb,frachtraum,fracht_leute,fracht_cantox,fracht_vorrat,fracht_min1,fracht_min2,fracht_min3,lemin,leminmax,logbuch,routing_status,routing_id,routing_koord,besitzer,id,name,kox,koy,flug,zielx,ziely,zielid,techlevel,masse_gesamt,status,spezialmission,tarnfeld,extra FROM skrupel_schiffe where status>0 and spiel=$spiel order by masse desc");
-$datensaetze_schiffe = @mysql_num_rows($zeiger_schiffe);
+$zeiger_schiffe = "SELECT volk,bild_klein,masse,kox_old,koy_old,klasse,schaden,antrieb,frachtraum,fracht_leute,fracht_cantox,fracht_vorrat,fracht_min1,fracht_min2,fracht_min3,lemin,leminmax,logbuch,routing_status,routing_id,routing_koord,besitzer,id,name,kox,koy,flug,zielx,ziely,zielid,techlevel,masse_gesamt,status,spezialmission,tarnfeld,extra FROM " . table_prefix . "schiffe use index (status,spiel) where status>0 and spiel='".$spiel."' order by masse desc";
+$rows_schiffe = $db->execute($zeiger_schiffe);
+$datensaetze_schiffe = $rows_schiffe->RecordCount();
 
 ////////scankreise
 
 if ($datensaetze_planeten>=1) {
-
-	for  ($i=0; $i<$datensaetze_planeten;$i++) {
-    $ok = @mysql_data_seek($zeiger_planeten,$i);
-
-      $array = @mysql_fetch_array($zeiger_planeten);
+        $array_planeten = $rows_planet->getArray();
+	foreach ($array_planeten as $array) {    
       $id=$array["id"];
       $x_pos=$array["x_pos"];
       $y_pos=$array["y_pos"];
       $besitzer=$array["besitzer"];
-
 	  $x_position=round($x_pos/$umfang*$breite);
       $y_position=round($y_pos/$umfang*$hoehe);
 
@@ -97,44 +95,36 @@ if ($datensaetze_planeten>=1) {
 }
 
 if ($datensaetze_schiffe>=1) {
-
-	for  ($i=0; $i<$datensaetze_schiffe;$i++) {
-    $ok = @mysql_data_seek($zeiger_schiffe,$i);
-
-      $array = @mysql_fetch_array($zeiger_schiffe);
+    $array_schiffe = $rows_schiffe->getArray();
+	foreach ($array_schiffe as $array) {    
       $id=$array["id"];
       $x_pos=$array["kox"];
       $y_pos=$array["koy"];
       $besitzer=$array["besitzer"];
-
 	  $x_position=round($x_pos/$umfang*$breite);
       $y_position=round($y_pos/$umfang*$hoehe);
-
 		if ($besitzer>=1) {
 			Imagecopy($bild,$scanbild,$x_position-12,$y_position-12,0,0,25,25);
 		}
-
-}}
+}
+                }
 
 ////wurmloecher etc
 
-$zeiger_anomalie = @mysql_query("SELECT * FROM skrupel_anomalien where spiel=$spiel order by id");
-$datensaetze_anomalie = @mysql_num_rows($zeiger_anomalie);
+$zeiger_anomalie = @mysql_query("SELECT * FROM " . table_prefix . "anomalien use index (spiel) where spiel='".$spiel."' order by id");
+$rows_anomalie = $db->ewxecute($zeiger_anomalie);
+$datensaetze_anomalie = $rows_anomalie->RecordCount();
 
 if ($datensaetze_anomalie>=1) {
-
-	for  ($i=0; $i<$datensaetze_anomalie;$i++) {
-    $ok = @mysql_data_seek($zeiger_anomalie,$i);
-      $array = @mysql_fetch_array($zeiger_anomalie);
+        $array_anomalie = $rows_anomalie->getArray();
+	foreach  ($array_anomalie as $array) {    
       $aid=$array["id"];
       $art=$array["art"];
       $x_pos=$array["x_pos"];
       $y_pos=$array["y_pos"];
       $extra=$array["extra"];
-
 	  $x_position=round($x_pos/$umfang*$breite);
       $y_position=round($y_pos/$umfang*$hoehe);
-
 	if (($art==1) or ($art==2)) {
 		imagesetpixel($bild,$x_position,$y_position,$color['white']);
 		imagesetpixel($bild,$x_position+1,$y_position+1,$color['blue']);
@@ -146,36 +136,28 @@ if ($datensaetze_anomalie>=1) {
 	if ($art==3) {
 		imagesetpixel($bild,$x_position,$y_position,$color['white']);
 	}
-}}
+}
+        }
 
 ////planeten
 
 if ($datensaetze_planeten>=1) {
-
-	for  ($i=0; $i<$datensaetze_planeten;$i++) {
-    $ok = @mysql_data_seek($zeiger_planeten,$i);
-
-      $array = @mysql_fetch_array($zeiger_planeten);
+    $array_planeten = $rows_planeten->getArray();
+	foreach ($array_planeten as $array) {    
       $id=$array["id"];
       $x_pos=$array["x_pos"];
       $y_pos=$array["y_pos"];
       $besitzer=$array["besitzer"];
       $sternenbasis=$array["sternenbasis"];
-
-	  $x_position=round($x_pos/$umfang*$breite);
+      $x_position=round($x_pos/$umfang*$breite);
       $y_position=round($y_pos/$umfang*$hoehe);
-
 	  imagesetpixel($bild,$x_position,$y_position,$color['spieler'][$besitzer]);
-
 	if ($besitzer>=1) {
-
 	  imagesetpixel($bild,$x_position-1,$y_position,$color['spieler'][$besitzer]);
 	  imagesetpixel($bild,$x_position+1,$y_position,$color['spieler'][$besitzer]);
 	  imagesetpixel($bild,$x_position,$y_position-1,$color['spieler'][$besitzer]);
 	  imagesetpixel($bild,$x_position,$y_position+1,$color['spieler'][$besitzer]);
-
 	if ($sternenbasis==2) {
-
 		imagesetpixel($bild,$x_position,$y_position-3,$color['spieler'][$besitzer]);
 		imagesetpixel($bild,$x_position,$y_position-2,$color['spieler'][$besitzer]);
 		imagesetpixel($bild,$x_position,$y_position+2,$color['spieler'][$besitzer]);
@@ -184,29 +166,23 @@ if ($datensaetze_planeten>=1) {
 		imagesetpixel($bild,$x_position-2,$y_position,$color['spieler'][$besitzer]);
 		imagesetpixel($bild,$x_position+2,$y_position,$color['spieler'][$besitzer]);
 		imagesetpixel($bild,$x_position+3,$y_position,$color['spieler'][$besitzer]);
-
-	}}
-
+	}        
+        }
 	}
 }
 
 ////schiffe
 
 if ($datensaetze_schiffe>=1) {
-
-	for  ($i=0; $i<$datensaetze_schiffe;$i++) {
-    $ok = @mysql_data_seek($zeiger_schiffe,$i);
-
-      $array = @mysql_fetch_array($zeiger_schiffe);
+    $array_schiffe = $rows_schiffe->getArray();
+    foreach ($array_schiffe as $array) {
       $id=$array["id"];
       $x_pos=$array["kox"];
       $y_pos=$array["koy"];
       $besitzer=$array["besitzer"];
       $status=$array["status"];
-
-	  $x_position=round($x_pos/$umfang*$breite);
+      $x_position=round($x_pos/$umfang*$breite);
       $y_position=round($y_pos/$umfang*$hoehe);
-
 	if ($status==2)  {
 		imagesetpixel($bild,$x_position-1,$y_position-1,$color['spieler'][$besitzer]);
 		imagesetpixel($bild,$x_position-1,$y_position+1,$color['spieler'][$besitzer]);
@@ -232,17 +208,13 @@ ImageString($bild,2,287,356,'Round '.sprintf("%03d",$spiel_runde),$color['white'
 $runde_anzeige = sprintf("%04d", $spiel_runde);
 
 $scenes_dir = $moviegif_files_path . 'temp/' . $spiel . '/';
-if (!file_exists($scenes_dir)) mkdir($scenes_dir, 0777, true);
-
+if (!file_exists($scenes_dir)) {
+    mkdir($scenes_dir, 0777, true);
+}
 $scene_file = $scenes_dir . 'scene_' . $runde_anzeige . '.gif';
-
 @ImageGif($bild, $scene_file);
 @chmod($scene_file, 0777);
-
 ////////ende
-
 ImageDestroy($bild);
 ImageDestroy($hintergrundbild);
 ImageDestroy($scanbild);
-
-?>
