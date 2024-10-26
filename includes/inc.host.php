@@ -245,7 +245,7 @@ foreach ($array_out10 as $array10) {
         $db->execute("UPDATE " . table_prefix . "schiffe SET warp='7' WHERE id='".$shid."' AND spiel='".$spiel."'");
     }
 }
-    $sql2  = "SELECT flug,besitzer,spezialmission FROM " . table_prefix . "schiffe WHERE id='" . $traktor_id ."' AND spiel='" . $spiel ."' order by id";
+    $zeiger2  = "SELECT flug,besitzer,spezialmission FROM " . table_prefix . "schiffe WHERE id='" . $traktor_id ."' AND spiel='" . $spiel ."' order by id";
     $array_out2 = $db->getArray($zeiger2);
     foreach ($array_out2 as $array2){
     $flug = $array2["flug"];
@@ -1172,7 +1172,7 @@ if ($datensaetze>=1) {
 ///////////////////////////////////////////////////////////////////////////////////////////////DRUGUNVERZERRER ANFANG
 $zeiger3 = "SELECT * FROM " . table_prefix . "schiffe where spezialmission='30' and spiel='".$spiel."' order by id";
 $rows3 = $db->execute($zeiger3);
-$schiffanzahl = $rows3->RecrdCount();
+$schiffanzahl = $rows3->RecordCount();
 if ($schiffanzahl>=1) {
     $array3_out = $db->getArray($zeiger);
     foreach ($array3_out as $array) {        
