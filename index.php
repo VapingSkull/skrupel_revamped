@@ -30,7 +30,7 @@ if (isset($params)){
     $spiel_slot = @$params["spiel_slot"];
     
     /*
-     * Login über direkten Link deaktiviert ! Da keine E-Mails mehr vom Skript werden, ist das unötig geworden
+     * Login über direkten Link deaktiviert ! Da keine E-Mails mehr vom Skript verschickt werden, ist das unötig geworden
      */
     ///////////////////////////////login ueber link
     /*if (($hash_f = $params["hash"]) !== false) {
@@ -90,10 +90,9 @@ if (isset($params)){
     if (!(empty($login_f) || (empty($pass_f) && empty($pass)))) {
         if(empty($pass)){
             $sql_zeiger = "SELECT salt FROM " . table_prefix . "user WHERE nick = '" . $login_f . "' order by nick";
-            $zeiger = $db->execute($sql_zeiger);
-            
-            if($zeiger = $db->getRow($sql_zeiger)) {
-                $salt = $zeiger['salt'];
+            $zeiger_login = $db->execute($sql_zeiger);            
+            if(!empty($zeiger_login)) {                 
+                $salt = $db->getOne($sql_zeiger);
                 $pass_f = cryptPasswd($pass_f, $salt);
                 $pass_f = explode(':',$pass_f, 2);
                 $pass = $pass_f[0];                
@@ -114,17 +113,7 @@ if (isset($params)){
             if ($spieler_sprache=='') {
                 $spieler_sprache='de';
             }
-            $zeiger2sql = "SELECT * FROM " . table_prefix . "spiele WHERE (spieler_1 = '" . $spieler_id . "'
-                                                                 or spieler_2 = '" . $spieler_id . "'
-                                                                 or spieler_3 = '" . $spieler_id . "'
-                                                                 or spieler_4 = '" . $spieler_id . "'
-                                                                 or spieler_5 = '" . $spieler_id . "'
-                                                                 or spieler_6 = '" . $spieler_id . "'
-                                                                 or spieler_7 = '" . $spieler_id . "'
-                                                                 or spieler_8 = '" . $spieler_id . "'
-                                                                 or spieler_9 = '" . $spieler_id . "'
-                                                                 or spieler_10 = '" . $spieler_id . "')
-                                                                 and id = '" . $spiel_slot ."'";
+            $zeiger2sql = "SELECT * FROM " . table_prefix . "spiele use index (id_spieler_index) WHERE ".$spieler_id." IN (spieler_1, spieler_2, spieler_3, spieler_4, spieler_5, spieler_6, spieler_7, spieler_8, spieler_9, spieler_10) and id = '" . $spiel_slot ."'";
             $rows = $db->execute($zeiger2sql);
             $anzahl2 = $rows->RecordCount();
             if ($anzahl2==1) {
