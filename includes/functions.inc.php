@@ -215,7 +215,9 @@ function str_get($key, $mode)
 
     return false;
 }
-
+/*
+ * Function bleibt nur noch so lange bis alles überarbeitet wurde
+ */
 function safe_strval($value, $mode, $nl2br = false)
 {
     switch ($mode){
@@ -224,7 +226,7 @@ function safe_strval($value, $mode, $nl2br = false)
             break;
 
         case 'SQLSAFE':
-            $retvar = stripslashes($value);
+            //$retvar = stripslashes($value);
             if ($nl2br) {
                 $retvar = $retvar;
             }
@@ -306,8 +308,9 @@ function neuigkeiten($art,$icon,$spieler_id,$inhalt,$werte) {
         $search[]=$platzhalter;        
     }
     $inhalt=str_replace($search,$werte,$inhalt);
-    $db->execute("INSERT INTO " . table_prefix . "neuigkeiten (datum,art,icon,inhalt,spieler_id,spiel_id) values 
-                              ('" . $datum ."','" . $art . "','" . $icon . "','". $inhalt . "','" . $spieler_id ."','" . $spiel ."')");
+    $sqli = "INSERT INTO " . table_prefix . "neuigkeiten (datum,art,icon,inhalt,spieler_id,spiel_id) values 
+                              (?, ?, ?, ?, ?, ?)";
+    $db->execute($sqli, array($datum, $art, $icon, $inhalt, $spieler_id, $spiel));
 }
 function sichtaddieren($sicht_alt,$sicht_neu) {
     if ((substr($sicht_alt,0,1)=="1") or (substr($sicht_neu,0,1)=="1")) { $s1="1"; } else { $s1="0"; }
