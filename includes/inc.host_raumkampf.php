@@ -167,13 +167,13 @@ if ($schiffanzahl>=1) {
                             $kox_new=max(0,min($umfang,$kox+round($abstand*cos($alpha))));
                             $sektork=sektor($kox_new,$koy_new);
                             $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set status=1,kox=$kox_new, koy=$koy_new where id=$shid and spiel=$spiel");
-                            neuigkeiten(2,"../daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][10],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
+                            neuigkeiten(2,"../daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['10'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
                             $alpha=(double)(6.28318530718*mt_rand(0,$mt_randmax)/$mt_randmax);
                             $koy_new=max(0,min($umfang,$koy+round($abstand*sin($alpha))));
                             $kox_new=max(0,min($umfang,$kox+round($abstand*cos($alpha))));
                             $sektork=sektor($kox_new,$koy_new);
                             $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set status='1',kox='".$kox_new."', koy='".$koy_new."' where id='".$shid_2."' and spiel='".$spiel."'");
-                            neuigkeiten(2,"../daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][10],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
+                            neuigkeiten(2,"../daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['10'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
                             $checkstring[]=$shid_2;
                             $checkstring[]=$shid;
                             break;
@@ -366,8 +366,8 @@ if ($schiffanzahl>=1) {
                                     $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set flug=0,warp=0,zielx=0,ziely=0,zielid=0 where flug in ('3','4') and zielid='".$shid_2."'");
                                     $schiffevernichtet++;
                                     $stat_schlacht_sieg[$besitzer]++;
-                                    neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][0],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
-                                    neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][1],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
+                                    neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['0'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
+                                    neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['1'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
                                 }
                             }
                             if ($luckyshot2>=1) {
@@ -381,8 +381,8 @@ if ($schiffanzahl>=1) {
                                     $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set flug=0,warp=0,zielx=0,ziely=0,zielid=0 where flug in ('3','4') and zielid='".$shid."'");
                                     $schiffevernichtet++;
                                     $stat_schlacht_sieg[$besitzer_2]++;
-                                    neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][0],array($name,$sektork,$spielerfarbe[$besitzer],$name_2));
-                                    neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][1],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
+                                    neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['0'],array($name,$sektork,$spielerfarbe[$besitzer],$name_2));
+                                    neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['1'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
                                 }
                             }
                             //////////////////////////////////////////////////////////////////////////////////////
@@ -677,8 +677,8 @@ if ($schiffanzahl>=1) {
                                     $schiffevernichtet++;
                                     $stat_schlacht_sieg[$besitzer_2]++;
                                     if($kamikaze==true) {
-                                        neuigkeiten(2,"../daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][12],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
-                                        neuigkeiten(2,"../daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][13],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
+                                        neuigkeiten(2,"../daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['12'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
+                                        neuigkeiten(2,"../daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['13'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
                                     } elseif ($waffenlos==0) {
                                         $zeiger_temp = mysql_query("INSERT INTO " . table_prefix . "kampf (spiel,art,schiff_id_1,schiff_id_2,name_1,name_2,rasse_1,rasse_2,bild_1,bild_2,datum,energetik_1,energetik_2,projektile_1,projektile_2,hangar_1,hangar_2,schild_1,schild_2,schaden_1,schaden_2,crew_1,crew_2) values 
                                                                   ('".$spiel."',
@@ -704,11 +704,11 @@ if ($schiffanzahl>=1) {
                                                                    '".$aufzeichnung_schaden_2."',
                                                                    '".$aufzeichnung_crew_1."',
                                                                    '".$aufzeichnung_crew_2."')");
-                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][4],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2,$shid,$shid_2,$datum));
-                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][5],array($name_2,$sektork,$spielerfarbe[$besitzer],$name,$shid,$shid_2,$datum));
+                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['4'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2,$shid,$shid_2,$datum));
+                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['5'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name,$shid,$shid_2,$datum));
                                     } else {
-                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][6],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
-                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][7],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
+                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['6'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
+                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['7'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
                                     }
                                     break;
                                 }
@@ -728,8 +728,8 @@ if ($schiffanzahl>=1) {
                                     $schiffevernichtet++;
                                     $stat_schlacht_sieg[$besitzer]++;
                                     if($kamikaze_2==true) {
-                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][12],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
-                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][13],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
+                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['12'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
+                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['13'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
                                     } elseif ($waffenlos==0) {
                                         $zeiger_temp = mysql_query("INSERT INTO " . table_prefix . "kampf (spiel,art,schiff_id_1,schiff_id_2,name_1,name_2,rasse_1,rasse_2,bild_1,bild_2,datum,energetik_1,energetik_2,projektile_1,projektile_2,hangar_1,hangar_2,schild_1,schild_2,schaden_1,schaden_2,crew_1,crew_2) values 
                                                                    ('".$spiel."',
@@ -755,11 +755,11 @@ if ($schiffanzahl>=1) {
                                                                     '".$aufzeichnung_schaden_2."',
                                                                     '".$aufzeichnung_crew_1."',
                                                                     '".$aufzeichnung_crew_2."')");
-                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][4],array($name_2,$sektork,$spielerfarbe[$besitzer],$name,$shid,$shid_2,$datum));
-                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][5],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2,$shid,$shid_2,$datum));
+                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['4'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name,$shid,$shid_2,$datum));
+                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['5'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2,$shid,$shid_2,$datum));
                                     } else {
-                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][6],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
-                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][7],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
+                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['6'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
+                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['7'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
                                     }
                                     //break;
                                 }
@@ -775,8 +775,8 @@ if ($schiffanzahl>=1) {
                                     $schiffevernichtet++;
                                     $schiffevernichtet++;
                                     if($kamikaze==true || $kamikaze_2==true) {
-                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][14],array($name_2,$spielerfarbe[$besitzer],$name,$sektork));
-                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][14],array($name,$spielerfarbe[$besitzer_2],$name_2,$sektork));
+                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['14'],array($name_2,$spielerfarbe[$besitzer],$name,$sektork));
+                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['14'],array($name,$spielerfarbe[$besitzer_2],$name_2,$sektork));
                                     } elseif ($waffenlos==0) {
                                         $zeiger_temp = mysql_query("INSERT INTO " . table_prefix . "kampf (spiel,art,schiff_id_1,schiff_id_2,name_1,name_2,rasse_1,rasse_2,bild_1,bild_2,datum,energetik_1,energetik_2,projektile_1,projektile_2,hangar_1,hangar_2,schild_1,schild_2,schaden_1,schaden_2,crew_1,crew_2) values 
                                                                   ('".$spiel."',
@@ -802,11 +802,11 @@ if ($schiffanzahl>=1) {
                                                                     '".$aufzeichnung_schaden_2."', 
                                                                     '".$aufzeichnung_crew_1."', 
                                                                     '".$aufzeichnung_crew_2."')");
-                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][8],array($name_2,$spielerfarbe[$besitzer],$name,$sektork,$shid,$shid_2,$datum));
-                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][8],array($name,$spielerfarbe[$besitzer_2],$name_2,$sektork,$shid,$shid_2,$datum));
+                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['8'],array($name_2,$spielerfarbe[$besitzer],$name,$sektork,$shid,$shid_2,$datum));
+                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['8'],array($name,$spielerfarbe[$besitzer_2],$name_2,$sektork,$shid,$shid_2,$datum));
                                     } else {
-                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][9],array($name_2,$spielerfarbe[$besitzer],$name,$sektork));
-                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][9],array($name,$spielerfarbe[$besitzer_2],$name_2,$sektork));
+                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['9'],array($name_2,$spielerfarbe[$besitzer],$name,$sektork));
+                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['9'],array($name,$spielerfarbe[$besitzer_2],$name_2,$sektork));
                                     }
                                     break;
                                 }
@@ -876,8 +876,8 @@ if ($schiffanzahl>=1) {
                                                                                                     '".$aufzeichnung_schaden_2."', 
                                                                                                     '".$aufzeichnung_crew_1."', 
                                                                                                     '".$aufzeichnung_crew_2."')");
-                                    neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][2],array($name_2,$sektork,$spielerfarbe[$besitzer],$name,$shid,$shid_2,$datum));
-                                    neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][3],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2,$shid,$shid_2,$datum));
+                                    neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['2'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name,$shid,$shid_2,$datum));
+                                    neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['3'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2,$shid,$shid_2,$datum));
                                 }
                                 if (($schaden_2<100) and ($schaden<100) and ($crew<=0)) {
                                     $checkstring[]=$shid;
@@ -898,8 +898,8 @@ if ($schiffanzahl>=1) {
                                                               ('".$spiel."','1','".$shid."','".$shid_2."','".$name."','".$name_2."','".$volk."','".$volk_2."','".$bild_klein."','".$bild_klein_2."','".$datum."','".$aufzeichnung_energetik_1."',
                                                                '".$aufzeichnung_energetik_2."','".$aufzeichnung_projektile_1."','".$aufzeichnung_projektile_2."','".$aufzeichnung_hangar_1."','".$aufzeichnung_hangar_2."','".$aufzeichnung_schild_1."',
                                                                '".$aufzeichnung_schild_2."','".$aufzeichnung_schaden_1."','".$aufzeichnung_schaden_2."','".$aufzeichnung_crew_1."','".$aufzeichnung_crew_2."')");
-                                    neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][2],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2,$shid,$shid_2,$datum));
-                                    neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][3],array($name_2,$sektork,$spielerfarbe[$besitzer],$name,$shid,$shid_2,$datum));
+                                    neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['2'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2,$shid,$shid_2,$datum));
+                                    neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['3'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name,$shid,$shid_2,$datum));
                                     break;
                                 }
                                 if (($schaden_2<100) and ($schaden<100) and ($crew>=1) and ($crew_2>=1) and ($ausweichen==1)) {
@@ -910,8 +910,8 @@ if ($schiffanzahl>=1) {
                                         $kox_new=max(0,min($umfang,$kox+round($abstand*cos($alpha))));
                                         $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set kox='".$kox_new."',koy='".$koy_new."',crew='".$crew."',schaden='".$schaden."',schild='".$schild."',projektile='".$projektile."',status='1' where id='".$shid."'");
                                         $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set crew='".$crew_2."',schaden='".$schaden_2."',schild='".$schild_2."',projektile='".$projektile_2."' where id='".$shid_2."' and besitzer='".$besitzer_2."'");
-                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][10],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
-                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][11],array($name_2,$sektork));
+                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['10'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
+                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['11'],array($name_2,$sektork));
                                         break;
                                     }
                                     if ($mission_2==2) {
@@ -921,8 +921,8 @@ if ($schiffanzahl>=1) {
                                         $kox_new=max(0,min($umfang,$kox+round($abstand*cos($alpha))));
                                         $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set kox='".$kox_new."',koy='".$koy_new."',crew='".$crew_2."',schaden='".$schaden_2."',schild='".$schild_2."',projektile='".$projektile_2."',status='1' where id='".$shid_2."'");
                                         $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set crew='".$crew."',schaden='".$schaden."',schild='".$schild."',projektile='".$projektile."' where id='".$shid."' and besitzer='".$besitzer."'");
-                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$lang['hostraumkampf'][$spielersprache[$besitzer_2]][10],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
-                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['hostraumkampf'][$spielersprache[$besitzer]][11],array($name,$sektork));
+                                        neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['10'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
+                                        neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf'][$langraum],array($name,$sektork));
                                     }
                                 }
                             }
