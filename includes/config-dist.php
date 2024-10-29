@@ -73,7 +73,7 @@ define ('extensions' , main_dir . 'extend/'); // Extensions
 define ('table_prefix', "skrupel_"); // hier kann man seinen Tabellenpräfix anpassen
 define ('sprache', 'de');
 
-define ('sversion' , 'V0.1.0 Optimized Version &copy; by SkullCollector 2024');
+define ('sversion' , 'V0.1.0 Optimized Version &copy; by SkullCollector 2024 based on Original Skrupel &copy; by Bernd Kantoks');
 include(main_dir . 'libs/adodb/vendor/autoload.php');
 
 $db = adoNewConnection('mysqli'); # eg. 'mysqli' or 'oci8'
