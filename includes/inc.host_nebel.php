@@ -1,61 +1,62 @@
 <?php
-$db->execute("update " . table_prefix . "anomalien set
-                                                       sicht_1='0',
-                                                       sicht_2='0', 
-                                                       sicht_3='0', 
-                                                       sicht_4='0', 
-                                                       sicht_5='0', 
-                                                       sicht_6='0', 
-                                                       sicht_7='0', 
-                                                       sicht_8='0',
-                                                       sicht_9='0', 
-                                                       sicht_10='0'
-                                                 where spiel='" . $spiel . "'");
-
-$db->execute("update " . table_prefix . "sternenbasen set sicht_1='0', 
-                                                          sicht_2='0', 
-                                                          sicht_3='0', 
-                                                          sicht_4='0', 
-                                                          sicht_5='0', 
-                                                          sicht_6='0', 
-                                                          sicht_7='0', 
-                                                          sicht_8='0', 
-                                                          sicht_9='0', 
-                                                          sicht_10='0'
-                                         where spiel='" . $spiel . "'");
-
-$db->execute("update " . table_prefix . "planeten set sicht_1='0', 
-                                                      sicht_2='0', 
-                                                      sicht_3='0', 
-                                                      sicht_4='0', 
-                                                      sicht_5='0', 
-                                                      sicht_6='0', 
-                                                      sicht_7='0', 
-                                                      sicht_8='0', 
-                                                      sicht_9='0', 
-                                                      sicht_10='0'
-                                         where spiel='" . $spiel . "'");
-$db->execute("update " . table_prefix . "schiffe set sicht_1='0', 
-                                                     sicht_2='0', 
-                                                     sicht_3='0', 
-                                                     sicht_4='0', 
-                                                     sicht_5='0', 
-                                                     sicht_6='0', 
-                                                     sicht_7='0', 
-                                                     sicht_8='0', 
-                                                     sicht_9='0', 
-                                                     sicht_10='0',
-                                                     sicht_1_beta='0', 
-                                                     sicht_2_beta='0', 
-                                                     sicht_3_beta='0', 
-                                                     sicht_4_beta='0', 
-                                                     sicht_5_beta='0', 
-                                                     sicht_6_beta='0', 
-                                                     sicht_7_beta='0', 
-                                                     sicht_8_beta='0', 
-                                                     sicht_9_beta='0', 
-                                                     sicht_10_beta='0'
-                                         where spiel='" . $spiel . "'");
+$sqlu = "update " . table_prefix . "anomalien set sicht_1 = ?, 
+                                                  sicht_2 = ?, 
+                                                  sicht_3 = ?, 
+                                                  sicht_4 = ?, 
+                                                  sicht_5 = ?, 
+                                                  sicht_6 = ?, 
+                                                  sicht_7 = ?, 
+                                                  sicht_8 = ?, 
+                                                  sicht_9 = ?, 
+                                                  sicht_10 = ? 
+                                    where spiel = ?";
+$db->execute($sqlu, arrray(0,0,0,0,0,0,0,0,0,0,$spiel));
+$sqlu = "update " . table_prefix . "sternenbasen set sicht_1 = ?, 
+                                                  sicht_2 = ?, 
+                                                  sicht_3 = ?, 
+                                                  sicht_4 = ?, 
+                                                  sicht_5 = ?, 
+                                                  sicht_6 = ?, 
+                                                  sicht_7 = ?, 
+                                                  sicht_8 = ?, 
+                                                  sicht_9 = ?, 
+                                                  sicht_10 = ? 
+                                    where spiel = ?";
+$db->execute($sqlu, arrray(0,0,0,0,0,0,0,0,0,0,$spiel));
+$sqlu = "update " . table_prefix . "planeten set sicht_1 = ?, 
+                                                  sicht_2 = ?, 
+                                                  sicht_3 = ?, 
+                                                  sicht_4 = ?, 
+                                                  sicht_5 = ?, 
+                                                  sicht_6 = ?, 
+                                                  sicht_7 = ?, 
+                                                  sicht_8 = ?, 
+                                                  sicht_9 = ?, 
+                                                  sicht_10 = ? 
+                                    where spiel = ?";
+$db->execute($sqlu, arrray(0,0,0,0,0,0,0,0,0,0,$spiel));
+$sqlu = "update " . table_prefix . "schiffe set sicht_1 = ?, 
+                                                sicht_2 = ?, 
+                                                sicht_3 = ?, 
+                                                sicht_4 = ?, 
+                                                sicht_5 = ?, 
+                                                sicht_6 = ?, 
+                                                sicht_7 = ?, 
+                                                sicht_8 = ?, 
+                                                sicht_9 = ?, 
+                                                sicht_10 = ?, 
+                                                sicht_1_beta = ?, 
+                                                sicht_2_beta = ?, 
+                                                sicht_3_beta = ?, 
+                                                sicht_4_beta = ?, 
+                                                sicht_5_beta = ?, 
+                                                sicht_6_beta = ?, 
+                                                sicht_7_beta = ?, 
+                                                sicht_8_beta = ?, 
+                                                sicht_9_beta = ?, 
+                                                sicht_10_beta = ?
+                                    where spiel = ?";
+$db->execute($sqlu,array(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,$spiel));
 $scans = array();
 $scanhash = array();
 $scantelepat = array();
@@ -94,8 +95,8 @@ foreach ($array90_out as $array90) {
         if ((1 == $native_fert_telepat) && (0 < $native_kol)) {
             $scantelepat[$native_id][] = $besitzer;
         }
-       
-        $db->execute("INSERT INTO " . table_prefix . "scan (spiel,besitzer,x,y) values ('" . $spiel . "', '" . $besitzer . "', '" . $x_pos . "', '" . $y_pos . "')");
+        $sqli = "INSERT INTO " . table_prefix . "scan (spiel,besitzer,x,y) values (?,?,?,?)";
+        $db->execute($sqli,array($spiel,$besitzer,$x_pos,$ypos));
         $scans[] = array(
             'besitzer' => $besitzer,
             'x' => $x_pos,
@@ -106,7 +107,8 @@ foreach ($array90_out as $array90) {
             if ((isset($beziehung[$besitzer][$f]['status']) && (($beziehung[$besitzer][$f]['status']==4) or 
                       ($beziehung[$besitzer][$f]['status']==5))) or 
                 ((isset($sicht_spionage[$besitzer][$f]) && $sicht_spionage[$besitzer][$f]==1) && $module[0])) {
-                $db->execute("INSERT INTO " . table_prefix . "scan (spiel,besitzer,x,y) values ('" . $spiel . "', '" . $f . "', '" . $x_pos . "', '" . $y_pos . "')");
+                $sqli = "INSERT INTO " . table_prefix . "scan (spiel,besitzer,x,y) values (?,?,?,?)";
+                $db->execute($sqli,array($spiel,$f,$x_pos,$y_pos));
                 $scans[] = array(
                     'besitzer' => $f,
                     'x' => $x_pos,
@@ -129,7 +131,8 @@ foreach ($array91_out as $array91) {
     $scanner_r = 53;
     if ((isset($scantelepat[$native_id])) && (0 < $native_kol)) {
         foreach ($scantelepat[$native_id] as $owner) {
-            $db->execute("INSERT INTO " . table_prefix . "scan (spiel,besitzer,x,y) values ('" . $spiel . "', '". $owner . "', '" . $x_pos . "', '" . $y_pos . "')");
+            $sqli = "INSERT INTO " . table_prefix . "scan (spiel,besitzer,x,y) values (?,?,?,?)";
+            $db->execute($sqli,array($spiel,$owner,$x_pos,$y_pos));
             $scans[] = array(
                 'besitzer' => $owner,
                 'x' => $x_pos,
@@ -138,7 +141,8 @@ foreach ($array91_out as $array91) {
             $scanhash[$owner.'_'.$x_pos.'_'.$y_pos] = $scanner_r;
             for ($f=1;$f<=10;$f++) {
                 if (($beziehung[$owner][$f]['status']==4) or ($beziehung[$owner][$f]['status']==5) or ((isset($sicht_spionage[$owner][$f]) && $sicht_spionage[$owner][$f]==1) && $module[0])) {
-                    $db->execute("INSERT INTO " . table_prefix . "scan (spiel,besitzer,x,y) values ($spiel,$f,$x_pos,$y_pos)");
+                    $sqli = "INSERT INTO " . table_prefix . "scan (spiel,besitzer,x,y) values (?,?,?,?)";
+                    $db->execute($sqli,array($spiel,$f,$x_pos,$y_pos));
                     $scans[] = array(
                         'besitzer' => $f,
                         'x' => $x_pos,
@@ -164,7 +168,8 @@ foreach ($array92_out as $array92) {
     if ($besitzer>=1) {
         $scanhashindex = $besitzer.'_'.$kox.'_'.$koy;
         if (!array_key_exists($scanhashindex, $scanhash) or $scanner_r>$scanhash[$scanhashindex]) {
-            $db->execute("INSERT INTO " . table_prefix . "scan (spiel,besitzer,x,y) values ('" . $spiel . "','" . $besitzer . "', '" . $kox . "', '" . $koy . "')");
+            $sqli = "INSERT INTO " . table_prefix . "scan (spiel,besitzer,x,y) values (?,?,?,?)";
+            $db->execute($sqli,array($spiel,$besitzer,$kox,$koy));
             $scans[] = array(
                 'besitzer' => $besitzer,
                 'x' => $kox,
@@ -180,7 +185,8 @@ foreach ($array92_out as $array92) {
                 ($beziehung[$f][$besitzer]['status']==5) or 
                 ((isset($sicht_spionage[$besitzer][$f]) && $sicht_spionage[$besitzer][$f]==1) && $module[0])) {
                 if (!array_key_exists($scanhashindex, $scanhash) or $scanner_r>$scanhash[$scanhashindex]) {
-                    $db->execute("INSERT INTO " . table_prefix . "scan (spiel,besitzer,x,y) values ('" . $spiel . "','" . $f . "', '" . $kox . "', '" . $koy . "')");
+                    $sqli = "INSERT INTO " . table_prefix . "scan (spiel,besitzer,x,y) values (?,?,?,?)";
+                    $db->execute($sqli,array($spiel,$f,$kox,$koy));
                     $scans[] = array(
                         'besitzer' => $f,
                         'x' => $kox,
@@ -203,34 +209,40 @@ foreach ($scans as $scantupel) {
     //kleiner hack, da in $scans für jedes schiff einer flotte ein eintrag ist
     if($scanreichweite > 0) {
         $scanhash[$scanhashindex] = 0;
-        $db->execute("update " . table_prefix . "planeten set " . $spalte_beta . " = '1'
-                                        where (
-                                            (sqrt((x_pos-".$xx.")*(x_pos-".$xx.")+(y_pos-".$yy.")*(y_pos-".$yy.")))<=225
-                                            ) and spiel='" . $spiel . "' and " . $spalte_beta . " = '0'");
-        $db->execute("update " . table_prefix . "planeten set " . $spalte . " = '1'
-                                        where (
-                                            (sqrt((x_pos-".$xx.")*(x_pos-".$xx.")+(y_pos-".$yy.")*(y_pos-".$yy.")))<=125
-                                            ) and spiel='" . $spiel ."' and " . $spalte . " = '0'");
-        $db->execute("update " . table_prefix . "schiffe set " . $spalte . " = '1'
-                                        where (
-                                            (sqrt((kox-".$xx.")*(kox-".$xx.")+(koy-".$yy.")*(koy-".$yy.")))<=125
-                                            ) and spiel='".$spiel."' and ".$spalte." = '0'");
-        $db->execute("update " . table_prefix . "schiffe set ".$spalte_beta." = '1'
-                                        where (
-                                            (sqrt((kox-".$xx.")*(kox-".$xx.")+(koy-".$yy.")*(koy-".$yy.")))<=".$scanreichweite."
-                                            ) and spiel='".$spiel."'");
-        $db->execute("update " . table_prefix . "anomalien set ".$spalte." = '1'
-                                        where (
-                                            (sqrt((x_pos-".$xx.")*(x_pos-".$xx.")+(y_pos-".$yy.")*(y_pos-".$yy.")))<=125
-                                            ) and spiel='".$spiel."' and ".$spalte." = '0' and (art!=5) ");
-        $db->execute("update " . table_prefix . "anomalien set ".$spalte." = '1'
-                                        where (
-                                            (sqrt((x_pos-".$xx.")*(x_pos-".$xx.")+(y_pos-".$yy.")*(y_pos-".$yy.")))<=100
-                                            ) and spiel='" . $spiel ."' and " .$spalte." = '0' and (art=5) ");
-        $db->execute("update " . table_prefix . "sternenbasen set ".$spalte." = '1'
-                                        where (
-                                            (sqrt((x_pos-".$xx.")*(x_pos-".$xx.")+(y_pos-".$yy.")*(y_pos-".$yy.")))<=125
-                                            ) and spiel='" . $spiel . "' and ". $spalte ." = '0'");
+        $sqlu = "update " . table_prefix . "planeten set " . $spalte_beta . " = ?
+                                            where ((sqrt((x_pos-?)*(x_pos-?)+(y_pos-?)*(y_pos-?)))<=225)
+                                            and spiel = ? and " . $spalte_beta . " = ?";
+        $db->execute($sqlu, array(1,$xx,$xx,$yy,$yy,$spiel,0));
+        
+        $sqlu = "update " . table_prefix . "planeten set " . $spalte . " = ?
+                                            where ((sqrt((x_pos-?)*(x_pos-?)+(y_pos-?)*(y_pos-?)))<=125) 
+                                            and spiel = ? and " . $spalte . " = ?";
+        $db->execute($sqlu,array(1,$xx,$xx,$yy,$yy,$spiel,0));
+        
+        $sqlu = "update " . table_prefix . "schiffe set " . $spalte . " = 0 
+                                            where ((sqrt((kox-?)*(kox-?)+(koy-?)*(koy-?)))<=125) 
+                                            and spiel = ? and ".$spalte." = ?";
+        $db->execute($sqlu,array(1,$xx,$xx,$yy,$yy,$spiel,0));
+        
+        $sqlu = "update " . table_prefix . "schiffe set ".$spalte_beta." = ?
+                                            where ((sqrt((kox-?)*(kox-?)+(koy-?)*(koy-?)))<=?) 
+                                            and spiel = ?";
+        $db->execute(1,$xx,$xx,$yy,$yy,$scanreichweite,$spiel);
+        
+        $sqlu = "update " . table_prefix . "anomalien set ".$spalte." = ?  
+                                            where ((sqrt((x_pos-?)*(x_pos-?)+(y_pos-?)*(y_pos-?)))<=125) 
+                                            and spiel = ? and ".$spalte." = ? and (art!=?)";
+        $db->execute($sqlu, array(1,$xx,$xx,$yy,$yy,$spiel,0,5));
+        
+        $sqlu = "update " . table_prefix . "anomalien set ".$spalte." = ? 
+                                            where ((sqrt((x_pos-?)*(x_pos-?)+(y_pos-?)*(y_pos-?)))<=100) 
+                                            and spiel = ? and " .$spalte." = ? and (art=?)";
+        $db->execute($sqlu,array(1,$xx,$xx,$yy,$yy,$spiel,0,5));
+        
+        $sqlu = "update " . table_prefix . "sternenbasen set ".$spalte." = ?
+                                            where ((sqrt((x_pos-?)*(x_pos-?)+(y_pos-?)*(y_pos-?)))<=125) 
+                                            and spiel = ? and ". $spalte ." = ?";
+        $db->execute($sqlu,array(1,$xx,$xx,$yy,$yy,$spiel,0));
     }
 }
 //neue tarnungsarten:
@@ -252,7 +264,8 @@ for($i=1;$i<11;$i++){
         if($tarnfeldgen==1){
             $war=rand(1,10);
             if($war==10){
-                $db->execute("update " . table_prefix . "schiffe set ".$spalte_beta." = '1' where id='".$s_id."' and spiel='".$spiel."'");
+                $sqlu = "update " . table_prefix . "schiffe set ".$spalte_beta." = ? where id = ? and spiel = ?";
+                $db->execute(1,$s_id,$spiel);
             }
         //klingonen tarnung
         }elseif($tarnfeldgen==3){
@@ -263,7 +276,8 @@ for($i=1;$i<11;$i++){
             $anzahl_temp = $anzahl_temp1+$anzahl_temp2;
             $war=rand(1,20);
             if($war<=(2+$anzahl_temp)){
-                $db->execute("update " . table_prefix . "schiffe set ".$spalte_beta." = '1' where id='".$s_id."' and spiel='".$spiel."'");
+                $sqlu = "update " . table_prefix . "schiffe set " . $spalte_beta . " = ? where id = ? and spiel = ?";
+                $db->execute($sqlu,array(1,$s_id,$spiel));
             }
         }
     }
@@ -287,8 +301,10 @@ if ($module[4]==1) {
                         if (($totals>=1) or ($totalp>=1)) {
                             $begegnung[$n][$m]=1;
                             $begegnung[$m][$n]=1;
-                            $db->execute("INSERT INTO " . table_prefix . "begegnung (partei_a,partei_b,spiel) values ('".$n."','".$m."','".$spiel."')");
-                            $db->execute("INSERT INTO " . table_prefix . "begegnung (partei_a,partei_b,spiel) values ('".$m."','".$n."','".$spiel."')");
+                            $sqli = "INSERT INTO " . table_prefix . "begegnung (partei_a,partei_b,spiel) values (?,?,?)";
+                            $db->execute($sqli,array($n,$m,$spiel));
+                            $sqli = "INSERT INTO " . table_prefix . "begegnung (partei_a,partei_b,spiel) values (?,?,?)";
+                            $db->execute($sqli,$array($m,$n,$spiel));
                         }
                     }
                 }
