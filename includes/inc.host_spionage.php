@@ -27,6 +27,7 @@ if($module[0]) {
             $extra_spio[1] = $stufe_neu;
             $extra[0] = implode("-", $extra_spio);
             $extra_neu = implode(":", $extra);
+            $spstufe = "Spion (Stufe ".$stufe_neu.")";
             $sqlu = "UPDATE " . table_prefix . "schiffe set kox = ?, 
                                                            koy = ?, 
                                                            erfahrung = ?, 
@@ -37,14 +38,14 @@ if($module[0]) {
                                                            extra = ?, 
                                                            tarnfeld = ? 
                                                      where id = ?";
-            $db->execute($sqlu, array($s_x, $s_y, $erfahrung_neu, "Spion (Stufe ".$stufe_neu.")", "2", $pos_heimat[0], $pos_heimat[1], $extra_neu, "10", $spion['id']));
+            $db->execute($sqlu, array($s_x, $s_y, $erfahrung_neu,$spstufe , 2, $pos_heimat[0], $pos_heimat[1], $extra_neu, 10, $spion['id']));
         } else {
             //erfahrung durch strecke
             $extra_spio[0] += intval($spion['strecke'] / 5);
             $extra[0] = implode("-", $extra_spio);
             $extra_neu = implode(":", $extra);
             $sqlu = "UPDATE " . table_prefix . "schiffe set extra = ? , strecke = ? where id = ?";
-            $db->execute($sqlu, array($extra_neu, "0", $spion['id']));
+            $db->execute($sqlu, array($extra_neu,0,$spion['id']));
         }
         //Heimatbasis noch da?
         $sql_heimat = "SELECT name,besitzer from " . table_prefix . "planeten use index (x_pos,y_pos,spiel) where x_pos='".$s_x."' and y_pos='".$s_y."' and spiel='".$spiel."'";
@@ -104,9 +105,9 @@ if($module[0]) {
         $zielsternenbasis_array[$id] = 0;
         //spion am ziel?
         if($spiomission_array[$id] != 9  && $spiomission_array[$id] != 6) {
-            $sql_target = "SELECT id, besitzer, sternenbasis_id FROM " . table_prefix . "planeten use index (besitzer,x_pos,y_pos,spiel) WHERE besitzer!='0' AND besitzer<>".$spionbesitzer_array[$id]." AND x_pos='".$kox_array[$id]."' AND y_pos='".$koy_array[$id]."' AND spiel='".$spiel."'";
+            $sql_target = "SELECT id, besitzer, sternenbasis_id FROM " . table_prefix . "planeten use index (besitzer,spiel) WHERE besitzer!='0' AND besitzer<>".$spionbesitzer_array[$id]." AND x_pos='".$kox_array[$id]."' AND y_pos='".$koy_array[$id]."' AND spiel='".$spiel."'";
             $zeiger_target = $db->execute($sql_target);
-            if(!empty($zeiger_target)) {
+            if(!empty($zeiger_target)) {                
                 $ergebnis_target = $db->getRow($sql_target);
                 if($ergebnis_target['id'] == $zielid_array[$id]) {
                     $temp_zielid = 0;
@@ -121,7 +122,7 @@ if($module[0]) {
             $sql_target2 = "SELECT besitzer FROM " . table_prefix . "schiffe WHERE besitzer<>0 AND besitzer<>".$spionbesitzer_array[$id]." AND kox='".$kox_array[$id]."' AND koy='".$koy_array[$id]."' AND id='".$zielid_array[$id]."' AND spiel='".$spiel."'";
             $zeiger_target2 = $db->execute($sql_target2);
             if(!empty($zeiger_target2)) {
-                $ergebnis_target = $db->getRow($sql_target2);
+                $ergebnis_target = $db->getOne($sql_target2);
                 //spion am ziel?
                 $zielschiffbesitzer_array[$id] = $ergebnis_target['besitzer'];
             }
