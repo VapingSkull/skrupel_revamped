@@ -1,24 +1,29 @@
 <?php
-$zeiger_temp = mysql_query("UPDATE " . table_prefix . "planeten set sternenbasis_defense='0' where spiel='".$spiel."'");
-$zeiger = mysql_query("SELECT * FROM " . table_prefix . "sternenbasen where status='1' and spiel='".$spiel."' order by id");
-$basenanzahl = mysql_num_rows($zeiger);
+/*
+ * Sprachen einlesen
+ */
+$langorbital = get_phrasen('de', 'orbitalkampf');
+
+$db->execute("UPDATE " . table_prefix . "planeten set sternenbasis_defense='0' where spiel = ?",array($spiel));
+$sqlo1 = "SELECT * FROM " . table_prefix . "sternenbasen where status='1' and spiel = ? order by id";
+$rowso1 = $db->execute($sqlo1,array($spiel));
+$basenanzahl = $rowso1->RecordCount();
 if ($basenanzahl>=1) {
-    for  ($i=0; $i<$basenanzahl;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
+    $arrayo1_out = $db->getArray($sqlo1,array($spiel));
+    foreach ($arrayo1_out as $array) {        
         $baid=$array["id"];
         $defense=$array["defense"];
         $planetid=$array["planetid"];
-        $zeiger_temp = mysql_query("UPDATE " . table_prefix . "planeten set sternenbasis_defense='".$defense."' where id='".$planetid."'");
+        $db->execute("UPDATE " . table_prefix . "planeten set sternenbasis_defense = ? where id = ?",array($defense,$planetid));
     }
 }
-$zeiger_temp = mysql_query("UPDATE " . table_prefix . "planeten set p_defense_gesamt=sternenbasis_defense+abwehr+100 where spiel='".$spiel."'");
-$zeiger = mysql_query("SELECT * FROM " . table_prefix . "schiffe where spiel='".$spiel."' order by aggro desc");
-$schiffanzahl = mysql_num_rows($zeiger);
+$db->execute("UPDATE " . table_prefix . "planeten set p_defense_gesamt=sternenbasis_defense+abwehr+100 where spiel = ?",array($spiel));
+$sqlo2 = "SELECT * FROM " . table_prefix . "schiffe where spiel = ? order by aggro desc";
+$rows02 = $db->execute($sqlo2,array($spiel));
+$schiffanzahl = $rowso2->RecordCount();
 if ($schiffanzahl>=1) {
-    for  ($i=0; $i<$schiffanzahl;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
+    $arrayo2_out = $db->GetArray($sqlo2,array($spiel));
+    foreach ($arrayo2_out as $array) {        
         $shid=$array["id"];
         $besitzer=$array["besitzer"];
         $name=$array["name"];
@@ -37,8 +42,7 @@ if ($schiffanzahl>=1) {
         $masse=$array["masse"];
         $masse_gesamt=$array["masse_gesamt"];
         $bild_gross=$array["bild_gross"];
-        $bild_klein=$array["bild_klein"];
-        $erfahrung=$array["erfahrung"];
+        $bild_klein=$array["bild_klein"];        
         $energetik_stufe=$array["energetik_stufe"];
         $energetik_anzahl=$array["energetik_anzahl"];
         $projektile_stufe=$array["projektile_stufe"];
@@ -51,7 +55,9 @@ if ($schiffanzahl>=1) {
         $techlevel=$array["techlevel"];
         $fertigkeiten=$array["fertigkeiten"];
         $zusatzmodul=$array["zusatzmodul"];
-        if (($energetik_anzahl==0) and ($zusatzmodul==5)) { $energetik_stufe=1; }
+        if (($energetik_anzahl==0) and ($zusatzmodul==5)) { 
+            $energetik_stufe=1;             
+        }
         /////////beschaedigung der waffensysteme anfang
         if ($schaden>50) {
             $prozent = ($schaden-50)*2;
@@ -78,45 +84,47 @@ if ($schiffanzahl>=1) {
         if(($zusatzmodul==1)and($erfahrung<5)){$erfahrung++;}
         $orbitalschild=intval(substr($fertigkeiten,56,1));
         $gemeinsam=0;
-        $zeiger_temp = mysql_query("SELECT count(*) as gemeinsam FROM " . table_prefix . "planeten where x_pos='".$kox."' and y_pos='".$koy."' and besitzer<>".$besitzer." and besitzer>='1' and spiel='".$spiel."'");
-        $array_temp = mysql_fetch_array($zeiger_temp);
-        $gemeinsam=$array_temp["gemeinsam"];
-        if ($orbitalschild==1) { $gemeinsam=0; }
-        if ($gemeinsam>=1) {
-            $zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "planeten where x_pos='".$kox."' and y_pos='".$koy."' and spiel='".$spiel."'");
-            $array2 = mysql_fetch_array($zeiger2);
-            $p_id=$array2["id"];
-            $p_name=$array2["name"];
-            $p_besitzer=$array2["besitzer"];
-            $p_bild=$array2["bild"];
-            $p_klasse=$array2["klasse"];
-            $p_abwehr=$array2["abwehr"];
-            $p_sternenbasis=$array2["sternenbasis"];
-            $p_sternenbasis_defense=$array2["sternenbasis_defense"];
-            $p_defense_gesamt=$array2["p_defense_gesamt"];
-            $native_id=$array2["native_id"];
-            $native_fert=$array2["native_fert"];
-            $native_kol=$array2["native_kol"];
-            $osys_1=$array2["osys_1"];
-            $osys_2=$array2["osys_2"];
-            $osys_3=$array2["osys_3"];
-            $osys_4=$array2["osys_4"];
-            $osys_5=$array2["osys_5"];
-            $osys_6=$array2["osys_6"];
-            if (($beziehung[$besitzer][$p_besitzer]['status']!=3) and ($beziehung[$besitzer][$p_besitzer]['status']!=4) and ($beziehung[$besitzer][$p_besitzer]['status']!=5)) {
-                //Signaturscannerphalanx
-                if(($osys_1==18) or ($osys_2==18) or ($osys_3==18) or ($osys_4==18) or ($osys_5==18)or ($osys_6==18)){
+        $sqlo3 = "SELECT count(*) as gemeinsam FROM " . table_prefix . "planeten where x_pos = ? and y_pos = ? and besitzer<>? and besitzer>=1 and spiel = ?";
+        $gemeinsam = $db->getArray($sqlo3,array($kox,$koy,$besitzer,$spiel));        
+        if ($orbitalschild==1) { 
+            $gemeinsam=0;             
+        }
+        if ($gemeinsam>=1) {     
+            $sqlo4 = "SELECT * FROM " . table_prefix . "planeten WHERE x_pos = ? AND y_pos = ? AND spiel = ?";            
+            $zeiger2 = $db->execute($sqlo4, array($kosx,$koy,$spiel));
+            if ($zeiger2 && !$zeiger2->EOF) {            
+            $array2 = $zeiger2->fields;        
+            $p_id = $array2["id"];
+            $p_name = $array2["name"];
+            $p_besitzer = $array2["besitzer"];
+            $p_bild = $array2["bild"];
+            $p_klasse = $array2["klasse"];
+            $p_abwehr = $array2["abwehr"];
+            $p_sternenbasis = $array2["sternenbasis"];
+            $p_sternenbasis_defense = $array2["sternenbasis_defense"];
+            $p_defense_gesamt = $array2["p_defense_gesamt"];
+            $native_id = $array2["native_id"];
+            $native_fert = $array2["native_fert"];
+            $native_kol = $array2["native_kol"];
+            $osys_1 = $array2["osys_1"];
+            $osys_2 = $array2["osys_2"];
+            $osys_3 = $array2["osys_3"];
+            $osys_4 = $array2["osys_4"];
+            $osys_5 = $array2["osys_5"];
+            $osys_6 = $array2["osys_6"];            
+            if (!in_array($beziehung[$besitzer][$p_besitzer]['status'], [3, 4, 5])) {
+                //Signaturscannerphalanx                
+                if (in_array(18, [$osys_1, $osys_2, $osys_3, $osys_4, $osys_5, $osys_6])) {
                     $planet_rasse=$s_eigenschaften[$p_besitzer]['rasse'];
                     $schiff_rasse=$s_eigenschaften[$besitzer]['rasse'];
                     if (($planet_rasse=="kuatoh")and($schiff_rasse!="kuatoh")and($volk!="unknown")) {
                         $anzahl=0;
-                        $zeiger7 = mysql_query("SELECT count(*) as total FROM " . table_prefix . "konplaene where besitzer='".$p_besitzer."' and spiel='".$spiel."' and klasse_id='".$klasseid."' and rasse='".$volk."'");
-                        $array7 = mysql_fetch_array($zeiger7);
-                        $anzahl=$array7["total"];
+                        $sqlo5 = "SELECT count(*) as total FROM " . table_prefix . "konplaene where besitzer = ? and spiel = ? and klasse_id = ? and rasse = ?";
+                        $anzahl = $db->getOne($sqlo5,array($p_besitzer,$spiel,$klasseid,$volk));                        
                         if ($anzahl>=1) {
                         }else{
-                            $file=daten_dir.$volk."/schiffe.txt";
-                            $fp = fopen($file,"r");
+                            $file=$main_verzeichnis."daten/".$volk."/schiffe.txt";
+                            $fp = fopen("$file","r");
                             if ($fp) {
                                 $zaehler=0;
                                 $schiff = array();
@@ -132,16 +140,15 @@ if ($schiffanzahl>=1) {
                                 if ($schiffwert[1]==$klasseid) {
                                     $schiffwert_laenge=strlen($schiffwert[0])+strlen($schiffwert[1])+strlen($schiffwert[2])+3;
                                     $sonstiges=substr($schiff[$iks],$schiffwert_laenge,strlen($schiff[$iks])-$schiffwert_laenge);
-                                    $zeiger_temp2 = mysql_query("INSERT INTO " . table_prefix . "konplaene (besitzer,spiel,rasse,klasse,klasse_id,techlevel,sonstiges) 
-                                                                                                    values ('".$p_besitzer."', '".$spiel."' ,'".$volk."','".$schiffwert[0]."','".$schiffwert[1]."','".$schiffwert[2]."','".$sonstiges."')");
+                                    $db->execute("INSERT INTO " . table_prefix . "konplaene (besitzer,spiel,rasse,klasse,klasse_id,techlevel,sonstiges) 
+                                                                                     values (?,?,?,?,?,?,?)",array($p_besitzer,$spiel,$volk,$schiffwert[0],$schiffwert[1],$schiffwert[2],$sonstiges));
                                     for($i9=1;$i9<11;$i9++){
                                         if(($beziehung[$p_besitzer][$i9]['status']==5)and($s_eigenschaften[$i9]['rasse']==$planet_rasse)and!($i9==$p_besitzer)){
-                                            $zeiger8 = mysql_query("SELECT count(*) as total8 FROM " . table_prefix . "konplaene where besitzer='".$i9."' and spiel='".$spiel."' and klasse_id='".$klasseid."' and rasse='".$volk."'");
-                                            $array8 = mysql_fetch_array($zeiger7);
-                                            $anzahl=$array8["total"];
+                                            $sqlo6 = "SELECT count(*) as total FROM " . table_prefix . "konplaene where besitzer = ? and spiel = ? and klasse_id = ? and rasse = ?";                                            
+                                            $anzahl=$db->getOne($sqlo6,array($i9,$spiel,$klasseid,$volk));
                                             if ($anzahl==0){
-                                                $zeiger_temp = mysql_query("INSERT INTO " . table_prefix . "konplaene (besitzer,spiel,rasse,klasse,klasse_id,techlevel,sonstiges) 
-                                                                                                               values ('".$i9."','".$spiel."','".$volk_8."','".$schiffwert[0]."','".$schiffwert[1]."','".$schiffwert[2]."','".$sonstiges."')");
+                                            $db->execute("INSERT INTO " . table_prefix . "konplaene (besitzer,spiel,rasse,klasse,klasse_id,techlevel,sonstiges) 
+                                                                                             values (?,?,?,?,?,?,?)",array($i9,$spiel,$volk,$schiffwert[0],$schiffwert[1],$schiffwert[2],$sonstiges));
                                             }
                                         }
                                     }
@@ -242,29 +249,31 @@ if ($schiffanzahl>=1) {
                         }
                     }
                 }
-                if ($schaden>=100) {
-                    if ((@file_exists(extend_dir . "xstats")) and (intval(substr($spiel_extend,2,1))==1)) {
-                        xstats_shipVSPlanet( $spiel, $shid, $besitzer, $kox, $koy, $p_id, $p_besitzer, 1);
-                    }                
-                    $zeiger_temp = mysql_query("DELETE FROM " . table_prefix . "schiffe where id='".$shid."' and besitzer='".$besitzer."'");
-                    $zeiger_temp = mysql_query("DELETE FROM " . table_prefix . "anomalien where art=3 and extra like 's:".$shid.":%'");
-                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug in ('3','4') and zielid='".$shid."'");
-                    /*
-                     * mysql_query("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where (flug='3' or flug='4') and zielid='".$shid."'");
-                     * UPDATE skrupel_schiffe set flug='0',warp='0',zielx='0',ziely='0', zielid='0' where flug in ('3','4') and zielid='1'
-                     */
-                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "planeten set p_defense_gesamt=p_defense_gesamt-".$schaden_2." where id='".$p_id."' and besitzer='".$p_besitzer."'");
+                
+if ($schaden>=100) {                             
+                    $db->execute("DELETE FROM " . table_prefix . "schiffe where id = ? and besitzer = ?",
+                                  array($shid,$besitzer));
+                    $shids = "s:".$shid.":%";
+                    $db->execute("DELETE FROM " . table_prefix . "anomalien where art = '3' and extra like ?",
+                                  array($shids));
+                    $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug in ('3','4') and zielid = ?",
+                                  array($shid));                    
+                    $db->execute("UPDATE " . table_prefix . "planeten set p_defense_gesamt=p_defense_gesamt-? where id = ? and besitzer = ?",
+                                  array($schaden_2,$p_id,$p_besitzer));
                     $schiffevernichtet++;
-                    neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host'][$spielersprache[$besitzer]]['orbitalkampf'][0],array($name,$p_name));
-                    neuigkeiten(1,servername . "bilder/planeten/$p_klasse"."_"."$p_bild.jpg",$p_besitzer,$lang['host'][$spielersprache[$p_besitzer]]['orbitalkampf'][1],array($p_name,$name));
+                    neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langorbital['orbitalkampf']['0'],array($name,$p_name));
+                    neuigkeiten(1,servername . "bilder/planeten/$p_klasse"."_"."$p_bild.jpg",$p_besitzer,$langorbital['orbitalkampf']['1'],array($p_name,$name));
                 }
                 if ((($schaden<100) and ($schaden_2>=$p_defense_gesamt)) or ($p_abwehr==0)) {
-                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "planeten set p_defense_gesamt=p_defense_gesamt-".$schaden_2." where id='".$p_id."' and besitzer='".$p_besitzer."'");
-                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set schaden='".$schaden."',schild='".$schild.-"',projektile='".$projektile."' where id='".$shid."' and besitzer='".$besitzer."'");
-                    neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host'][$spielersprache[$besitzer]]['orbitalkampf'][2],array($name,$p_name));
-                    neuigkeiten(1,servername . "bilder/planeten/$p_klasse"."_"."$p_bild.jpg",$p_besitzer,$lang['host'][$spielersprache[$p_besitzer]]['orbitalkampf'][3],array($name,$p_name));
+                    $db->execute("UPDATE " . table_prefix . "planeten set p_defense_gesamt=p_defense_gesamt-? where id = ? and besitzer = ?",
+                                  array($schaden_2,$p_id,$p_besitzer));
+                    $db->execute("UPDATE " . table_prefix . "schiffe set schaden = ?,schild = ?,projektile = ? where id = ? and besitzer = ?",
+                                  array($schaden,$schild,$projektile,$shid,$besitzer));
+                    neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langorbital['orbitalkampf']['2'],array($name,$p_name));
+                    neuigkeiten(1,servername . "bilder/planeten/$p_klasse"."_"."$p_bild.jpg",$p_besitzer,$langorbital['orbitalkampf']['3'],array($name,$p_name));
                 }
             }
+           }
         }
     }
-}
+}   
