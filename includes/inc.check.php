@@ -5,7 +5,7 @@ $uid = (isset($params['uid']) && !preg_match('/[^0-9A-Za-z\/\.]/',$params['uid']
 
 // Abfrage der Benutzerdaten
 $sql = "SELECT * FROM " . table_prefix . "user WHERE uid = ?";
-$user_result = $db->Execute($sql, array($uid));
+$user_result = $db->execute($sql, array($uid));
 
 if ($user_result && $user_result->RecordCount() == 1) {
     $array = $user_result->FetchRow();
@@ -23,7 +23,7 @@ if ($user_result && $user_result->RecordCount() == 1) {
     $spiel_sql = "SELECT * FROM " . table_prefix . "spiele USE INDEX (sid_spieler_index) 
                   WHERE sid = ? AND ? IN (spieler_1, spieler_2, spieler_3, spieler_4, spieler_5, spieler_6, spieler_7, spieler_8, spieler_9, spieler_10) 
                   ORDER BY sid";
-    $spiel_result = $db->Execute($spiel_sql, array($sid, $spieler_id));
+    $spiel_result = $db->execute($spiel_sql, array($sid, $spieler_id));
 
     if ($spiel_result && $spiel_result->RecordCount() == 1) {
         $array2 = $spiel_result->FetchRow();
