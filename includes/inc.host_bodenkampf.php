@@ -183,31 +183,34 @@ foreach ($array11_out as $array11) {
     }
     if (($verteidiger_kol>=1) or ($verteidiger_leichtebt>=1) or ($verteidiger_schwerebt>=1)) {
         $planetenerobertfehl++;
-        $db->execute("UPDATE " . table_prefix . "planeten set kolonisten='".$verteidiger_kol."',
-                                                              leichtebt='".$verteidiger_leichtebt."', 
-                                                              schwerebt='".$verteidiger_schwerebt."', 
-                                                              kolonisten_spieler='0', 
-                                                              kolonisten_new='0', 
-                                                              leichtebt_new='0', 
-                                                              schwerebt_new='0' 
-                                                              where id='".$pid."'");
+        $sqlu = "UPDATE " . table_prefix . "planeten set kolonisten = ?, 
+                                                         leichtebt = ?, 
+                                                         schwerebt = ?, 
+                                                         kolonisten_spieler = ?, 
+                                                         kolonisten_new = ?, 
+                                                         leichtebt_new = ?, 
+                                                         schwerebt_new = ? 
+                                            where id = ?";
+        $db->execute($sqlu, array($verteidiger_kol,$verteidiger_leichtebt,$verteidiger_schwerebt,0,0,0,0,$pid));
         $datum=time();
         neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$besitzer,$langbkampf['hostbodenkampf']['btruppen1'],array($name));
         neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$kolonisten_spieler,$langbkampf['hostbodenkampf']['btruppen2'],array($name));
     }
     if (($angreifer_kol>=1) or ($angreifer_leichtebt>=1) or ($angreifer_schwerebt>=1)) {
         $planetenerobert++;
-        $db->execute("UPDATE " . table_prefix . "planeten set besitzer='".$kolonisten_spieler."', 
-                                                              kolonisten='".$angreifer_kol."', 
-                                                              leichtebt='".$angreifer_leichtebt."', 
-                                                              schwerebt='".$angreifer_schwerebt."', 
-                                                              kolonisten_spieler='0', 
-                                                              kolonisten_new='0', 
-                                                              leichtebt_new='0', 
-                                                              schwerebt_new='0' 
-                                                              where id='".$pid."'");
+        $sqlu = "UPDATE " . table_prefix . "planeten set besitzer = ?, 
+                                                         kolonisten = ?, 
+                                                         leichtebt = ?, 
+                                                         schwerebt = ?, 
+                                                         kolonisten_spieler = ?, 
+                                                         kolonisten_new = ?, 
+                                                         leichtebt_new = ?, 
+                                                         schwerebt_new = ? 
+                                            where id = ?";
+        $db->execute($sqlu, array($kolonisten_spieler,$angreifer_kol,$angreifer_leichtebt,$angreifer_schwerebt,0,0,0,0,$pid));
         if ($sternenbasis_id>=1) { 
-                                    $db->execute("UPDATE " . table_prefix . "sternenbasen set besitzer='".$kolonisten_spieler."' where id='".$sternenbasis_id."'");                                     
+            $sqlu = "UPDATE " . table_prefix . "sternenbasen set besitzer = ? where id = ?";
+            $db->execute($sqlu, array($kolonisten_spieler,$sternenbasis_id));
         }
         $datum=time();
         $stat_kol_erobert[$kolonisten_spieler]++;
@@ -218,18 +221,21 @@ foreach ($array11_out as $array11) {
         $datum=time();
         neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$besitzer,$langbkampf['hostbodenkampf']['btruppen3'],array($name));
         neuigkeiten(1,servername . "images/planeten/$p_klasse"."_"."$p_bild.jpg",$kolonisten_spieler,$langbkampf['hostbodenkampf']['btruppen2'],array($name));
-        $db->execute("UPDATE " . table_prefix . "planeten set leichtebt='0', 
-                                                                             schwerebt='0', 
-                                                                             kolonisten='0', 
-                                                                             besitzer='0', 
-                                                                             auto_minen='0', 
-                                                                             auto_fabriken='0', 
-                                                                             abwehr='0', 
-                                                                             auto_abwehr='0', 
-                                                                             auto_vorrat='0', 
-                                                                             logbuch='' where id='".$pid."'");
+        $sqlu = "UPDATE " . table_prefix . "planeten set leichtebt = ?, 
+                                                         schwerebt = ?, 
+                                                         kolonisten = ?, 
+                                                         besitzer = ?, 
+                                                         auto_minen = ?, 
+                                                         auto_fabriken = ?, 
+                                                         abwehr = ?, 
+                                                         auto_abwehr = ?, 
+                                                         auto_vorrat = ?, 
+                                                         logbuch = ? 
+                                            where id = ?";
+        $db->execute($sqlu,array(0,0,0,0,0,0,0,0,0,'',$pid));
         if ($sternenbasis_id>=1) {
-            $zeiger_temp = $db->execute("UPDATE " . table_prefix . "sternenbasen set besitzer='0' where id='".$sternenbasis_id."'");
+            $sqlu = "UPDATE " . table_prefix . "sternenbasen set besitzer = ? where id = ?";
+            $db->execute($sql, array(0,$sternenbasis_id));
         }
     }
     ////////////////////////////////////////////////////////////////
