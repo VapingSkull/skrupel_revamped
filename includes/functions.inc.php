@@ -110,20 +110,33 @@ function get_phrasen($language, $page) {
     return $array;
 }
 
-function cryptPasswd($passwd, $salt = '')
+/*function cryptPasswd($passwd, $salt = '')
 {
     if (strlen($salt) < 16) {
         $salt = zufallstring(16, WITH_NUMBERS | WITH_SPECIAL_CHARACTERS);
     }
-    $passwd = hash('sha256', $passwd.$salt).':'.$salt;
-    
+    $passwd = hash('sha256', $passwd.$salt).':'.$salt;    
     return $passwd;
 }
-
-
+*/
+/*
+ * Umgeschriebene Function
+ */
+function cryptPasswd(string $passwd, string $salt = ''): string
+{
+    if (strlen($salt) < 16) {
+        $salt = zufallstring(16, WITH_NUMBERS | WITH_SPECIAL_CHARACTERS);
+    }
+    
+    // Der Passwort-Hash wird generiert und mit dem Salt kombiniert
+    $hashedPasswd = hash('sha256', $passwd . $salt) . ':' . $salt;
+    
+    return $hashedPasswd;
+}
+/*
 if (!defined('ONLY_LETTERS')) { define('ONLY_LETTERS',0); }
 if (!defined('WITH_NUMBERS')) { define('WITH_NUMBERS', 1); }
-if (!defined('WITH_SPECIAL_CHARACTERS')) { define('WITH_SPECIAL_CHARACTERS', 2); }
+if (!defined('WITH_SPECIAL_CHARACTERS')) { define('WITH_SPECIAL_CHARACTERS', 2); }*/
 /**
  * Erzeugt einen Zufallsstring
  *
@@ -131,6 +144,7 @@ if (!defined('WITH_SPECIAL_CHARACTERS')) { define('WITH_SPECIAL_CHARACTERS', 2);
  *@autor finke
  *@return string Zufalsstring
  */
+/*
 function zufallstring($size = 20, $url = ONLY_LETTERS){
     mt_srand();
     $pool = 'abcdefghijklmnopqrstuvwxyz';
@@ -147,7 +161,34 @@ function zufallstring($size = 20, $url = ONLY_LETTERS){
         $salt .= $pool[mt_rand(0, $pool_size - 1)];
     }
     return $salt;
+}*/
+
+if (!defined('ONLY_LETTERS')) { define('ONLY_LETTERS', 0); }
+if (!defined('WITH_NUMBERS')) { define('WITH_NUMBERS', 1); }
+if (!defined('WITH_SPECIAL_CHARACTERS')) { define('WITH_SPECIAL_CHARACTERS', 2); }
+
+function zufallstring(int $size = 20, int $url = ONLY_LETTERS): string
+{
+    mt_srand();
+    $pool = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    if ($url & WITH_SPECIAL_CHARACTERS) {
+        $pool .= ',.-;:_#+*~!$%&/()=?';
+    }
+    if ($url & WITH_NUMBERS) {
+        $pool .= '0123456789';
+    }
+
+    $pool_size = strlen($pool);
+    $salt = '';
+
+    for ($i = 0; $i < $size; $i++) {
+        $salt .= $pool[mt_rand(0, $pool_size - 1)];
+    }
+
+    return $salt;
 }
+
 function neuigkeit($art, $icon, $spieler_id, $inhalt)
 {
     global $db, $spiel;
@@ -169,7 +210,7 @@ function neuigkeit($art, $icon, $spieler_id, $inhalt)
                                                            '1')");
 }
 
-function nick($userid)
+function nick(int $userid): string
 {
     global $db;
     $nickname = $db->getOne("SELECT nick FROM " . table_prefix ."user where id = '". intval($userid) ."' order by id");
@@ -389,7 +430,7 @@ function platz($wert) {
 //
 function beam_das($id_a_p,$typ_a_p,$id_b_p,$typ_b_p,$was_p,$wieviel_p)
 {
-    global $db,$skrupel_planeten,$skrupel_schiffe,$debug_beamen;
+    global $db,$debug_beamen;
     if($debug_beamen)
     {
         print "ID von A: $id_a_p<br>\n";
@@ -402,25 +443,34 @@ function beam_das($id_a_p,$typ_a_p,$id_b_p,$typ_b_p,$was_p,$wieviel_p)
     // Diesen Trivialfall loesen wir ohne Datenbank-Zugriff
     if(!$wieviel_p || ($wieviel_p==0)) { return 0; }
     // Datensatz von A holen
-    if($typ_a_p=="p") { $table_a=$skrupel_planeten; }
-    else { $table_a=$skrupel_schiffe; }
+    if($typ_a_p=="p") { 
+        $table_a = table_prefix."planeten";         
+    } else { 
+        $table_a= table_preix . "schiffe";         
+    }
     if(!($query_ret=$db->execute("SELECT * FROM " . $table_a . " WHERE id='" . $id_a_p . "' ")))
     { return -1; }
-    if($query_ret->RecordCount() !=1) { return -1; }
+    if($query_ret->RecordCount() !=1) { 
+        return -1;         
+    }
     $array_a=$db->getArray($query_ret);
     // Datensatz von B holen
-    if($typ_b_p=="p") { $table_b=$skrupel_planeten; }
-    else { $table_b=$skrupel_schiffe; }
-    if(!($query_ret=$db->execute("SELECT * FROM " . $table_b . " WHERE id='" . $id_b_p . "' ")))
-    { return -1; }
+    if($typ_b_p=="p") { 
+        $table_b = table_prefix ."planeten";         
+    } else { 
+        $table_b = table_prefix . "schiffe";         
+    }
+    if(!($query_ret=$db->execute("SELECT * FROM " . $table_b . " WHERE id='" . $id_b_p . "' "))) { 
+        return -1;         
+    }
     if($query_ret->RecordCount() !=1) { return -2; }
     $array_b=$db->getArray($query_ret);
     // Variablenfummelei: die Parameter sind die Spaltenbezeichnungen fuer
     //          die Planetentabelle
     //        fuer Schiffe muss umgesetzt werden.
-    if($typ_a_p=="p") { $was_auf_a=$was_p; }
-    else
-    {
+    if($typ_a_p=="p") { 
+        $was_auf_a=$was_p; 
+    } else {
       switch($was_p)
       {
       case "lemin":  $was_auf_a="lemin";
@@ -439,9 +489,9 @@ function beam_das($id_a_p,$typ_a_p,$id_b_p,$typ_b_p,$was_p,$wieviel_p)
       break;
       }
     }
-    if($typ_b_p=="p") { $was_auf_b=$was_p; }
-    else
-    {
+    if($typ_b_p=="p") { 
+        $was_auf_b=$was_p;         
+    } else {
       switch($was_p)
       {
       case "lemin":  $was_auf_b="lemin";
@@ -467,9 +517,13 @@ function beam_das($id_a_p,$typ_a_p,$id_b_p,$typ_b_p,$was_p,$wieviel_p)
     {
         $wieviel=$array_a[$was_auf_a];
     }
-    if($debug_beamen) { print "wieviel: $wieviel<br>\n"; }
+    if($debug_beamen) { 
+        print "wieviel: $wieviel<br>\n";         
+    }
     // Sinnlos, ohne was Beambares weiter zu machen
-    if(!$wieviel || ($wieviel==0)) { return 0; }
+    if(!$wieviel || ($wieviel==0)) { 
+        return 0;         
+    }
     // Hier vielleicht eine Warnung ausgeben
     // Ueberpruefen, ob $was_p noch in B rein passt
     // ggf. Menge anpassen
@@ -489,13 +543,10 @@ function beam_das($id_a_p,$typ_a_p,$id_b_p,$typ_b_p,$was_p,$wieviel_p)
     }
     elseif($was_p=="cantox")
     { // Nix machen, Cantox passt immer
-    }
-    else
-    {
+    } else {
         $gesamtfracht=0;
         // Cantox wiegt nix, Leute muss man anders behandeln
-        foreach(array("fracht_min1","fracht_min2","fracht_min3",
-                  "fracht_vorrat")
+        foreach(array("fracht_min1","fracht_min2","fracht_min3","fracht_vorrat")
             as $fracht)
         { $gesamtfracht+=$array_b[$fracht]; }
         $gesamtfracht+=round($array_b["fracht_leute"]/100);
@@ -539,18 +590,20 @@ function beam_das($id_a_p,$typ_a_p,$id_b_p,$typ_b_p,$was_p,$wieviel_p)
         }else{
         $query_str= "UPDATE " . $table_b . " SET " . $was_auf_b . "=" . $was_auf_b . "+" . $wieviel. " WHERE id='" . $id_b_p . "'";
         }
-    if($debug_beamen)
-    { print "$query_str<br>\n"; }
-    else
-    { $db->execute($query_str); }
-
+    if($debug_beamen){ 
+        print "$query_str<br>\n";         
+    } else { 
+        $db->execute($query_str);         
+    }
     return $wieviel;
 }
+
 // Beamen von Schiff nach Planet
 function beam_s_p($id_a_p,$id_b_p,$was_p,$wieviel_p)
 {
     return beam_das($id_a_p,"s",$id_b_p,"p",$was_p,$wieviel_p);
 }
+
 // Beamen von Planet nach Schiff
 function beam_p_s($id_a_p,$id_b_p,$was_p,$wieviel_p)
 {
