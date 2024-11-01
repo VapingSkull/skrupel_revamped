@@ -3,21 +3,14 @@
  * Phrasen einlesen
  */
 $langraum = get_phrasen('de','hostraumkampf');
-
-$zeiger = mysql_query("SELECT * FROM " . table_prefix . "schiffe where spiel='".$spiel."' order by aggro desc");
-$schiffanzahl = mysql_num_rows($zeiger);
+$sql = "SELECT * FROM skrupel_schiffe where spiel='".$spiel."' and id in (SELECT id FROM skrupel_schiffe where spiel='".$spiel."' order by aggro DESC) order by spiel";
+$rows = $db->execute($sql);
+$schiffanzahl = $rows->RecordCount();
 $checkstring=array();
 if ($schiffanzahl>=1) {
-    for ($i=0; $i<$schiffanzahl;$i++) {
-        $ok = mysql_data_seek($zeiger,$i);
-        $array = mysql_fetch_array($zeiger);
+    $array_out = $rows->getArray();
+    foreach ($array_out as $array) {        
         $shid=$array["id"];
-        //daten werden neu eingelesen, leider nicht ide beste loesung aktuell
-        $fighting_ship_query = @mysql_query("SELECT * FROM " . table_prefix . "schiffe where spiel='".$spiel."' and id='".$shid."' order by spiel");
-        if (@mysql_num_rows($fighting_ship_query) == 0) {
-            continue;
-        }
-        $array = @mysql_fetch_array($fighting_ship_query); 
         $besitzer=$array["besitzer"];
         $name=$array["name"];
         $status=$array["status"];
@@ -92,14 +85,12 @@ if ($schiffanzahl>=1) {
         $kamikaze_schaden=intval(substr($fertigkeiten,63,1))*100;
         if (!in_array($shid,$checkstring)) {
             $gemeinsam=0;
-            $zeiger_temp = mysql_query("SELECT count(*) as gemeinsam FROM " . table_prefix . "schiffe where kox='".$kox."' and koy='".$koy."' and id<>".$shid." and besitzer<>".$besitzer." and spiel='".$spiel."'");
-            $array_temp = mysql_fetch_array($zeiger_temp);
-            $gemeinsam=$array_temp["gemeinsam"];
+            $zeiger_temp = "SELECT count(*) as gemeinsam FROM " . table_prefix . "schiffe where kox='".$kox."' and koy='".$koy."' and id<>".$shid." and besitzer<>".$besitzer." and spiel='".$spiel."'";            
+            $gemeinsam=$db->getOne($zeiger_temp);
+            $zeiger2 = "SELECT * FROM " . table_prefix . "schiffe where kox='".$kox."' and koy='".$koy."' and id<>".$shid." and besitzer<>".$besitzer." and spiel='".$spiel."' order by aggro desc";            
             if ($gemeinsam>=1) {
-                $zeiger2 = mysql_query("SELECT * FROM " . table_prefix . "schiffe where kox='".$kox."' and koy='".$koy."' and id<>".$shid." and besitzer<>".$besitzer." and spiel='".$spiel."' order by aggro desc");
-                for ($ihj=0; $ihj<$gemeinsam;$ihj++) {
-                    $ok2 = mysql_data_seek($zeiger2,$ihj);
-                    $array2 = mysql_fetch_array($zeiger2);
+                $array2_out = $db->getArray($zeiger2);
+                foreach ($array_out2 as $array2) {                    
                     $shid_2=$array2["id"];
                     $besitzer_2=$array2["besitzer"];
                     $name_2=$array2["name"];
@@ -166,13 +157,14 @@ if ($schiffanzahl>=1) {
                             $koy_new=max(0,min($umfang,$koy+round($abstand*sin($alpha))));
                             $kox_new=max(0,min($umfang,$kox+round($abstand*cos($alpha))));
                             $sektork=sektor($kox_new,$koy_new);
-                            $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set status=1,kox=$kox_new, koy=$koy_new where id=$shid and spiel=$spiel");
+                            $db->execute("UPDATE " . table_prefix . "schiffe set status=1,kox = ?, koy = ? where id = ? and spiel = ?",array($kox_new,$koy_new,$shid,$spiel));
                             neuigkeiten(2,"../daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['10'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
                             $alpha=(double)(6.28318530718*mt_rand(0,$mt_randmax)/$mt_randmax);
                             $koy_new=max(0,min($umfang,$koy+round($abstand*sin($alpha))));
                             $kox_new=max(0,min($umfang,$kox+round($abstand*cos($alpha))));
                             $sektork=sektor($kox_new,$koy_new);
-                            $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set status='1',kox='".$kox_new."', koy='".$koy_new."' where id='".$shid_2."' and spiel='".$spiel."'");
+                            $db->execute("UPDATE " . table_prefix . "schiffe set status='1',kox = ?, koy = ? where id = ? and spiel = ?",
+                                                                     array($kox_new,$koy_new,$shid_2,$spiel));
                             neuigkeiten(2,"../daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['10'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
                             $checkstring[]=$shid_2;
                             $checkstring[]=$shid;
@@ -242,18 +234,17 @@ if ($schiffanzahl>=1) {
                             $besitzer_rasse=$s_eigenschaften[$besitzer]['rasse'];
                             if (($klau==1) and ($besitzer_rasse!=$volk_2) and ($besitzer_rasse==$volk) ) {
                                 //////////////////////////////////////////////////////////////////////////////////Flottenkuatoh
-                                $zeiger8 = mysql_query("SELECT * FROM " . table_prefix . "schiffe where besitzer<>".$besitzer." and spiel='".$spiel."' and kox='".$kox."' and koy='".$koy."' and volk<>'unknown'");
-                                $schiffanzahl8 = mysql_num_rows($zeiger8);
+                                $zeiger8 = "SELECT klasseid,volk FROM " . table_prefix . "schiffe where besitzer<>".$besitzer." and spiel='".$spiel."' and kox='".$kox."' and koy='".$koy."' and volk<>'unknown'";
+                                $rows8 = $db->execute($zeiger8);
+                                $schiffanzahl8 = $rows8->RecordCount();
                                 if($schiffanzahl8>=1){
-                                    for($i8=0;$i8<$schiffanzahl8;$i8++){
-                                        $ok8 = mysql_data_seek($zeiger8,$i8);
-                                        $array7 = mysql_fetch_array($zeiger8);
+                                    $array7_out = $rows8->getArray();
+                                    foreach($array7_out as $array7){                                        
                                         $klasseid_8=$array7["klasseid"];
                                         $volk_8=$array7["volk"];
                                         $anzahl=0;
-                                        $zeiger7 = mysql_query("SELECT count(*) as total FROM " . table_prefix . "konplaene where besitzer='".$besitzer."' and spiel='".$spiel."' and klasse_id='".$klasseid_8."' and rasse='".$volk_8."'");
-                                        $array7 = mysql_fetch_array($zeiger7);
-                                        $anzahl=$array7["total"];
+                                        $zeiger7 = "SELECT count(*) as total FROM " . table_prefix . "konplaene where besitzer='".$besitzer."' and spiel='".$spiel."' and klasse_id='".$klasseid_8."' and rasse='".$volk_8."'";
+                                        $anzahl=$db->getOne($zeiger7);
                                         if ($anzahl>=1) {} else {
                                             $file=daten_dir.$volk_8."/schiffe.txt";
                                             $fp = fopen("$file","r");
@@ -272,21 +263,20 @@ if ($schiffanzahl>=1) {
                                                 if ($schiffwert[1]==$klasseid_8) {
                                                     $schiffwert_laenge=strlen($schiffwert[0])+strlen($schiffwert[1])+strlen($schiffwert[2])+3;
                                                     $sonstiges=substr($schiff[$iks],$schiffwert_laenge,strlen($schiff[$iks])-$schiffwert_laenge);
-                                                    $zeiger_temp = mysql_query("INSERT INTO " . table_prefix . "konplaene (besitzer,spiel,rasse,klasse,klasse_id,techlevel,sonstiges) values 
-                                                                                                                          ('".$besitzer."','".$spiel."','".$volk_8."','".$schiffwert[0]."','".$schiffwert[1]."','".$schiffwert[2]."','".$sonstiges."')");
-                                                    ///////////////////////////////////////////////////////Anfang Allianzkuatoh
+                                                    $db->execute("INSERT INTO " . table_prefix . "konplaene (besitzer,spiel,rasse,klasse,klasse_id,techlevel,sonstiges) values (?,?,?,?,?,?,?)", 
+                                                                                                  array($besitzer,$spiel,$volk_8,$schiffwert[0],$schiffwert[1],$schiffwert[2],$sonstiges));
+                                                    ///////////////////////////////////////////////////////Anfang Allianz
                                                     for($i9=1;$i9<11;$i9++){
                                                         if(($beziehung[$besitzer][$i9]['status']==5)and($s_eigenschaften[$i9]['rasse']==$volk)and!($i9==$besitzer)){
-                                                            $zeiger8 = mysql_query("SELECT count(*) as total8 FROM " . table_prefix . "konplaene where besitzer='".$i9."' and spiel='".$spiel."' and klasse_id='".$klasseid_8."' and rasse='".$volk_8."'");
-                                                            $array8 = mysql_fetch_array($zeiger7);
-                                                            $anzahl=$array8["total"];
+                                                            $zeiger8 = "SELECT count(*) as total FROM " . table_prefix . "konplaene where besitzer='".$i9."' and spiel='".$spiel."' and klasse_id='".$klasseid_8."' and rasse='".$volk_8."'";                                                            
+                                                            $anzahl=$db->getOne($zeiger8);
                                                             if ($anzahl==0){
-                                                                $zeiger_temp = mysql_query("INSERT INTO " . table_prefix . "konplaene (besitzer,spiel,rasse,klasse,klasse_id,techlevel,sonstiges) values 
-                                                                                                                                      ('".$i9."','".$spiel."','".$volk_8."','".$schiffwert[0]."','".$schiffwert[1]."','".$schiffwert[2]."','".$sonstiges."')");
+                                                                $db->execute("INSERT INTO " . table_prefix . "konplaene (besitzer,spiel,rasse,klasse,klasse_id,techlevel,sonstiges) values (?,?,?,?,?,?,?)",
+                                                                                                              array($i9,$spiel,$volk_8,$schiffwert[0],$schiffwert[1],$schiffwert[2],$sonstiges));
                                                             }
                                                         }
                                                     }
-                                                    ///////////////////////////////////////////////////////Ende Allianzkuatoh
+                                                    ///////////////////////////////////////////////////////Ende Allianz
                                                 }
                                             }
                                         }
@@ -297,19 +287,20 @@ if ($schiffanzahl>=1) {
                             $besitzer_2_rasse=$s_eigenschaften[$besitzer_2]['rasse'];
                             if (($klau2==1) and ($besitzer_2_rasse!=$volk) and ($besitzer_2_rasse==$volk_2) ) {
                                 //////////////////////////////////////////////////////////////////////////////////Flottenkuatoh
-                                $zeiger8 = mysql_query("SELECT * FROM " . table_prefix . "schiffe where besitzer<>".$besitzer_2." and spiel='".$spiel."' and kox='".$kox."' and koy='".$koy."' and volk<>'unknown'");
-                                $schiffanzahl8 = mysql_num_rows($zeiger8);
+                                $sql = "SELECT * FROM " . table_prefix . "schiffe use index (koordbesitzer) where besitzer<>".$besitzer_2." and spiel='".$spiel."' and kox='".$kox."' and koy='".$koy."' and volk<>'unknown'";
+                                $rows80 = $db->execute($sql);
+                                $schiffanzahl8 = $rows8->RecordCount();
                                 if($schiffanzahl8>=1){
-                                    for($i8=0;$i8<$schiffanzahl8;$i8++){
-                                        $ok8 = mysql_data_seek($zeiger8,$i8);
-                                        $array7 = mysql_fetch_array($zeiger8);
+                                    $array80_out = $rows80->getArray();
+                                    foreach($array80_out as $array7){                                        
                                         $klasseid_8=$array7["klasseid"];
                                         $volk_8=$array7["volk"];
                                         $anzahl=0;
-                                        $zeiger7 = mysql_query("SELECT count(*) as total FROM " . table_prefix . "konplaene where besitzer='".$besitzer_2."' and spiel='".$spiel."' and klasse_id='".$klasseid_8."' and rasse='".$volk_8."'");
-                                        $array7 = mysql_fetch_array($zeiger7);
-                                        $anzahl=$array7["total"];
-                                        if ($anzahl>=1) {} else {
+                                        $anzahl_sql = "SELECT count(*) as total FROM " . table_prefix . "konplaene where besitzer='".$besitzer_2."' and spiel='".$spiel."' and klasse_id='".$klasseid_8."' and rasse='".$volk_8."'";                                        
+                                        $anzahl=$db->getOne($anzahl_sql);
+                                        if ($anzahl>=1) {
+                                            
+                                        } else {
                                             $file=daten_dir.$volk_8."/schiffe.txt";
                                             $fp = fopen("$file","r");
                                             if ($fp) {
@@ -327,23 +318,22 @@ if ($schiffanzahl>=1) {
                                                 if ($schiffwert[1]==$klasseid_8) {
                                                     $schiffwert_laenge=strlen($schiffwert[0])+strlen($schiffwert[1])+strlen($schiffwert[2])+3;
                                                     $sonstiges=substr($schiff[$iks],$schiffwert_laenge,strlen($schiff[$iks])-$schiffwert_laenge);
-                                                    $zeiger_temp = mysql_query("INSERT INTO " . table_prefix . "konplaene (besitzer,spiel,rasse,klasse,klasse_id,techlevel,sonstiges) values 
-                                                                                                                          ('".$besitzer_2."','".$spiel."','".$volk_8."','".$schiffwert[0]."','".$schiffwert[1]."','".$schiffwert[2]."','".$sonstiges."')");
-                                                    ///////////////////////////////////////////////////////Anfang Allianzkuatoh
+                                                    $db->execute("INSERT INTO " . table_prefix . "konplaene (besitzer,spiel,rasse,klasse,klasse_id,techlevel,sonstiges) values (?,?,?,?,?,?,?)",
+                                                                                                  array($besitzer_2,$spiel,$volk_8,$schiffwert[0],$schiffwert[1],$schiffwert[2],$sonstiges));
+                                                    ///////////////////////////////////////////////////////Anfang Allianz
                                                     for($i9=1;$i9<11;$i9++){
                                                         if(($beziehung[$besitzer_2][$i9]['status']==5) and
                                                             ($s_eigenschaften[$i9]['rasse']==$volk_2) and!
                                                             ($i9==$besitzer_2)){
-                                                            $zeiger8 = mysql_query("SELECT count(*) as total8 FROM " . table_prefix . "konplaene where besitzer='".$i9."' and spiel='".$spiel."' and klasse_id='".$klasseid_8."' and rasse='".$volk_8."'");
-                                                            $array8 = mysql_fetch_array($zeiger7);
-                                                            $anzahl=$array8["total"];
+                                                            $anzahl_sql90 = "SELECT count(*) as total FROM " . table_prefix . "konplaene where besitzer='".$i9."' and spiel='".$spiel."' and klasse_id='".$klasseid_8."' and rasse='".$volk_8."'";                                                            
+                                                            $anzahl=$db->getOne($anzahl_sql90);
                                                             if ($anzahl==0){
-                                                                $zeiger_temp = mysql_query("INSERT INTO " . table_prefix . "konplaene (besitzer,spiel,rasse,klasse,klasse_id,techlevel,sonstiges) values 
-                                                                                                                                      ('".$i9."','".$spiel."','".$volk_8."','".$schiffwert[0]."','".$schiffwert[1]."','".$schiffwert[2]."','".$sonstiges."')");
+                                                                $db->execute("INSERT INTO " . table_prefix . "konplaene (besitzer,spiel,rasse,klasse,klasse_id,techlevel,sonstiges) values (?,?,?,?,?,?,?)",
+                                                                                                              array($i9,$spiel,$volk_8,$schiffwert[0],$schiffwert[1],$schiffwert[2],$sonstiges));
                                                             }
                                                         }
                                                     }
-                                                    ///////////////////////////////////////////////////////Ende Allianzkuatoh
+                                                    ///////////////////////////////////////////////////////Ende Allianz
                                                 }
                                             }
                                         }
@@ -361,9 +351,13 @@ if ($schiffanzahl>=1) {
                                 if ($temp<=$luck) {
                                     $checkstring[]=$shid_2;
                                     $kampf_findet_statt=0;
-                                    $zeiger_temp = mysql_query("DELETE FROM " . table_prefix . "schiffe where id='".$shid_2."' and besitzer='".$besitzer_2."'");
-                                    $zeiger_temp = mysql_query("DELETE FROM " . table_prefix . "anomalien where art=3 and extra like 's:".$shid_2.":%'");
-                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set flug=0,warp=0,zielx=0,ziely=0,zielid=0 where flug in ('3','4') and zielid='".$shid_2."'");
+                                    $db->execute("DELETE FROM " . table_prefix . "schiffe where id = ? and besitzer = ?",
+                                                                                  array($shid_2,$besitzer_2));
+                                    $shid_2s = "s:".$shid_2.":%";
+                                    $db->execute("DELETE FROM " . table_prefix . "anomalien where art = '3' and extra like ?",
+                                                                                                array($shid_2s));
+                                    $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug in ('3','4') and zielid = ?",
+                                                                             array($shid2));
                                     $schiffevernichtet++;
                                     $stat_schlacht_sieg[$besitzer]++;
                                     neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['0'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
@@ -376,9 +370,13 @@ if ($schiffanzahl>=1) {
                                 if ($temp<=$luck) {
                                     $checkstring[]=$shid;
                                     $kampf_findet_statt=0;
-                                    $zeiger_temp = mysql_query("DELETE FROM " . table_prefix . "schiffe where id='".$shid."' and besitzer='".$besitzer."'");
-                                    $zeiger_temp = mysql_query("DELETE FROM " . table_prefix . "anomalien where art=3 and extra like 's:".$shid.":%'");
-                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set flug=0,warp=0,zielx=0,ziely=0,zielid=0 where flug in ('3','4') and zielid='".$shid."'");
+                                    $db->execute("DELETE FROM " . table_prefix . "schiffe where id = ? and besitzer = ?",
+                                                                                  array($shid,$besitzer));
+                                    $shids = "s:".$shid_2.":%";
+                                    $db->execute("DELETE FROM " . table_prefix . "anomalien where art = '3' and extra like ?",
+                                                                                  array($shids));
+                                    $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug in ('3','4') and zielid = ?",
+                                                                             array($shid));
                                     $schiffevernichtet++;
                                     $stat_schlacht_sieg[$besitzer_2]++;
                                     neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['0'],array($name,$sektork,$spielerfarbe[$besitzer],$name_2));
@@ -404,29 +402,32 @@ if ($schiffanzahl>=1) {
                                 $freunde=0;
                                 $maxunterhalb=round($maxunter/2);
                                 $mintechlevel=$techlevel-2;if ($mintechlevel<1) {$mintechlevel=1;}
-                                $zeiger_temp = mysql_query("SELECT count(*) as freunde FROM " . table_prefix . "schiffe where (energetik_anzahl>=".$maxunterhalb." or projektile_anzahl>=".$maxunterhalb." or hanger_anzahl>=".$maxunterhalb.") and techlevel>=".$mintechlevel." and kox='".$kox."' and koy='".$koy."' and besitzer='".$besitzer."' and spiel='".$spiel."'");
-                                $array_temp = mysql_fetch_array($zeiger_temp);
-                                $freunde=$array_temp["freunde"];
+                                $sql_freunde = "SELECT count(*) as freunde FROM " . table_prefix . "schiffe where (energetik_anzahl>=".$maxunterhalb." or projektile_anzahl>=".$maxunterhalb." or hanger_anzahl>=".$maxunterhalb.") and techlevel>=".$mintechlevel." and kox='".$kox."' and koy='".$koy."' and besitzer='".$besitzer."' and spiel='".$spiel."'";
+                                $freunde=$db->getOne($sql_freunde);
                                 if ($freunde>$maxunter) {$freunde=$maxunter;}
                                 $feinde=0;
                                 $maxunterhalb_2=round($maxunter_2/2);
-                                $mintechlevel_2=$techlevel_2-2;if ($mintechlevel_2<1) {$mintechlevel_2=1;}
-                                $zeiger_temp = mysql_query("SELECT count(*) as feinde FROM " . table_prefix . "schiffe where (energetik_anzahl>=".$maxunterhalb_2." or projektile_anzahl>=".$maxunterhalb_2." or hanger_anzahl>=".$maxunterhalb_2.") and techlevel>=".$mintechlevel_2." and kox='".$kox."' and koy='".$koy."' and besitzer='".$besitzer_2."' and spiel='".$spiel."'");
-                                $array_temp = mysql_fetch_array($zeiger_temp);
-                                $feinde=$array_temp["feinde"];
+                                $mintechlevel_2=$techlevel_2-2;
+                                if ($mintechlevel_2<1) { 
+                                    $mintechlevel_2=1;                                    
+                                }
+                                $sql_feinde = "SELECT count(*) as feinde FROM " . table_prefix . "schiffe where (energetik_anzahl>=".$maxunterhalb_2." or projektile_anzahl>=".$maxunterhalb_2." or hanger_anzahl>=".$maxunterhalb_2.") and techlevel>=".$mintechlevel_2." and kox='".$kox."' and koy='".$koy."' and besitzer='".$besitzer_2."' and spiel='".$spiel."'";
+                                $feinde=$db->getOne($sql_feinde);
                                 if ($feinde>$maxunter_2) {$feinde=$maxunter_2;}
                                 $freunde=$freunde+$erfahrung;
                                 $feinde=$feinde+$erfahrung_2;
                                 $gemeinsamm=0;
-                                $zeiger_temp33 = mysql_query("SELECT count(*) as gemeinsamm FROM " . table_prefix . "schiffe where kox='".$kox."' and koy='".$koy."' and id<>".$shid." and besitzer='".$besitzer."' and fertigkeiten like '___________________________________________________________1%' and spiel='".$spiel."'");
-                                $array_temp33 = mysql_fetch_array($zeiger_temp33);
-                                $gemeinsamm=$array_temp33["gemeinsamm"];
-                                if ($gemeinsamm>=1) { $freunde++; }
+                                $sql_gemeinsam = "SELECT count(*) as gemeinsamm FROM " . table_prefix . "schiffe where kox='".$kox."' and koy='".$koy."' and id<>".$shid." and besitzer='".$besitzer."' and fertigkeiten like '___________________________________________________________1%' and spiel='".$spiel."'";
+                                $gemeinsamm = $db->getOne($sql_gemeinsam);
+                                if ($gemeinsamm>=1) { 
+                                    $freunde++;                                     
+                                }
                                 $gemeinsamm=0;
-                                $zeiger_temp33 = mysql_query("SELECT count(*) as gemeinsamm FROM " . table_prefix . "schiffe where kox='".$kox."' and koy='".$koy."' and id<>".$shid_2." and besitzer='".$besitzer_2."' and fertigkeiten like '___________________________________________________________1%' and spiel='".$spiel."'");
-                                $array_temp33 = mysql_fetch_array($zeiger_temp33);
-                                $gemeinsamm=$array_temp33["gemeinsamm"];
-                                if ($gemeinsamm>=1) { $feinde++; }
+                                $sql_gemeinsam = "SELECT count(*) as gemeinsamm FROM " . table_prefix . "schiffe where kox='".$kox."' and koy='".$koy."' and id<>".$shid_2." and besitzer='".$besitzer_2."' and fertigkeiten like '___________________________________________________________1%' and spiel='".$spiel."'";
+                                $gemeinsamm=$db->getOne($sql_gemeinsam);
+                                if ($gemeinsamm>=1) { 
+                                    $feinde++;                                     
+                                }
                                 $waffenlos=0;
                                 if (($energetik_anzahl==0) and ($energetik_anzahl_2==0) and ($projektile_anzahl==0) and ($projektile_anzahl_2==0) and ($hangar_anzahl==0) and ($hangar_anzahl_2==0)) {
                                     $waffenlos=1;
@@ -447,12 +448,14 @@ if ($schiffanzahl>=1) {
                                     $daempfer_an2 = false;
                                     if($daempfer_fert>=1 && $spezialmission==71 && $rennurbin>=round($masse_2/100*$daempfer_fert) && $schild_2>0) {
                                         $rennurbin -= round($masse_2/100*$daempfer_fert);
-                                        mysql_query("UPDATE " . table_prefix . "schiffe set fracht_min2='".$rennurbin."' where id='".$shid."'");
+                                       $db->execute("UPDATE " . table_prefix . "schiffe set fracht_min2 = ? where id = ?",
+                                                                                array($rennurbin,$shid));
                                         $daempfer_an1 = true;
                                     }
                                     if($daempfer_fert_2>=1 && $spezialmission_2==71 && $rennurbin_2>=round($masse/100*$daempfer_fert_2) && $schild>0) {
                                         $rennurbin_2 -= round($masse/100*$daempfer_fert_2);
-                                        mysql_query("UPDATE " . table_prefix . "schiffe set fracht_min2='".$rennurbin_2."' where id='".$shid_2."'");
+                                        $db->execute("UPDATE " . table_prefix . "schiffe set fracht_min2 = ? where id = ?",
+                                                                                 array($rennurbin_2,$shid_2));
                                         $daempfer_an2 = true;
                                     }
                                     //////////////////////////////////////////////////////////////////////////////////////
@@ -664,15 +667,21 @@ if ($schiffanzahl>=1) {
                                 if (($schaden>=100) and ($schaden_2<100)) {
                                     $checkstring[]=$shid;
                                     $crew_2=($crew_2>0)?$crew_2:0;
-                                    $zeiger_temp = mysql_query("DELETE FROM " . table_prefix . "schiffe where id='".$shid."' and besitzer='".$besitzer."'");
-                                    $zeiger_temp = mysql_query("DELETE FROM " . table_prefix . "anomalien where art=3 and extra like 's:".$shid.":%'");
-                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set flug=0,warp=0,zielx=0,ziely=0,zielid=0 where flug in ('3','4') and zielid='".$shid."'");
-                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set crew='".$crew_2."',schaden='".$schaden_2."',schild='".$schild_2."',projektile='".$projektile_2."' where id='".$shid_2."' and besitzer='".$besitzer_2."'");
+                                    $db->execute("DELETE FROM " . table_prefix . "schiffe where id = ? and besitzer = ?",
+                                                                                  array($shid,$besitzer));
+                                    $shids = "s:".$shid.":%";
+                                    $db->execute("DELETE FROM " . table_prefix . "anomalien where art='3' and extra like ?", 
+                                                                                  array($shids));
+                                    $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug in ('3','4') and zielid = ?",
+                                                                             array($shid));
+                                    $db->execute("UPDATE " . table_prefix . "schiffe set crew = ?,schaden = ?,schild = ?,projektile = ? where id = ? and besitzer = ?",
+                                                                             array($crew_2,$schaden_2,$schild_2,$projektile_2,$shid_2,$besitzer_2));
                                     if ($techlevel>=$techlevel_2) { $faktor=10; } else { $faktor=5; }
                                     $tech_unterschied=(($techlevel-$techlevel_2)*$faktor)+50;
                                     $zufall=mt_rand(1,100);
                                     if ($zufall>=$tech_unterschied) {
-                                        $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set erfahrung=erfahrung+1 where erfahrung<5 and spiel='".$spiel."' and id='".$shid_2."' and besitzer='".$besitzer_2."'");
+                                        $db->ecxecute("UPDATE " . table_prefix . "schiffe set erfahrung=erfahrung+1 where erfahrung<5 and spiel = ? and id = ? and besitzer = ?",
+                                                                                  array($spiel,$shid_2,$besitzer_2));
                                     }
                                     $schiffevernichtet++;
                                     $stat_schlacht_sieg[$besitzer_2]++;
@@ -680,30 +689,11 @@ if ($schiffanzahl>=1) {
                                         neuigkeiten(2,"../daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['12'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
                                         neuigkeiten(2,"../daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['13'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
                                     } elseif ($waffenlos==0) {
-                                        $zeiger_temp = mysql_query("INSERT INTO " . table_prefix . "kampf (spiel,art,schiff_id_1,schiff_id_2,name_1,name_2,rasse_1,rasse_2,bild_1,bild_2,datum,energetik_1,energetik_2,projektile_1,projektile_2,hangar_1,hangar_2,schild_1,schild_2,schaden_1,schaden_2,crew_1,crew_2) values 
-                                                                  ('".$spiel."',
-                                                                   '1',
-                                                                   '".$shid."',
-                                                                   '".$shid_2."',
-                                                                   '".$name."',
-                                                                   '".$name_2."',
-                                                                   '".$volk."',
-                                                                   '".$volk_2."',
-                                                                   '".$bild_klein."',
-                                                                   '".$bild_klein_2."',
-                                                                   '".$datum."',
-                                                                   '".$aufzeichnung_energetik_1."',
-                                                                   '".$aufzeichnung_energetik_2."',
-                                                                   '".$aufzeichnung_projektile_1."',
-                                                                   '".$aufzeichnung_projektile_2."',
-                                                                   '".$aufzeichnung_hangar_1."',
-                                                                   '".$aufzeichnung_hangar_2."',
-                                                                   '".$aufzeichnung_schild_1."',
-                                                                   '".$aufzeichnung_schild_2."',
-                                                                   '".$aufzeichnung_schaden_1."',
-                                                                   '".$aufzeichnung_schaden_2."',
-                                                                   '".$aufzeichnung_crew_1."',
-                                                                   '".$aufzeichnung_crew_2."')");
+                                        $db->execute("INSERT INTO " . table_prefix . "kampf (spiel,art,schiff_id_1,schiff_id_2,name_1,name_2,rasse_1,rasse_2,bild_1,bild_2,datum,energetik_1,energetik_2,projektile_1,projektile_2,hangar_1,hangar_2,schild_1,schild_2,schaden_1,schaden_2,crew_1,crew_2) values 
+                                                                  (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                                                                                                   array($spiel,1,$shid,$shid_2,$name,$name_2,$volk,$volk_2,$bild_klein,$bild_klein_2,$datum,$aufzeichnung_energetik_1,
+                                                                                                         $aufzeichnung_energetik_2,$aufzeichnung_projektile_1,$aufzeichnung_projektile_2,$aufzeichnung_hangar_1,$aufzeichnung_hangar_2,
+                                                                                                         $aufzeichnung_schild_1,$aufzeichnung_schild_2,$aufzeichnung_schaden_1,$aufzeichnung_schaden_2,$aufzeichnung_crew_1,$aufzeichnung_crew_2));
                                         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['4'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2,$shid,$shid_2,$datum));
                                         neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['5'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name,$shid,$shid_2,$datum));
                                     } else {
@@ -715,15 +705,21 @@ if ($schiffanzahl>=1) {
                                 if (($schaden_2>=100) and ($schaden<100)) {
                                     $crew=($crew>0)?$crew:0;
                                     $checkstring[]=$shid_2;
-                                    $zeiger_temp = mysql_query("DELETE FROM " . table_prefix . "schiffe where id='".$shid_2."' and besitzer='".$besitzer_2."'");
-                                    $zeiger_temp = mysql_query("DELETE FROM " . table_prefix . "anomalien where art=3 and extra like 's:".$shid_2.":%'");
-                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set flug=0,warp=0,zielx=0,ziely=0,zielid=0 where flug in ('3','4') and zielid='".$shid_2."'");
-                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set crew='".$crew."',schaden='".$schaden."',schild='".$schild."',projektile='".$projektile."' where id='".$shid."' and besitzer='".$besitzer."'");
+                                    $db->execute("DELETE FROM " . table_prefix . "schiffe where id = ? and besitzer = ?",
+                                                                                  array($shid_2,$besitzer_2));
+                                    $shid_2s = "s:".$shid_2.":%";
+                                    $db->execute("DELETE FROM " . table_prefix . "anomalien where art='3' and extra like ?",
+                                                                                  array($shid_2s));
+                                    $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug in ('3','4') and zielid = ?",
+                                                                             array($shid_2));
+                                    $db->execute("UPDATE " . table_prefix . "schiffe set crew = ?,schaden = ?,schild = ?,projektile = ? where id = ? and besitzer = ?",
+                                                                             array($crew,$schaden,$schild,$projektile,$shid,$besitzer));
                                     if ($techlevel_2>=$techlevel) { $faktor=10; } else { $faktor=5; }
                                     $tech_unterschied=(($techlevel_2-$techlevel)*$faktor)+50;
                                     $zufall=mt_rand(1,100);
                                     if ($zufall>=$tech_unterschied) {
-                                        $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set erfahrung=erfahrung+1 where erfahrung<5 and spiel='".$spiel."' and id='".$shid."' and besitzer='".$besitzer."'");
+                                        $db->execute("UPDATE " . table_prefix . "schiffe set erfahrung=erfahrung+1 where erfahrung<5 and spiel = ? and id = ? and besitzer = ?",
+                                                                                 array($spiel,$shid,$besitzer));
                                     }
                                     $schiffevernichtet++;
                                     $stat_schlacht_sieg[$besitzer]++;
@@ -731,77 +727,42 @@ if ($schiffanzahl>=1) {
                                         neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['12'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
                                         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['13'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
                                     } elseif ($waffenlos==0) {
-                                        $zeiger_temp = mysql_query("INSERT INTO " . table_prefix . "kampf (spiel,art,schiff_id_1,schiff_id_2,name_1,name_2,rasse_1,rasse_2,bild_1,bild_2,datum,energetik_1,energetik_2,projektile_1,projektile_2,hangar_1,hangar_2,schild_1,schild_2,schaden_1,schaden_2,crew_1,crew_2) values 
-                                                                   ('".$spiel."',
-                                                                    '1',
-                                                                    '".$shid."',
-                                                                    '".$shid_2."',
-                                                                    '".$name."',
-                                                                    '".$name_2."',
-                                                                    '".$volk."',
-                                                                    '".$volk_2."',
-                                                                    '".$bild_klein."',
-                                                                    '".$bild_klein_2."',
-                                                                    '".$datum."',
-                                                                    '".$aufzeichnung_energetik_1."',
-                                                                    '".$aufzeichnung_energetik_2."',
-                                                                    '".$aufzeichnung_projektile_1."',
-                                                                    '".$aufzeichnung_projektile_2."',
-                                                                    '".$aufzeichnung_hangar_1."',
-                                                                    '".$aufzeichnung_hangar_2."',
-                                                                    '".$aufzeichnung_schild_1."',
-                                                                    '".$aufzeichnung_schild_2."',
-                                                                    '".$aufzeichnung_schaden_1."',
-                                                                    '".$aufzeichnung_schaden_2."',
-                                                                    '".$aufzeichnung_crew_1."',
-                                                                    '".$aufzeichnung_crew_2."')");
+                                        $db->execute("INSERT INTO " . table_prefix . "kampf (spiel,art,schiff_id_1,schiff_id_2,name_1,name_2,rasse_1,rasse_2,bild_1,bild_2,datum,energetik_1,energetik_2,projektile_1,projektile_2,hangar_1,hangar_2,schild_1,schild_2,schaden_1,schaden_2,crew_1,crew_2) values 
+                                                                   (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                                                                                      array($spiel,1,$shid,$shid_2,$name,$name_2,$volk,$volk_2,$bild_klein,$bild_klein_2,$datum,$aufzeichnung_energetik_1,
+                                                                                            $aufzeichnung_energetik_2,$aufzeichnung_projektile_1,$aufzeichnung_projektile_2,$aufzeichnung_hangar_1,$aufzeichnung_hangar_2,
+                                                                                            $aufzeichnung_schild_1,$aufzeichnung_schild_2,$aufzeichnung_schaden_1,$aufzeichnung_schaden_2,$aufzeichnung_crew_1,$aufzeichnung_crew_2));
+                                        
                                         neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['4'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name,$shid,$shid_2,$datum));
                                         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['5'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2,$shid,$shid_2,$datum));
                                     } else {
                                         neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['6'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
                                         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['7'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
-                                    }
-                                    //break;
+                                    }                                    
                                 }
                                 if ((($schaden_2>=100) and ($schaden>=100)) or (($crew_2<=0) and ($crew<=0))) {
                                     $checkstring[]=$shid;
                                     $checkstring[]=$shid_2;
-                                    $zeiger_temp = mysql_query("DELETE FROM " . table_prefix . "schiffe where id='".$shid_2."' and besitzer='".$besitzer_2."'");
-                                    $zeiger_temp = mysql_query("DELETE FROM " . table_prefix . "anomalien where art=3 and extra like 's:".$shid_2.":%'");
-                                    $zeiger_temp = mysql_query("DELETE FROM " . table_prefix . "schiffe where id='".$shid."' and besitzer='".$besitzer."'");
-                                    $zeiger_temp = mysql_query("DELETE FROM " . table_prefix . "anomalien where art=3 and extra like 's:".$shid.":%'");
-                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set flug=0,warp=0,zielx=0,ziely=0,zielid=0 where flug in ('3','4') and zielid='".$shid."'");
-                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set flug=0,warp=0,zielx=0,ziely=0,zielid=0 where flug in ('3','4') and zielid='".$shid_2."'");
+                                    $db->execute("DELETE FROM " . table_prefix . "schiffe where id = ? and besitzer = ?",array($shid_2,$besitzer_2));
+                                    $shid_2s = "s:".$shid_2.":%";
+                                    $db->execute("DELETE FROM " . table_prefix . "anomalien where art='3' and extra like ?",array($shid_2s));
+                                    $db->execute("DELETE FROM " . table_prefix . "schiffe where id = ? and besitzer = ?",array($shid,$besitzer));
+                                    $shids = "s:".$shid.":%";
+                                    $db->execute("DELETE FROM " . table_prefix . "anomalien where art='3' and extra like ?",array($shids));
+                                    $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug in ('3','4') and zielid = ?",array($shid));
+                                    $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug in ('3','4') and zielid = ?",array($shid_2));
                                     $schiffevernichtet++;
                                     $schiffevernichtet++;
                                     if($kamikaze==true || $kamikaze_2==true) {
                                         neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['14'],array($name_2,$spielerfarbe[$besitzer],$name,$sektork));
                                         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['14'],array($name,$spielerfarbe[$besitzer_2],$name_2,$sektork));
                                     } elseif ($waffenlos==0) {
-                                        $zeiger_temp = mysql_query("INSERT INTO " . table_prefix . "kampf (spiel,art,schiff_id_1,schiff_id_2,name_1,name_2,rasse_1,rasse_2,bild_1,bild_2,datum,energetik_1,energetik_2,projektile_1,projektile_2,hangar_1,hangar_2,schild_1,schild_2,schaden_1,schaden_2,crew_1,crew_2) values 
-                                                                  ('".$spiel."',
-                                                                   '1',
-                                                                   '".$shid."',
-                                                                   '".$shid_2."',
-                                                                   '".$name."',
-                                                                   '".$name_2."',
-                                                                   '".$volk."',
-                                                                   '".$volk_2."',
-                                                                    '".$bild_klein."',
-                                                                    '".$bild_klein_2."',
-                                                                    '".$datum."',
-                                                                    '".$aufzeichnung_energetik_1."',
-                                                                    '".$aufzeichnung_energetik_2."',
-                                                                    '".$aufzeichnung_projektile_1."',
-                                                                    '".$aufzeichnung_projektile_2."',
-                                                                    '".$aufzeichnung_hangar_1."',
-                                                                    '".$aufzeichnung_hangar_2."', 
-                                                                    '".$aufzeichnung_schild_1."', 
-                                                                    '".$aufzeichnung_schild_2."', 
-                                                                    '".$aufzeichnung_schaden_1."', 
-                                                                    '".$aufzeichnung_schaden_2."', 
-                                                                    '".$aufzeichnung_crew_1."', 
-                                                                    '".$aufzeichnung_crew_2."')");
+                                        $db->execute("INSERT INTO " . table_prefix . "kampf (spiel,art,schiff_id_1,schiff_id_2,name_1,name_2,rasse_1,rasse_2,bild_1,bild_2,datum,energetik_1,energetik_2,
+                                                                                             projektile_1,projektile_2,hangar_1,hangar_2,schild_1,schild_2,schaden_1,schaden_2,crew_1,crew_2) 
+                                                                                             values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                                                                                      array($spiel,1,$shid,$shid_2,$name,$name_2,$volk,$volk_2,$bild_klein,$bild_klein_2,$datum,$aufzeichnung_energetik_1,$aufzeichnung_energetik_2,
+                                                                                            $aufzeichnung_projektile_1,$aufzeichnung_projektile_2,$aufzeichnung_hangar_1,$aufzeichnung_hangar_2,$aufzeichnung_schild_1,
+                                                                                            $aufzeichnung_schild_2,$aufzeichnung_schaden_1,$aufzeichnung_schaden_2,$aufzeichnung_crew_1,$aufzeichnung_crew_2));
                                         neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['8'],array($name_2,$spielerfarbe[$besitzer],$name,$sektork,$shid,$shid_2,$datum));
                                         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['8'],array($name,$spielerfarbe[$besitzer_2],$name_2,$sektork,$shid,$shid_2,$datum));
                                     } else {
@@ -821,61 +782,30 @@ if ($schiffanzahl>=1) {
                                     /*
                                      * End ?!
                                      */
-                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set kox='".$kox_new."',koy='".$koy_new."',crew='0',schaden='".$schaden_2."',schild='".$schild_2."',projektile='".$projektile_2."',spezialmission='0',besitzer='".$besitzer."',fracht_leute='0',ordner='0',erfahrung='0',flug='0',warp='0',zielx='0',ziely='0',zielid='0',status='1' where id='".$shid_2."'");
-                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0',routing_schritt='0',routing_status='0',routing_koord='',routing_id='',routing_mins='',routing_warp='0',routing_tank='0',routing_rohstoff='0' where flug in ('3','4') and zielid='".$shid_2."'");
-                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set crew='".$crew."',schaden='".$schaden."',schild='".$schild."',projektile='".$projektile."' where id='".$shid."' and besitzer='".$besitzer."'");
+                                    $db->execute("UPDATE " . table_prefix . "schiffe set kox = ?,koy = ?,crew='0',schaden = ?,schild = ?,
+                                                                                         projektile = ?,spezialmission='0',besitzer = ?,fracht_leute='0',ordner='0',erfahrung='0',
+                                                                                         flug='0',warp='0',zielx='0',ziely='0',zielid='0',status='1' where id = ?",
+                                                                             array($kox_new,$koy_new,$schaden_2,$schild_2,$projektile_2,$besitzer,$shid_2,));
+                                    $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0',routing_schritt='0',routing_status='0', 
+                                                                                          routing_koord='',routing_id='',routing_mins='',routing_warp='0',routing_tank='0',
+                                                                                          routing_rohstoff='0' where flug in ('3','4') and zielid = ?",
+                                                                             array($shid_2));
+                                    $db->execute("UPDATE " . table_prefix . "schiffe set crew = ?,schaden = ?,schild = ?,projektile = ? where id = ? and besitzer = ?",
+                                                                             array($crew,$schaden,$schild,$projektile,$shid,$besitzer));
                                     if ($techlevel_2>=$techlevel) { $faktor=10; } else { $faktor=5; }
                                     $tech_unterschied=(($techlevel_2-$techlevel)*$faktor)+50;
                                     $zufall=mt_rand(1,100);
                                     if ($zufall>=$tech_unterschied) {
-                                        $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set erfahrung=erfahrung+1 where erfahrung<5 and spiel='".$spiel."' and id='".$shid."' and besitzer='".$besitzer."'");
+                                        $db->execute("UPDATE " . table_prefix . "schiffe set erfahrung=erfahrung+1 where erfahrung<5 and spiel = ? and id = ? and besitzer = ?",
+                                                                                 array($spiel,$shid,$besitzer));
                                     }
                                     $stat_schlacht_sieg[$besitzer]++;
-                                    $zeiger_temp = mysql_query("INSERT INTO " . table_prefix . "kampf (spiel, 
-                                                                                                       art, 
-                                                                                                       schiff_id_1, 
-                                                                                                       schiff_id_2, 
-                                                                                                       name_1, 
-                                                                                                       name_2, 
-                                                                                                       rasse_1, 
-                                                                                                       rasse_2, 
-                                                                                                       bild_1, 
-                                                                                                       bild_2, 
-                                                                                                       datum, 
-                                                                                                       energetik_1, 
-                                                                                                       energetik_2, 
-                                                                                                       projektile_1, 
-                                                                                                       projektile_2, 
-                                                                                                       hangar_1, 
-                                                                                                       hangar_2, 
-                                                                                                       schild_1, 
-                                                                                                       schild_2, 
-                                                                                                       schaden_1, 
-                                                                                                       schaden_2, 
-                                                                                                       crew_1,crew_2) 
-                                                                                            values ('".$spiel."', 
-                                                                                                    '1', 
-                                                                                                    '".$shid."', 
-                                                                                                    '".$shid_2."', 
-                                                                                                    '".$name."', 
-                                                                                                    '".$name_2."', 
-                                                                                                    '".$volk."', 
-                                                                                                    '".$volk_2."', 
-                                                                                                    '".$bild_klein."', 
-                                                                                                    '".$bild_klein_2."', 
-                                                                                                    '".$datum."', 
-                                                                                                    '".$aufzeichnung_energetik_1."', 
-                                                                                                    '".$aufzeichnung_energetik_2."', 
-                                                                                                    '".$aufzeichnung_projektile_1."', 
-                                                                                                    '".$aufzeichnung_projektile_2."', 
-                                                                                                    '".$aufzeichnung_hangar_1."', 
-                                                                                                    '".$aufzeichnung_hangar_2."', 
-                                                                                                    '".$aufzeichnung_schild_1."', 
-                                                                                                    '".$aufzeichnung_schild_2."', 
-                                                                                                    '".$aufzeichnung_schaden_1."', 
-                                                                                                    '".$aufzeichnung_schaden_2."', 
-                                                                                                    '".$aufzeichnung_crew_1."', 
-                                                                                                    '".$aufzeichnung_crew_2."')");
+                                    $db->execute("INSERT INTO " . table_prefix . "kampf (spiel,art,schiff_id_1,schiff_id_2,name_1,name_2,rasse_1,rasse_2,bild_1,bild_2,datum,energetik_1,energetik_2, 
+                                                                                         projektile_1,projektile_2,hangar_1,hangar_2,schild_1,schild_2,schaden_1,schaden_2,crew_1,crew_2) 
+                                                                                         values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                                                                            array ($spiel,1,$shid,$shid_2,$name,$name_2,$volk,$volk_2,$bild_klein,$bild_klein_2,$datum,$aufzeichnung_energetik_1, 
+                                                                                   $aufzeichnung_energetik_2,$aufzeichnung_projektile_1,$aufzeichnung_projektile_2,$aufzeichnung_hangar_1,$aufzeichnung_hangar_2, 
+                                                                                   $aufzeichnung_schild_1,$aufzeichnung_schild_2,$aufzeichnung_schaden_1,$aufzeichnung_schaden_2,$aufzeichnung_crew_1,$aufzeichnung_crew_2));
                                     neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['2'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name,$shid,$shid_2,$datum));
                                     neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['3'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2,$shid,$shid_2,$datum));
                                 }
@@ -884,20 +814,25 @@ if ($schiffanzahl>=1) {
                                     $alpha=(double)(6.28318530718*mt_rand(0,$mt_randmax)/$mt_randmax);
                                     $koy_new=max(0,min($umfang,$koy+round($abstand*sin($alpha))));
                                     $kox_new=max(0,min($umfang,$kox+round($abstand*cos($alpha))));
-                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set kox='".$kox_new."',koy='".$koy_new."',crew='0',schaden='".$schaden."',schild='".$schild."',projektile='".$projektile."',spezialmission='0',besitzer='".$besitzer_2."',fracht_leute='0',ordner='0',erfahrung='0',flug='0',warp='0',zielx='0',ziely='0',zielid='0',status='1' where id='".$shid."'");
-                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set flug=0,warp=0,zielx=0,ziely=0,zielid=0,routing_schritt=0,routing_status=0,routing_koord='',routing_id='',routing_mins='',routing_warp=0,routing_tank=0,routing_rohstoff=0 where flug in ('3','4') and zielid='".$shid."'");
-                                    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set crew='".$crew_2."',schaden='".$schaden_2."',schild='".$schild_2."',projektile='".$projektile_2."' where id='".$shid_2."' and besitzer='".$besitzer_2."'");
+                                    $db->execute("UPDATE " . table_prefix . "schiffe set kox = ?,koy = ?,crew='0',schaden = ?,schild = ?,projektile = ?,spezialmission='0',besitzer = ?,fracht_leute='0',ordner='0',erfahrung='0',flug='0',warp='0',zielx='0',ziely='0',zielid='0',status='1' where id = ?",
+                                                                             array($kox_new,$koy_new,$schaden,$schild,$projektile,$besitzer_2,$shid));
+                                    $db->execute("UPDATE " . table_prefix . "schiffe set flug=0,warp=0,zielx=0,ziely=0,zielid=0,routing_schritt=0,routing_status=0,routing_koord='',routing_id='',routing_mins='',routing_warp=0,routing_tank=0,routing_rohstoff=0 where flug in ('3','4') and zielid = ?",
+                                                                             array($shid));
+                                    $db->execute("UPDATE " . table_prefix . "schiffe set crew = ?,schaden = ?,schild = ?,projektile = ? where id = ? and besitzer = ?",
+                                                                             array($crew_2,$schaden_2,$schild_2,$projektile_2,$shid_2,$besitzer_2));
                                     if ($techlevel>=$techlevel_2) { $faktor=10; } else { $faktor=5; }
                                     $tech_unterschied=(($techlevel-$techlevel_2)*$faktor)+50;
                                     $zufall=mt_rand(1,100);
                                     if ($zufall>=$tech_unterschied) {
-                                        $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set erfahrung=erfahrung+1 where erfahrung<5 and spiel=$spiel and id=$shid_2 and besitzer=$besitzer_2");
+                                        $db->execute("UPDATE " . table_prefix . "schiffe set erfahrung=erfahrung+1 where erfahrung<5 and spiel = ? and id = ? and besitzer = ?",
+                                                                                 array($spiel,$shid_2,$besitzer_2));
                                     }
                                     $stat_schlacht_sieg[$besitzer_2]++;
-                                    $zeiger_temp = mysql_query("INSERT INTO " . table_prefix . "kampf (spiel,art,schiff_id_1,schiff_id_2,name_1,name_2,rasse_1,rasse_2,bild_1,bild_2,datum,energetik_1,energetik_2,projektile_1,projektile_2,hangar_1,hangar_2,schild_1,schild_2,schaden_1,schaden_2,crew_1,crew_2) values 
-                                                              ('".$spiel."','1','".$shid."','".$shid_2."','".$name."','".$name_2."','".$volk."','".$volk_2."','".$bild_klein."','".$bild_klein_2."','".$datum."','".$aufzeichnung_energetik_1."',
-                                                               '".$aufzeichnung_energetik_2."','".$aufzeichnung_projektile_1."','".$aufzeichnung_projektile_2."','".$aufzeichnung_hangar_1."','".$aufzeichnung_hangar_2."','".$aufzeichnung_schild_1."',
-                                                               '".$aufzeichnung_schild_2."','".$aufzeichnung_schaden_1."','".$aufzeichnung_schaden_2."','".$aufzeichnung_crew_1."','".$aufzeichnung_crew_2."')");
+                                    $db->execute("INSERT INTO " . table_prefix . "kampf (spiel,art,schiff_id_1,schiff_id_2,name_1,name_2,rasse_1,rasse_2,bild_1,bild_2,datum,energetik_1,energetik_2,projektile_1,projektile_2,hangar_1,hangar_2,schild_1,schild_2,schaden_1,schaden_2,crew_1,crew_2) 
+                                                               values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", 
+                                                                                               array($spiel,1,$shid,$shid_2,$name,$name_2,$volk,$volk_2,$bild_klein,$bild_klein_2,$datum,$aufzeichnung_energetik_1,
+                                                                                                     $aufzeichnung_energetik_2,$aufzeichnung_projektile_1,$aufzeichnung_projektile_2,$aufzeichnung_hangar_1,$aufzeichnung_hangar_2,$aufzeichnung_schild_1,
+                                                                                                     $aufzeichnung_schild_2,$aufzeichnung_schaden_1,$aufzeichnung_schaden_2,$aufzeichnung_crew_1,$aufzeichnung_crew_2));
                                     neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['2'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2,$shid,$shid_2,$datum));
                                     neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['3'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name,$shid,$shid_2,$datum));
                                     break;
@@ -908,8 +843,10 @@ if ($schiffanzahl>=1) {
                                         $alpha=(double)(6.28318530718*mt_rand(0,$mt_randmax)/$mt_randmax);
                                         $koy_new=max(0,min($umfang,$koy+round($abstand*sin($alpha))));
                                         $kox_new=max(0,min($umfang,$kox+round($abstand*cos($alpha))));
-                                        $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set kox='".$kox_new."',koy='".$koy_new."',crew='".$crew."',schaden='".$schaden."',schild='".$schild."',projektile='".$projektile."',status='1' where id='".$shid."'");
-                                        $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set crew='".$crew_2."',schaden='".$schaden_2."',schild='".$schild_2."',projektile='".$projektile_2."' where id='".$shid_2."' and besitzer='".$besitzer_2."'");
+                                        $db->execute("UPDATE " . table_prefix . "schiffe set kox = ?,koy = ?,crew = ?,schaden = ?,schild = ?,projektile = ?,status='1' where id = ?",
+                                                                                 array($kox_new,$koy_new,$crew,$schaden,$schild,$projektile,$shid));
+                                        $db->execute("UPDATE " . table_prefix . "schiffe set crew = ?,schaden = ?,schild = ?,projektile = ? where id = ? and besitzer = ?",
+                                                                                 array($crew_2,$schaden_2,$schild_2,$projektile_2,$shid_2,$besitzer_2));
                                         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf']['10'],array($name,$sektork,$spielerfarbe[$besitzer_2],$name_2));
                                         neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['11'],array($name_2,$sektork));
                                         break;
@@ -919,14 +856,15 @@ if ($schiffanzahl>=1) {
                                         $alpha=(double)(6.28318530718*mt_rand(0,$mt_randmax)/$mt_randmax);
                                         $koy_new=max(0,min($umfang,$koy+round($abstand*sin($alpha))));
                                         $kox_new=max(0,min($umfang,$kox+round($abstand*cos($alpha))));
-                                        $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set kox='".$kox_new."',koy='".$koy_new."',crew='".$crew_2."',schaden='".$schaden_2."',schild='".$schild_2."',projektile='".$projektile_2."',status='1' where id='".$shid_2."'");
-                                        $zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set crew='".$crew."',schaden='".$schaden."',schild='".$schild."',projektile='".$projektile."' where id='".$shid."' and besitzer='".$besitzer."'");
+                                        $db->execute("UPDATE " . table_prefix . "schiffe set kox = ?,koy = ?,crew = ?,schaden = ?,schild = ?,projektile = ?,status='1' where id = ?",
+                                                                                 array($kox_new,$koy_new,$crew_2,$schaden_2,$schild_2,$projektile_2,$shid_2));
+                                        $db->execute("UPDATE " . table_prefix . "schiffe set crew = ?,schaden = ?,schild = ?,projektile = ? where id = ? and besitzer = ?",
+                                                                                 array($crew,$schaden,$schild,$projektile,$shid,$besitzer));
                                         neuigkeiten(2,servername . "daten/$volk_2/bilder_schiffe/$bild_gross_2",$besitzer_2,$langraum['hostraumkampf']['10'],array($name_2,$sektork,$spielerfarbe[$besitzer],$name));
                                         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$langraum['hostraumkampf'][$langraum],array($name,$sektork));
                                     }
                                 }
-                            }
-                            //$checkstring=$checkstring.":::".$shid."::::::".$shid_2.":::";
+                            }                            
                         }
                     }
                 }
@@ -934,5 +872,5 @@ if ($schiffanzahl>=1) {
         }
     }
 }
-$zeiger_temp = mysql_query("UPDATE " . table_prefix . "schiffe set schild=100 where spiel='".$spiel."'");
+$db->execute("UPDATE " . table_prefix . "schiffe set schild=100 where spiel = ?",array($spiel));
 unset($langraum);
