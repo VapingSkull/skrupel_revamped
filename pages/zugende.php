@@ -1,25 +1,12 @@
 <?php
-require_once ('../inc.conf.php'); 
-require_once (inhalt_dir . 'inc.hilfsfunktionen.php');
 $params = array_merge(filter_struct_utf8(1, $_GET), filter_struct_utf8(1, $_POST), filter_struct_utf8(1, $_REQUEST));
-$langfile_1 = 'zugende';
+$langzugende = get_phrasen('de','zugende');
 $fuid = intval($params["fu"]);
 
 //fu:1 Zugende Hauptmenu {{{
 if ($fuid==1) {
-    include (inhalt_dir . "inc.header.php");
-    $weitere = $Db->getOne("SELECT count(*) AS total FROM " . table_prefix . "spiele WHERE (spieler_1='" . $spieler_id . "' 
-                                                                                          or spieler_2='" . $spieler_id . "' 
-                                                                                          or spieler_3='" . $spieler_id . "' 
-                                                                                          or spieler_4='" . $spieler_id . "' 
-                                                                                          or spieler_5='" . $spieler_id . "' 
-                                                                                          or spieler_6='" . $spieler_id . "' 
-                                                                                          or spieler_7='" . $spieler_id . "' 
-                                                                                          or spieler_8='" . $spieler_id . "' 
-                                                                                          or spieler_9='" . $spieler_id . "' 
-                                                                                          or spieler_10='" . $spieler_id . "') 
-                                                                                          and id<>" . $spiel . " 
-                                                                                          and phase='0'");    
+include (inhalt_dir . "inc.header.php"); 
+ $weitere = $db->getOne("SELECT count(*) AS total FROM skrupel_spiele WHERE ? IN (spieler_1,spieler_2,spieler_3,spieler_4,spieler_5,spieler_6,spieler_7,spieler_8,spieler_9,spieler_10) and id<>? and phase = '0'",array($spieler_id,$spiel));
     ?>
     <body text="#000000" bgcolor="#444444" style="background-image:url('<?php echo servername;?>bilder/aufbau/14.gif'); background-attachment:fixed;" link="#000000" vlink="#000000" alink="#000000" leftmargin="0" rightmargin="0" topmargin="0" marginwidth="0" marginheight="0">
         <center>
@@ -29,19 +16,19 @@ if ($fuid==1) {
                     if($weitere > 0) {
                         ?>
                         <td>
-                            <center><a href="<?php echo servername;?>inhalt/zugende.php?fu=7&uid=<?php echo $uid?>&sid=<?php echo $sid?>" target="_self"><img src="<?php echo servername;?>bilder/menu/gsprung.gif" width="75" height="75" border="0"><br><nobr><?php echo $lang['zugende']['galaxiesprung']?></nobr></a></center>
+                            <center><a href="<?php echo servername;?>inhalt/zugende.php?fu=7&uid=<?php echo $uid?>&sid=<?php echo $sid?>" target="_self"><img src="<?php echo servername;?>bilder/menu/gsprung.gif" width="75" height="75" border="0"><br><nobr><?php echo $langzugende['zugende']['galaxiesprung']?></nobr></a></center>
                         </td>
                         <?php
                     }
                     ?>
                     <td>
-                        <center><a href="<?php echo servername;?>inhalt/zugende.php?fu=2&uid=<?php echo $uid?>&sid=<?php echo $sid?>" target="_top"><img src="<?php echo servername;?>bilder/menu/logout.gif" width="75" height="75" border="0"><br><nobr><?php echo $lang['zugende']['logout']?></nobr></a></center>
+                        <center><a href="<?php echo servername;?>inhalt/zugende.php?fu=2&uid=<?php echo $uid?>&sid=<?php echo $sid?>" target="_top"><img src="<?php echo servername;?>bilder/menu/logout.gif" width="75" height="75" border="0"><br><nobr><?php echo $langzugende['zugende']['logout']?></nobr></a></center>
                     </td>
                     <?php
                     if ($zug_abgeschlossen==0 and $spieler_raus==0){
                         ?>
                         <td>
-                            <center><a href="<?php echo servername;?>inhalt/zugende.php?fu=3&uid=<?php echo $uid?>&sid=<?php echo $sid?>" target="_self"><img src="<?php echo servername;?>bilder/menu/abschliessen.gif" width="75" height="75" border="0"><br><nobr><?php echo $lang['zugende']['zugabschliessen']?></nobr></a></center>
+                            <center><a href="<?php echo servername;?>inhalt/zugende.php?fu=3&uid=<?php echo $uid?>&sid=<?php echo $sid?>" target="_self"><img src="<?php echo servername;?>bilder/menu/abschliessen.gif" width="75" height="75" border="0"><br><nobr><?php echo $langzugende['zugende']['zugabschliessen']?></nobr></a></center>
                         </td>
                         <?php
                     }
@@ -54,14 +41,13 @@ if ($fuid==1) {
 }
 //}}}
 //fu:2 Spiel verlassen {{{
-if ($fuid==2) {
-   // open_db();
+if ($fuid==2) {   
     include (inhalt_dir . "inc.check.php");
     include (lang_dir.$spieler_sprache.'/lang.zugende.php');
-    $Db->execute("UPDATE " . table_prefix . "user set uid='' where id='" . $spieler_id . "'");
-    $nachricht = $spieler_name.' '.$lang['zugende']['verlassen'];
+    $Db->execute("UPDATE " . table_prefix . "user set uid='' where id = ?", array($spieler_id));
+    $nachricht = $spieler_name.' '.$langzugende['zugende']['verlassen'];
     $aktuell = time();
-    $Db->execute("INSERT INTO " . table_prefix . "chat (spiel,datum,text,an,von,farbe) VALUES ('" . $spiel . "','" . $aktuell ."', '" . $nachricht ."','0','System','000000')");
+    $Db->execute("INSERT INTO " . table_prefix . "chat (spiel,datum,text,an,von,farbe) VALUES (?,?,?,'0','System','000000')",array($sapiel,$aktuell,$nachricht));
     $backlink = servername . "index.php?sprache=". $spieler_sprache;
     header ("Location: $backlink");
 }
@@ -69,20 +55,12 @@ if ($fuid==2) {
 //fu:3 Zug abschliessen {{{
 if ($fuid==3) {
     //open_db();
-    include (inhalt_dir . 'inc.check.php');
+    include (includes . 'inc.check.php');
     include (lang_dir . $spieler_sprache.'/lang.zugende.php');
     $spalte = "spieler_{$spieler}_zug";
     $spieler_zug_c[$spieler] = 1;
     $Db->execute("UPDATE " . table_prefix ."spiele SET " . $spalte . " = '1' WHERE sid='" . $sid . "'");
     $spiel_extend = $Db->getOne("SELECT extend FROM ". table_prefix ."info");    
-    if (@intval(substr($spiel_extend,1,1))==1) {
-        //Wird nur bei installierter, aktiver KI ausgefuehrt. Es wird zunaechst ueberprueft, ob alle
-        //menschlichen Spieler ihren Zug beendet haben, damit die KI ihren Zug berechnen kann. Ist dies
-        //der Fall, so wird fuer jeden KI-Spieler im aktuellen Spiel ein KI-Objekt erstellt, welches dann
-        //den Zug des jeweiligen Spielers berechnet. 
-        include(extend_dir . "ki/ki_basis/zugendeKI.php");
-    }
-    
     $fertig = 0;
     for($i=1; $i<=10; $i++) {
         if($spieler_zug_c[$i]==1) $fertig++;
@@ -103,7 +81,7 @@ if ($fuid==4) {
         <center>
             <table border="0" height="100%" cellspacing="0" cellpadding="0">
                 <tr>
-                        <td><nobr><center><?php echo $lang['zugende']['abgeschlossen']?></center></nobr></td>
+                        <td><nobr><center><?php echo $langzugende['zugende']['abgeschlossen']?></center></nobr></td>
                 </tr>
             </table>
         </center>
@@ -116,11 +94,13 @@ if ($fuid==5) {
     include (inhalt_dir . 'inc.header.php');
     $fertig = 0;
     for($i=1; $i<=10; $i++) {
-        if($spieler_zug_c[$i]==1) $fertig++;
+        if($spieler_zug_c[$i]==1) {
+            $fertig++;
+        }
     }
     if($fertig>=$spieleranzahl) {
         $lasttick = time();
-        $Db->execute("UPDATE " . table_prefix . "spiele SET lasttick='" . $lasttick . "',
+        $Db->execute("UPDATE " . table_prefix . "spiele SET lasttick = ?,
                                                  spieler_1_zug='0',
                                                  spieler_2_zug='0',
                                                  spieler_3_zug='0',
@@ -131,9 +111,9 @@ if ($fuid==5) {
                                                  spieler_8_zug='0',
                                                  spieler_9_zug='0',
                                                  spieler_10_zug='0' 
-                                             WHERE sid='" . $sid . "'");
+                                             WHERE sid = ?",array($lasttick,$sid));
         
-        include (inhalt_dir .'inc.host.php');
+        include (includes .'inc.host.php');
     }
     ?>
     <script language="JavaScript">
@@ -154,13 +134,13 @@ if ($fuid==5) {
         <center>
             <table border="0" height="100%" cellspacing="0" cellpadding="0">
                 <tr>
-                <td><nobr><center><?php echo $lang['zugende']['wurdenausgewertet']?></center></nobr></td>
+                <td><nobr><center><?php echo $langzugende['zugende']['wurdenausgewertet']?></center></nobr></td>
                 </tr>
             </table>
         </center>
         <?php
         $fuu=1;
-        include (inhalt_dir . 'inc.host_messenger.php');
+        //include (inhalt_dir . 'inc.host_messenger.php');
         include (inhalt_dir . 'inc.footer.php');
 }
 //}}}
@@ -176,7 +156,7 @@ if ($fuid==6) {
                         <center>
                         <img src="<?php echo servername;?>bilder/radd.gif" height="46" width="51">
                             <br><br>
-                            <?php echo $lang['zugende']['wirdberechnet']?>
+                            <?php echo $langzugende['zugende']['wirdberechnet']?>
                         </center>
                     </td>
                 </tr>
@@ -198,7 +178,7 @@ if ($fuid==7) {
                 </tr>
                 <tr>
                     <td><img src="<?php echo servername;?>bilder/empty.gif" border="0" width="17" height="17"></td>
-                    <td><center><?php echo $lang['zugende']['galaxiesprung']?></center></td>
+                    <td><center><?php echo $langzugende['zugende']['galaxiesprung']?></center></td>
                     <td><a href="javascript:hilfe();"><img src="<?php echo servername;?>bilder/icons/hilfe.gif" border="0" width="17" height="17"></a></td>
                 </tr>
             </table>
@@ -210,7 +190,7 @@ if ($fuid==7) {
                 </tr>
                 <tr>
                     <td><form name="formular" method="post" action="<?php echo servername;?>inhalt/zugende.php?fu=8&uid=<?php echo $uid?>&sid=<?php echo $sid?>"></td>
-                    <td><center><?php $lang['zugende']['sprungwohin']?></center></td>
+                    <td><center><?php $langzugende['zugende']['sprungwohin']?></center></td>
                     <td></td>
                 </tr>
                 <tr>
@@ -219,18 +199,9 @@ if ($fuid==7) {
                         <center>
                             <select name="neuesspiel">
                                 <?php
-                                $zeiger2 = @mysql_query("SELECT * FROM " . table_prefix . "spiele WHERE (spieler_1='" . $spieler_id . "' 
-                                                                                                      or spieler_2='" . $spieler_id . "' 
-                                                                                                      or spieler_3='" . $spieler_id . "' 
-                                                                                                      or spieler_4='" . $spieler_id . "' 
-                                                                                                      or spieler_5='" . $spieler_id . "' 
-                                                                                                      or spieler_6='" . $spieler_id . "' 
-                                                                                                      or spieler_7='" . $spieler_id . "' 
-                                                                                                      or spieler_8='" . $spieler_id . "' 
-                                                                                                      or spieler_9='" . $spieler_id . "' 
-                                                                                                      or spieler_10='" . $spieler_id . "') 
+                                $zeiger2 = @mysql_query("SELECT * FROM " . table_prefix . "spiele WHERE ? IN (spieler_1,spieler_2,spieler_3,spieler_4,spieler_5,spieler_6,spieler_7,spieler_8,spieler_9,spieler_10) 
                                                                                                   and id<>".$spiel." 
-                                                                                                  and phase='0'");
+                                                                                                  and phase='0'",array($spieler_id,$spiel));
                                 if (@mysql_num_rows($zeiger2)>0) {
                                     while ($array = @mysql_fetch_array($zeiger2)) {
                                         $spielneuid=$array["id"];
@@ -256,7 +227,7 @@ if ($fuid==7) {
                 </tr>
                 <tr>
                     <td></td>
-                    <td><center><input type="submit" name="bla" value="<?php echo $lang['zugende']['sprungdurchfuehren']?>" style="width:250px;"></center></td>
+                    <td><center><input type="submit" name="bla" value="<?php echo $langzugende['zugende']['sprungdurchfuehren']?>" style="width:250px;"></center></td>
                     <td></form></td>
                 </tr>
             </table>
@@ -268,11 +239,11 @@ if ($fuid==7) {
 //fu:8 Galaxiesprung durchfuehren {{{
 if ($fuid==8) {
     include (inhalt_dir . "inc.header.php");
-    $neuesspiel = int_post('neuesspiel');
-    $zeiger2 = @mysql_query("SELECT id,sid FROM " . table_prefix . "spiele WHERE id='" . $neuesspiel . "'");
-    if (@mysql_num_rows($zeiger2)==1) {
-        $array2 = @mysql_fetch_array($zeiger2);
-        $sidneu = $array2['sid'];
+    $neuesspiel = $params['neuesspiel'];
+    $sql = "SELECT sid FROM " . table_prefix . "spiele WHERE id = ?";
+    $rows = $db->execute($sql,array($neuesspiel));    
+    if ($rows->RecordCount()==1) {
+        $sidneu = $db->getOne($sql);          
     }
     ?>
     <script language="JavaScript">
@@ -295,7 +266,7 @@ if ($fuid==8) {
         <center>
             <table border="0" cellspacing="0" cellpadding="0" height="100%">
                 <tr>
-                    <td><center><?php echo $lang['zugende']['spunginitialisiert']?></center></td>
+                    <td><center><?php echo $langzugende['zugende']['spunginitialisiert']?></center></td>
                 </tr>
             </table>
         </center>
@@ -304,13 +275,11 @@ if ($fuid==8) {
 }
 //}}}
 //fu:9 Zug abschliessen zwischenschritt fuer langsame server oO {{{
-if ($fuid==9) {
-    open_db();
-    include (inhalt_dir .'inc.check.php');
-    include (lang_dir . $spieler_sprache.'/lang.zugende.php');
+if ($fuid==9) {   
+    include (inhalt_dir .'inc.check.php');    
     $spalte = "spieler_{$spieler}_zug";
     $spieler_zug_c[$spieler] = 1;
-    @mysql_query("UPDATE " . table_prefix . "spiele SET $spalte = '1' WHERE sid = '" . $sid ."' order by sid");
+    $db->execute("UPDATE " . table_prefix . "spiele SET $spalte = '1' WHERE sid = ? order by sid",array($sid));
     
     $fertig = 0;
     for($i=1; $i<=10; $i++) {
@@ -324,3 +293,4 @@ if ($fuid==9) {
     header ("Location: $backlink");
 }
 //}}}
+unset($langzugende);
