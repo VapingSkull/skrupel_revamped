@@ -1,5 +1,5 @@
 <?php
-$params = array_merge(filter_struct_utf8(1, $_GET), filter_struct_utf8(1, $_POST), filter_struct_utf8(1, $_REQUEST));
+$params = array_merge(filter_struct_utf8(1, $_GET), filter_struct_utf8(1, $_POST));
 $langzugende = get_phrasen('de','zugende');
 $fuid = intval($params["fu"]);
 $sid = $params['sid'];
