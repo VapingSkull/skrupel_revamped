@@ -81,6 +81,44 @@ function filter_struct_utf8($type, array $default) {
     }
     return $ret;
 }
+
+function set_header () {    
+global $db,$smarty,$params;
+
+include (includes . 'inc.check.php');
+$zeiger = "SELECT * FROM " . table_prefix . "info";
+$array = $db->getRow($zeiger);
+$spiel_chat      = $array['chat'];
+$spiel_anleitung = $array['anleitung'];
+$spiel_forum     = $array['forum'];
+$spiel_forum_url = $array['forum_url'];
+$spiel_version   = $array['version'];
+$spiel_extend    = $array['extend'];
+$spiel_serial    = $array['serial'];
+
+$useragent = getEnv("HTTP_USER_AGENT");
+$firefox = preg_match("=firefox=i", $useragent);
+$linux = preg_match("=linux=i", $useragent);
+$plus=0;
+if ($linux) { 
+    $plus=1;     
+}
+$fontsize_small = 10-$plus;
+$fontsize_big = 12-$plus;
+$smarty->assign('fontsize_small', $fontsize_small);
+$smarty->assign('fontsize_big', $fontsize_big);
+$smarty->assign('servername', servername);
+$smarty->assign('uid', $params['uid']);
+$smarty->assign('sid', $params['sid']);
+
+$flexjs = "";
+$showNot = array('meta_simulation.php', 'flotte_beta.php', 'basen_alpha.php');
+        if ((@intval(substr($spieler_optionen,17,1))!=1) and (!in_array(basename($_SERVER['PHP_SELF']), $showNot))) { 
+        $flexjs = '<script type="text/javascript" src="' . servername. 'js/flexcroll/flexcroll.js"></script>';
+   }
+$smarty->assign('flexjs', $flexjs);
+}
+
 function get_phrasen($language, $page) {
     
     global $db;
@@ -213,7 +251,7 @@ function neuigkeit($art, $icon, $spieler_id, $inhalt)
 function nick(int $userid): string
 {
     global $db;
-    $nickname = $db->getOne("SELECT nick FROM " . table_prefix ."user where id = '". intval($userid) ."' order by id");
+    $nickname = $db->getOne("SELECT nick FROM " . table_prefix ."user where id = ? order by id",array(intval($userid)));
     return $nickname;    
 }
 
@@ -644,3 +682,7 @@ function spionstufe($xp) {
     }
     return 10;
 }
+
+function tlquad($tl){
+        return $tl*$tl*100;
+    }
