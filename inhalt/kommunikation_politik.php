@@ -48,13 +48,14 @@ if ($fuid==2) {
             $optionenn=$beziehung[$partei_a][$partei_b]['optionen'];
             $icon_bilder=array("","krieg","handel","nichtangriff","bund","allianz");
             $icon='<img src="../bilder/empty.gif" width="25" height="25">';
-            if ($statuss==1) { $icon='<img src="'.$bildpfad.'/icons/'.$icon_bilder[$statuss].'.gif" width="25" height="25" title="'.$lang['kommunikationpolitik']['icon'][$statuss][0].'">';
-            }elseif ($statuss>1) {
+            if ($statuss==1) { 
+                $icon='<img src="'.$bildpfad.'/icons/'.$icon_bilder[$statuss].'.gif" width="25" height="25" title="'.$lang['kommunikationpolitik']['icon'][$statuss][0].'">';
+            } elseif ($statuss>1) {
                 if($optionenn==0) {
                     $icon='<img src="'.$bildpfad.'/icons/'.$icon_bilder[$statuss].'.gif" width="25" height="25" title="'.$lang['kommunikationpolitik']['icon'][$statuss][0].'">';
-                }elseif($optionenn==1) {
+                } elseif($optionenn==1) {
                     $icon="<img src=\"".$bildpfad."/icons/".$icon_bilder[$statuss]."_br.gif\" width=\"25\" height=\"25\" title=\"".$lang['kommunikationpolitik']['icon'][$statuss][1]."\">";
-                }elseif($optionenn>1){
+                } elseif($optionenn>1){
                     $icon='<img src="'.$bildpfad.'/icons/'.$icon_bilder[$statuss].'_br.gif" width="25" height="25" title="'.str_replace('{1}',$optionenn,$lang['kommunikationpolitik']['icon'][$statuss][2]).'">';
                 }
             }
@@ -130,8 +131,8 @@ if ($fuid==2) {
                                     <?php
                                     for($j=10;$j>$i;$j--){
                                         ?>
-                                        <td bgcolor="<?php /*if($array_spieler[$i]){*/echo $spielerfarbe[$i];/*}elseif($array_spieler[$j] and !$array_spieler[$i]){echo $spielerfarbe[$j];}*/ ?>"><?php echo icon($i,$j); ?></td>
-                                        <td bgcolor="<?php /*if($array_spieler[$j] and $array_spieler[$i]){*/echo $spielerfarbe[$j];/*}elseif(!$array_spieler[$j] and $array_spieler[$i]){echo $spielerfarbe[$i];}*/ ?>"><img src="../bilder/empty.gif" width="1" height="25"></td>
+                                        <td bgcolor="<?php echo $spielerfarbe[$i]; ?>"><?php echo icon($i,$j); ?></td>
+                                        <td bgcolor="<?php echo $spielerfarbe[$j]; ?>"><img src="../bilder/empty.gif" width="1" height="25"></td>
                                         <?php
                                     }
                                     ?>
@@ -297,9 +298,7 @@ if ($fuid==4) {
     $volk_b=$spielernummer;
     $partei_a=$volk_a;
     $partei_b=$volk_b;
-    if ($volk_a>$volk_b) { $temp=$volk_b;$volk_b=$volk_a;$volk_a=$temp; }
-        //$partei_a=$volk_a;
-        //$partei_b=$volk_b;
+    if ($volk_a>$volk_b) { $temp=$volk_b;$volk_b=$volk_a;$volk_a=$temp; }       
         if (!isset($beziehung[$volk_a][$volk_b]['status'])) {
             $beziehung[$volk_a][$volk_b]['status']=0;
             $beziehung[$volk_a][$volk_b]['optionen']=0;

@@ -19,7 +19,7 @@ if ($basenanzahl>=1) {
 }
 $db->execute("UPDATE " . table_prefix . "planeten set p_defense_gesamt=sternenbasis_defense+abwehr+100 where spiel = ?",array($spiel));
 $sqlo2 = "SELECT * FROM " . table_prefix . "schiffe where spiel = ? order by aggro desc";
-$rows02 = $db->execute($sqlo2,array($spiel));
+$rowso2 = $db->execute($sqlo2,array($spiel));
 $schiffanzahl = $rowso2->RecordCount();
 if ($schiffanzahl>=1) {
     $arrayo2_out = $db->GetArray($sqlo2,array($spiel));

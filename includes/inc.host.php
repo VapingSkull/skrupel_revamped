@@ -57,10 +57,14 @@ $neuebasen=0;
 $schiffevernichtet=0;
 $planetenerobert=0;
 $planetenerobertfehl=0;
-$db->execute("DELETE FROM " . table_prefix . "kampf  WHERE spiel='".$spiel."'");
-$db->execute("DELETE FROM " . table_prefix . "nebel  WHERE spiel='".$spiel."'");
-$db->execute("DELETE FROM " . table_prefix . "scan WHERE spiel='".$spiel."'");
-$db->execute("DELETE FROM " . table_prefix . "neuigkeiten WHERE sicher='0' AND spiel_id='".$spiel."' AND art in ('1','2','3','4','7','8')");
+$sqld = "DELETE FROM " . table_prefix . "kampf  WHERE spiel = ?";
+$db->execute($sqld, array($spiel));
+$qld = "DELETE FROM " . table_prefix . "nebel  WHERE spiel = ?";
+$db->execute($sqld, array($spiel));
+$sqld = "DELETE FROM " . table_prefix . "scan WHERE spiel = ?";
+$db->execute($sqld, array($spiel));
+$sqld = "DELETE FROM " . table_prefix . "neuigkeiten WHERE sicher = ? AND spiel_id = ? AND art IN (?, ?, ?, ?, ?, ?)";
+$db->Execute($sqld, array(0, $spiel, 1, 2, 3, 4, 7, 8));
 ///////////////////////////////////////////////////////////////////////////////////////////////RASSENEIGENSCHAFTEN ANFANG
 /*
  * Sämtliche Daten wie Rassen , Waffen usw. werden in naher Zukunft in die Datenbank verschoben. Denn dieses zusammensetzen von Daten aus Dateien ist zu zeitaufwendig 
@@ -193,36 +197,39 @@ if ($schiffanzahl>=1) {
                     $ziely=$routing_points[1];
                     $warp=$routing_warp;
                     $zielid=$routing_id_temp[$routing_schritt];
-                    $db->execute("update " . table_prefix . "schiffe set flug='2',
-                                                                                      warp='" . $warp . "',
-                                                                                      zielx='" . $zielx . "',
-                                                                                      ziely='" . $ziely ."',
-                                                                                      zielid='" . $zielid . "',
-                                                                                      routing_schritt='" . $routing_schritt . "' 
-                                                                         where id='" . $shid . "'");
+                    $sqlu = "update " . table_prefix . "schiffe set flug = ?,
+                                                                    warp = ?,
+                                                                    zielx = ?,
+                                                                    ziely = ?,
+                                                                    zielid = ?,
+                                                                    routing_schritt = ? 
+                                                              where id = ?";
+                    $db->execute($sqlu, array(2,$warp,$zielx,$ziely,$zielid,$routing_schritt,$shid));
                 } else {
-                    $db->execute("update " . table_prefix . "schiffe set flug='0', 
-                                                                         warp='0', 
-                                                                         zielx='0', 
-                                                                         ziely='0', 
-                                                                         zielid='0' 
-                                 where id='" . $shid . "'");
+                    $sqlu = "update " . table_prefix . "schiffe set flug = ?, 
+                                                                    warp = ?, 
+                                                                    zielx = ?, 
+                                                                    ziely = ?, 
+                                                                    zielid = ? 
+                                                              where id = ?";
+                    $db->execute($sqlu,array(0,0,0,0,0,$shid));
                 }
             } else {
                 neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['flug9'],array($name));
-                              $db->execute("update " . table_prefix . "schiffe set flug='0',
-                                                                                   warp='0',
-                                                                                   zielx='0',
-                                                                                   ziely='0',
-                                                                                   zielid='0',
-                                                                                   routing_schritt='0',
-                                                                                   routing_koord='',
-                                                                                   routing_warp='0',
-                                                                                   routing_mins='',
-                                                                                   routing_id='',
-                                                                                   routing_tank='0',
-                                                                                   routing_status='0' 
-                                                                                   where id='" . $shid . "'");
+                $sqlu = "update " . table_prefix . "schiffe set flug = ?, 
+                                                                warp = ?, 
+                                                                zielx = ?, 
+                                                                ziely = ?, 
+                                                                zielid = ?, 
+                                                                routing_schritt = ?, 
+                                                                routing_koord = ?, 
+                                                                routing_warp = ?, 
+                                                                routing_mins = ?, 
+                                                                routing_id = ?, 
+                                                                routing_tank = ?, 
+                                                                routing_status = ? 
+                                                          where id = ?";
+                $db->execute($sqlu, array(0,0,0,0,0,0,'',0,'','',0,0,$shid));
             }
         }
     }
@@ -230,19 +237,25 @@ if ($schiffanzahl>=1) {
 ///////////////////////////////////////////////////////////////////////////////////////////////ROUTESTARTEN ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////MINENAKTION LOESCHEN BEI BEWEGUNG ANFANG
 if ($module[2]) {
-    $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='0' where spiel='" . $spiel . "' and flug>=1 and spezialmission in ('24','25')");
+    $sqlu = "UPDATE " . table_prefix . "schiffe set spezialmission = ? where spiel = ? and flug>=? and spezialmission in (? , ?)";
+    $db->execute($sqlu, array(0,$spiel,1,24,25));
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////MINENAKTION LOESCHEN BEI BEWEGUNG ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////TRAKTORSTRAHL UEBERPRUEFEN ANFANG
 $sql10 = "SELECT id,traktor_id,besitzer,warp FROM " . table_prefix . "schiffe where spezialmission='21' and spiel='".$spiel."' order by id";
 $array_out10 = $db->getArray($sql10);
+/*
+ * Wenn obige Abfrage keine Ergebnis enthält, dann überspringe diesen Bereich.
+ */
+if(!empty ($array_out10)){
 foreach ($array_out10 as $array10) {    
     $shid = $array10["id"];
     $warp = $array10["warp"];
     $besitzer  = $array10["beitzer"];
     $traktor_id = $array10["traktor_id"];
     if ($warp>7) {
-        $db->execute("UPDATE " . table_prefix . "schiffe SET warp='7' WHERE id='".$shid."' AND spiel='".$spiel."'");
+        $sqlu = "UPDATE " . table_prefix . "schiffe SET warp = ? WHERE id = ? AND spiel = ?";
+        $db->execute($sqlu, array(7,$shid,$spiel));
     }
 }
     $zeiger2  = "SELECT flug,besitzer,spezialmission FROM " . table_prefix . "schiffe WHERE id='" . $traktor_id ."' AND spiel='" . $spiel ."' order by id";
@@ -252,8 +265,10 @@ foreach ($array_out10 as $array10) {
     $besitzer2 = $array2["besitzer"];
     $spezialmission = $array2["spezialmission"];    
     if ($flug>0 || $spezialmission>0 || $besitzer!=$besitzer2) {
-        $db->execute("UPDATE " . table_prefix . "schiffe SET spezialmission='0',traktor_id='0' WHERE id='" . $shid . "' AND spiel='" . $spiel . "'");
-    }    
+        $sqlu = "UPDATE " . table_prefix . "schiffe SET spezialmission = ?, traktor_id = ? WHERE id = ? AND spiel = ?";
+        $db->execute($sqlu, array(0,0,$shid,$spiel));
+    }
+ }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////TRAKTORSTRAHL UEBERPRUEFEN ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////SCHIFFSUEBERGABE ANFANG
@@ -271,13 +286,14 @@ foreach ($array_out3 as $array3) {
     $nick_besitzer = nick($spieler_id_c[$besitzer]);
     neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['uebergabe0'],array($name,'<font color='.$spielerfarbe[$neu_besitzer].'>'.$neu_nick_besitzer.'</font>'));
     neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$neu_besitzer,$lang['host']['uebergabe1'],array('<font color='.$spielerfarbe[$besitzer].'>'.$nick_besitzer.'</font>',$name));
-    $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='0',
-                                                         besitzer='" . $neu_besitzer ."',
-                                                         fracht_leute='0',
-                                                         schwerebt='0',
-                                                         leichtebt='0',
-                                                         ordner='0' 
-                                                         where id='" . $shid . "'");
+    $sqlu = "UPDATE " . table_prefix . "schiffe set spezialmission = ?, 
+                                                    besitzer = ?,
+                                                    fracht_leute = ?,
+                                                    schwerebt = ?, 
+                                                    leichtebt = ?, 
+                                                    ordner = ? 
+                                                    where id = ?";
+    $db->execute($sqlu, array(0,$neu_besitzer,0,0,0,0,$shid));
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////SCHIFFSUBERGABE ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////PLASMASTURM - SCHIFFE ANFANG
@@ -290,14 +306,15 @@ if ($datensaetze>=1) {
         
         $x_pos=$array6["x_pos"];
         $y_pos=$array6["y_pos"];
-        $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='0' where 
-                                                             spezialmission in ('7','8','9','10',11','12',13') 
-                                                             and kox>='" . $x_pos . "' 
-                                                             and kox<=" . $x_pos ."+10 
-                                                             and koy>=" . $y_pos . " 
-                                                             and koy<=" . $y_pos . "+10 
-                                                             and zusatzmodul<>9 
-                                                             and spiel='" . $spiel . "'");
+        $sqlu = "UPDATE " . table_prefix . "schiffe set spezialmission = ? where 
+                                                             spezialmission in (?,?,?,?,?,?,?) 
+                                                             and kox>=? 
+                                                             and kox<=?+10 
+                                                             and koy>=? 
+                                                             and koy<=?+10 
+                                                             and zusatzmodul<>? 
+                                                             and spiel = ?";
+        $db->execute($sqlu, array(0,7,8,9,10,11,12,13,$x_pos,$x_pos,$y_pos,$y_pos,9,$spiel));
         
         $sql7 = "SELECT id,warp,plasmawarp FROM " . table_prefix . "schiffe where warp>5 and kox>=" . $x_pos . " and kox<=" . $x_pos . "+10 and koy>=" . $y_pos ." and koy<=" . $y_pos . "+10 and zusatzmodul<>9 and spiel='" . $spiel . "' order by id";
         $rows7 = $db->execute($sql7);
@@ -309,7 +326,8 @@ if ($datensaetze>=1) {
                 $warp = $array7["warp"];
                 $plasmawarp = $array7["plasmawarp"];
                 $plasmawarp = max(0,$warp,$plasmawarp);
-                $db->execute("UPDATE " . table_prefix . "schiffe set plasmawarp='" . $plasmawarp . "', warp='5' where spiel='" . $spiel . "' and id='" . $shid . "'");
+                $sqlu = "UPDATE " . table_prefix . "schiffe set plasmawarp = ?, warp = ? where spiel = ? and id = ?";
+                $db->execute($sqlu, array($plasmawarp,5,$spiel,$shid));
             }
         }
     }
@@ -329,7 +347,8 @@ if ($datensaetze>=1) {
         $ds = $rows9->RecordCount();        
         if ($ds >=1){
         } else {
-            $db->execute("UPDATE " . table_prefix . "schiffe set warp='" . $plasmawarp . "', plasmawarp='0' where spiel='" . $spiel . "' and id='" . $shid . "'");
+            $sqlu = "UPDATE " . table_prefix . "schiffe set warp = ?, plasmawarp = ? where spiel = ? and id = ?";
+            $db->execute($sqlu, array($plasmawarp,0,$spiel,$shid));
         }
     }
 }
@@ -379,29 +398,33 @@ foreach ($array12_out as $array12) {
                 if(($t_spezialmission!=7 && $t_spezialmission!=16) || $t_besitzer==$besitzer || ($beziehung[$besitzer][$t_besitzer]['status']>=3 && $beziehung[$besitzer][$t_besitzer]['status']<=5)) {
                     if($t_warp > 7) {
                         neuigkeiten(2,servername . "daten/$t_volk/bilder_schiffe/$t_bild_gross",$t_besitzer,$lang['host']['wellengenerator2'],array($t_name));
-                        $db->execute("UPDATE " . table_prefix . "schiffe set warp='7' where id='" . $t_shid ."'");
+                        $sqlu = "UPDATE " . table_prefix . "schiffe set warp = ? where id = ?";
+                        $db->execute($sqlu , array(7,$t_shid));
                     }
                 } else {
                     $erfolg = true;
                     neuigkeiten(2,servername . "daten/$t_volk/bilder_schiffe/$t_bild_gross",$t_besitzer,$lang['host']['wellengenerator0'],array($t_name));
-                    $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='0', 
-                                                                         warp='0', 
-                                                                         flug='0', 
-                                                                         zielx='0', 
-                                                                         ziely='0', 
-                                                                         zielid='0' 
-                                                                   where id='" . $t_shid . "'");
+                    $sqlu = "UPDATE " . table_prefix . "schiffe set spezialmission = ?, 
+                                                                         warp = ?, 
+                                                                         flug = ?, 
+                                                                         zielx = ?, 
+                                                                         ziely = ?, 
+                                                                         zielid = ? 
+                                                                   where id = ?";
+                    $db->execute($sqlu, array(0,0,0,0,0,0,$t_shid));
                 }
             }
         }
         $vomisaan -= $wellengenerator_fert;
-        $db->execute("UPDATE " . table_prefix . "schiffe set fracht_min3='" . $vomisaan . "' where id='" . $shid . "'");
+        $sqlu = "UPDATE " . table_prefix . "schiffe set fracht_min3 = ? where id = ?";
+        $db->execute($sqlu, array($vormisaan, $shid));
         if ($erfolg) {
             neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['wellengenerator3'],array($name));
         }
     } else {
         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['wellengenerator1'],array($name));
-        $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='0' where id='" . $shid . "'");
+        $sqlu = "UPDATE " . table_prefix . "schiffe set spezialmission = ? where id = ?";
+        $db->execute($sqlu, array(0,$shid));
     }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////WELLENGENERATOR ENDE
@@ -463,32 +486,39 @@ if ($schiffanzahl>=1) {
                         $koy_neu = intval($koy+($ziely-$koy)*$faktor);
                         neuigkeiten(2,servername . "daten/$t_volk/bilder_schiffe/$t_bild_gross",$t_besitzer,$lang['host']['wellengenerator4'],array($t_name));
                         neuigkeiten(2,servername . "images/news/sprung.jpg",$besitzer,$lang['host']['sprungtriebwerk3'],array($name,(int)$reichweite2));
-                        $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='0', kox='".$kox_neu."', koy='".$koy_neu."', lemin='".$lemin."', flug='0', status='1' where id='".$shid."'");
+                        $sqlu = "UPDATE " . table_prefix . "schiffe set spezialmission = ?, kox = ?, koy = ?, lemin = ?, flug = ?, status = ? where id = ?";
+                        $db->execute($sqlu, array(0,$kox_neu,$koy_neu,$lemin,0,1,$shid));
                         continue(2);
                     }
                 }
             }
             if (($kox_neu>=10) and ($kox_neu<=$umfang-13) and ($koy_neu>=10) and ($koy_neu<=$umfang-13)) {
                 neuigkeiten(2, servername . "images/news/sprung.jpg",$besitzer,$lang['host']['sprungtriebwerk0'],array($name,$reichweite));
-                $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='0',kox='" . $kox_neu . "', koy='" . $koy_neu ."', lemin='" . $lemin . "', flug='0', status='1' where id='" . $shid . "'");
+                $sqlu = "UPDATE " . table_prefix . "schiffe set spezialmission = ?,kox = ?, koy = ?, lemin = ?, flug = ?, status = ? where id = ?";
+                $db->execute($sqlu, array(0,$kox_neu, $koy_neu, $lemin,0,1,$shid));
             } else {
                 $schiffverschollen++;
                 neuigkeiten(2, servername . "images/news/sprung.jpg",$besitzer,$lang['host']['sprungtriebwerk1'],array($name));
-                $db->execute("DELETE FROM " . table_prefix . "schiffe where id='" . $shid . "'");
-                $db->execute("DELETE FROM " . table_prefix . "anomalien where art='3' and extra like 's:".$shid.":%'");
-                $db->execute("UPDATE " . table_prefix . "schiffe set flug='0', 
-                                                                     warp='0', 
-                                                                     zielx='0', 
-                                                                     ziely='0', 
-                                                                     zielid='0' 
-                                                                     where flug='3' 
-                                                                     and zielid='" . $shid . "'");
+                $sqld = "DELETE FROM " . table_prefix . "schiffe where id = ?";
+                $db->execute($sqld, array($shid));
+                $shids = "s:".$shid.":%";
+                $sqld ="DELETE FROM " . table_prefix . "anomalien where art = ? and extra like ?";
+                $db->execute($sqld, array(3,$shids));
+                $sqlu = "UPDATE " . table_prefix . "schiffe set flug = ?, 
+                                                                warp = ?, 
+                                                                zielx = ?, 
+                                                                ziely = ?, 
+                                                                zielid = ? 
+                                                                where flug = ? 
+                                                            and zielid = ?";
+                $db->execute($sqlu, array(0,0,0,0,0,3,$shid));
             }
         } else {
             neuigkeiten(2,servername . "images/news/sprung.jpg",$besitzer,$lang['host']['sprungtriebwerk2'],array($name));
-            $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='0', 
-                                                                 flug='0' 
-                                                             where id='" . $shid . "'");
+            $sqlu = "UPDATE " . table_prefix . "schiffe set spezialmission = ?, 
+                                                            flug = ?  
+                                                      where id = ?";
+            $db->execute($sqlu , array(0,0,$shid));
         }
     }
 }
@@ -535,19 +565,24 @@ if ($schiffanzahl>=1) {
                 $schaden=round($t_schaden+($sub_schaden*(80/($t_masse+1))*(80/($t_masse+1))+2));
                 if ($schaden<100) {
                     neuigkeiten(2,servername . "daten/$t_volk/bilder_schiffe/$t_bild_gross",$t_besitzer,$lang['host']['subraumverzerrer0'],array($t_name,$schaden));
-                   $db->execute("UPDATE" . table_prefix . "schiffe set schaden='" . $schaden . "' where id='" . $t_shid . "'");
+                   $sqlu = "UPDATE" . table_prefix . "schiffe set schaden = ? where id = ?";
+                   $db->execute($sqlu , array($shid,$t_shid));
                 }
                 if ($schaden>=100) {
                     neuigkeiten(2,servername . "daten/$t_volk/bilder_schiffe/$t_bild_gross",$t_besitzer,$lang['host']['subraumverzerrer1'],array($t_name));
-                    $db->execute("DELETE FROM " . table_prefix . "schiffe where id='" . $t_shid . "'");
-                    $db->execute("DELETE FROM " . table_prefix . "anomalien where art=3 and extra like 's:" . $t_shid . ":%'");
-                    $db->execute("UPDATE " . table_prefix . "schiffe set flug='0', 
-                                                                         warp='0', 
-                                                                         zielx='0', 
-                                                                         ziely='0', 
-                                                                         zielid='0' 
-                                                             where flug in ('3','4') 
-                                                             and zielid='" .  $t_shid . "'");
+                    $sqld = "DELETE FROM " . table_prefix . "schiffe where id = ?";
+                    $db->execute($sqld, array($t_shid));
+                    $sqld = "DELETE FROM " . table_prefix . "anomalien where art = ? and extra like ?";
+                    $t_shids = "s:".$_tshid.":%";
+                    $db->execute(3, $t_shids);
+                    $sqlu = "UPDATE " . table_prefix . "schiffe set flug = ?, 
+                                                                    warp = ?, 
+                                                                    zielx = ?, 
+                                                                    ziely = ?, 
+                                                                    zielid = ? 
+                                                              where flug in (?,?) 
+                                                             and zielid = ?";
+                    $db->execute($sqlu, array(0,0,0,0,0,3,4,$t_shid));
                 }
             }
         }
@@ -560,20 +595,25 @@ if ($schiffanzahl>=1) {
                 $fid=$array24["id"];
                 $war=mt_rand(1,10);
                 if($war<=$fert_subver){
-                    $db->execute("DELETE FROM " . table_prefix . "anomalien where id='" . $fid . "'");
+                    $sqld = "DELETE FROM " . table_prefix . "anomalien where id = ?";
+                    $db->execute($sqld , array($fid));
                 }
             }
         }
         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['subraumverzerrer2'],array($name));
-        $db->execute("DELETE FROM " . table_prefix . "schiffe where id='" . $shid . "'");
-        $db->execute("DELETE FROM " . table_prefix . "anomalien where art='3' and extra like 's:" . $shid . ":%'");
-        $db->execute("UPDATE " . table_prefix . "schiffe set flug='0', 
-                                                             warp='0', 
-                                                             zielx='0', 
-                                                             ziely='0', 
-                                                             zielid='0' 
-                                                 where flug in ('3','4') 
-                                                 and zielid='" . $shid . "'");        
+        $sqld = "DELETE FROM " . table_prefix . "schiffe where id = ?";
+        $db->execute($sqld, array($shid));
+        $sqld = "DELETE FROM " . table_prefix . "anomalien where art = ? and extra like ?";
+        $shids = "s:".$shid.":%";
+        $db->execute($sqld, array(3,$shids));
+        $sqlu = "UPDATE " . table_prefix . "schiffe set flug = ?, 
+                                                        warp = ?, 
+                                                        zielx = ?, 
+                                                        ziely = ?, 
+                                                        zielid = ? 
+                                                 where flug in (?,?) 
+                                                 and zielid = ?";
+        $db->execute($sqlu, array(0,0,0,0,0,3,4,$shid));
     }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////SUBRAUMVERZERRUNG ENDE
@@ -598,8 +638,23 @@ if ($schiffanzahl>=1) {
         $kox=$s_x;
         $koy=$s_y;
         if ($fluchtmanoever==1) {
-            $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='0', kox='" . $kox . "' ,koy='" . $koy . "',flug='0',warp='0',zielx='0',ziely='0',zielid='0' where id='" . $shid . "'");
-            $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug in ('3','4') and zielid='" . $shid . "'");
+            $sqlu = "UPDATE " . table_prefix . "schiffe set spezialmission = ?, 
+                                                                       kox = ?, 
+                                                                       koy = ?, 
+                                                                      flug = ?, 
+                                                                      warp = ?, 
+                                                                     zielx = ?, 
+                                                                     ziely = ?,
+                                                                    zielid = ? 
+                                                        where id = ?";
+            $db->execute($sqlu, array(0,$kox,$koy,0,0,0,0,0,$shid));
+            $sqlu = "UPDATE " . table_prefix . "schiffe set flug = ?, 
+                                                            warp = ?, 
+                                                           zielx = ?, 
+                                                           ziely = ?, 
+                                                           zielid = ? 
+                                                where flug in (?,?) and zielid = ?";
+            $db->execute($sqlu, array(0,0,0,0,0,3,4,$shid));
             neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['fluchtmanoever0'],array($name));
         }
         if ($fluchtmanoever>=2) {
@@ -607,14 +662,39 @@ if ($schiffanzahl>=1) {
             $schaden=$schaden+$schadenbumm;
             if ($schaden<100) {
                 neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['fluchtmanoever1'],array($name,$schadenbumm));
-                $db->execute("UPDATE " . table_prefix . "schiffe set flug=0,warp=0,zielx=0,ziely=0,zielid=0 where flug in ('3','4') and zielid='" . $shid . "'");
-                $db->execute("UPDATE " . table_prefix . "schiffe set schaden='" . $schaden . "',spezialmission='0',kox='" . $kox . "',koy='" . $koy . "',flug='0',warp='0',zielx='0',ziely='0',zielid='0' where id='" . $shid . "'");
+                $sqlu = "UPDATE " . table_prefix . "schiffe set flug = ?, 
+                                                                warp = ?, 
+                                                                zielx = ?, 
+                                                                ziely = ?, 
+                                                                zielid = ? 
+                                                    where flug in (?,?) and zielid = ?";
+                $db->execute($sqlu, array(0,0,0,0,0,3,4,$shid));
+                $sqlu = "UPDATE " . table_prefix . "schiffe set schaden = ?, 
+                                                                spezialmission = ?, 
+                                                                kox = ?, 
+                                                                koy = ?, 
+                                                                flug = ?, 
+                                                                warp = ?, 
+                                                                zielx = ?, 
+                                                                ziely = ?, 
+                                                                zielid = ? 
+                                                    where id = ?";
+                $db->execute($sqlu, array($schaden,0,$kox,$koy,0,0,0,0,0,$shid));
             }
             if ($schaden>=100) {
                 neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['fluchtmanoever2'],array($name));
-                $db->execute("DELETE FROM " . table_prefix . "schiffe where id='" . $shid ."");
-                $db->execute("DELETE FROM " . table_prefix . "sanomalien where art='3' and extra like 's:".$shid.":%'");
-                $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug in ('3','4') and zielid='" . $shid ."'");
+                $sqld = "DELETE FROM " . table_prefix . "schiffe where id = ?";
+                $db->execute($sqld, array($shid));
+                $shids = "s:".$shid.":%";
+                $sqld = "DELETE FROM " . table_prefix . "sanomalien where art = ? and extra like ?";
+                $db->execute($sqld,array(3,$shids));
+                $sqlu = "UPDATE " . table_prefix . "schiffe set flug = ?, 
+                                                                warp = ?, 
+                                                                zielx = ?, 
+                                                                ziely = ?, 
+                                                                zielid = ? 
+                                                    where flug in (?,?) and zielid = ?";
+                $db->execute($sqlu, array(0,0,0,0,0,3,4,$shid));
             }
         }
     }
@@ -622,24 +702,26 @@ if ($schiffanzahl>=1) {
 ///////////////////////////////////////////////////////////////////////////////////////////////LOYDS FLUCHTMANOEVER ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////FLUG ANFANG
 //alte Koordinaten und temp_verfolgt nullen
-$db->execute("UPDATE " . table_prefix . "schiffe SET kox_old='0',koy_old='0',temp_verfolgt='0' WHERE spiel='" . $spiel . "'");
+$sqlu = "UPDATE " . table_prefix . "schiffe SET kox_old = ?, koy_old = ?, temp_verfolgt = ? WHERE spiel = ?";
+$db->execute($sqlu, array(0,0,0,$spiel));
 //Verfolger auf 1 setzen
-$db->execute("UPDATE " . table_prefix . "schiffe SET temp_verfolgt='1' WHERE spiel='" . $spiel . "' AND flug>2");
+$sqlu = "UPDATE " . table_prefix . "schiffe SET temp_verfolgt = ? WHERE spiel = ? AND flug>?";
+$db->execute($sqlu, array(1,$spiel,2));
 //setze temp_verfolgt auf 1 bei allen Schiffen die verfolgt werden
 $sql26 = "SELECT DISTINCT zielid FROM " . table_prefix . "schiffe use index (flug,spiel) where flug>2 and spiel='" . $spiel . "'";
 $array26_out = $db->getArray($sql26);
 foreach($array26_out as $array26) {
     $zid = $array26['zielid'];
-    $db->execute("UPDATE " . table_prefix . "schiffe SET temp_verfolgt='1' WHERE spiel='" . $spiel . "' AND id='" . $zid . "'");
+    $sqlu = "UPDATE " . table_prefix . "schiffe SET temp_verfolgt = ? WHERE spiel = ? AND id = ?";
+    $db->execute($sqlu, array(1,$spiel,$zid));
 }
-$sql27 = "SELECT id,zielid,flug,kox,koy FROM " . table_prefix . "schiffe use index (spiel,flug,temp_verfolgt,status) WHERE flug>0 AND status>0 AND spiel='" . $spiel . "' AND temp_verfolgt='1' ORDER BY zielid DESC";
+$sql27 = "SELECT id,zielid,flug,kox,koy FROM " . table_prefix . "schiffe use index (spiel,status) WHERE flug>0 AND status>0 AND spiel='" . $spiel . "' AND temp_verfolgt='1' ORDER BY zielid DESC";
 $rows26 = $db->execute($sql26);
 $schiffanzahl = $rows26->RecordCount();
 if($schiffanzahl>0){
     $array26_out = $db->getArray($sql26);
     for  ($i=0; $i< $schiffanzahl;$i++) {
-    foreach ($array26_out as $array26) {
-        
+    foreach ($array26_out as $array26) {        
         $feld_shid[$i]=$array26["id"];
         $feld_zielid[$i]=$array26["zielid"];
         $feld_flug[$i]=$array26["flug"];
@@ -772,11 +854,11 @@ if($schiffanzahl>0){
             $zwischenarray_shid[$kreisel_anzahl-1]=$feld_shid[$feldindex_maxentfernung];
             $zwischenarray_zielid[$kreisel_anzahl-1]=$feld_zielid[$feldindex_maxentfernung];
             //neues Temporaeres ziel
-            $db->execute("UPDATE " . table_prefix . "schiffe set zielx='" . $MP_x . "', 
-                                                                 ziely='" . $MP_y . "', 
-                                                                 zielid=-1 
-                                                                 where spiel='" . $spiel . "' 
-                                                                 and id='" . $feld_shid[$feldindex_maxentfernung] . "'");
+            $sqlu = "UPDATE " . table_prefix . "schiffe set zielx = ?, 
+                                                                 ziely = ?, 
+                                                                 zielid = ? 
+                                                where spiel = ?  and id = ?";
+            $db->execute($sqlu,array($MP_x,$MP_y,'-1',$spiel,$feld_shid[$feldindex_maxentfernung]));
             //jetzt machen wir endlich aus dem Kreisel eine Schlange
             $ind=$feldindex_maxentfernung;
             for($k=$anzahl_schlange;$k>0;$k--){
@@ -806,7 +888,8 @@ for($i=0; $i<$schiffanzahl;$i++) {
 //so jetzt schreiben wir noch die werte der Schlangenfelder auf die temp_verfolgt der DB und dann knnen wir danach sortiert auslesen
 //e
 for($i=0; $i<$schiffanzahl;$i++) {
-    $db->execute("UPDATE " . table_prefix . "schiffe set temp_verfolgt='" . $feld_schlange[$i] . "' where spiel='" . $spiel . "' and id='" . $feld_shid[$i] . "'");
+    $sqlu = "UPDATE " . table_prefix . "schiffe set temp_verfolgt = ? where spiel = ? and id = ?";
+    $db->execute($sqlu, array($feld_schlange[$i],$spiel,$feld_shid[$i]));
 }
 //so wir haben es geschaft alles ist wohlgeordnet jetzt kann geflogen werden
 $sql29 = "SELECT * FROM " . table_prefix . "schiffe use index(flug,status,spiel) where flug>0 and status>0 and spiel='" . $spiel . "' order by temp_verfolgt";
@@ -863,7 +946,8 @@ if ($schiffanzahl>=1) {
                 $masse2=$db->getOne($sql30);
                 $masse_gesamt=round($masse+($masse2/2));
             } else {
-                $db->execute("UPDATE " . table_prefix . "schiffe set spezialmission='0',traktor_id='0' where id='" . $shid . "' and spiel='" . $spiel . "'");
+                $sqlu = "UPDATE " . table_prefix . "schiffe set spezialmission = ?,traktor_id = ? where id = ? and spiel = ?";
+                $db->execute($sqlu, array(0,0,$shid,$spiel));
             }
         }
         ////////////////////////////overdrive
@@ -1029,30 +1113,32 @@ if ($schiffanzahl>=1) {
         }
         if ($rauswurf==1) {
             if (($flug==1) or ($flug==2)) {
-                $db->execute("UPDATE " . table_prefix . "schiffe set kox_old='" . $kox_old . "', 
-                                                                     koy_old='" . $koy_old . "', 
-                                                                     strecke=strecke+".$streckemehr.", 
-                                                                     fracht_min2='" . $fracht_min2 . "', 
-                                                                     kox='" . $kox . "', 
-                                                                     koy='" . $koy . "', 
-                                                                     lemin='" . $lemin . "', 
-                                                                     flug='" . $flug_neu . "', 
-                                                                     status='" . $status  . "' 
-                                                         where id='" . $shid . "'");
+                $sqlu = "UPDATE " . table_prefix . "schiffe set kox_old = ?, 
+                                                                koy_old = ?, 
+                                                                strecke = strecke+?, 
+                                                                fracht_min2 = ?, 
+                                                                kox = ?, 
+                                                                koy = ?, 
+                                                                lemin = ?, 
+                                                                flug = ?, 
+                                                                status = ? 
+                                                         where id = ?";
+                $db->execute($sqlu, array($kox_old,$koy_old,$streckemehr,$fracht_min2,$kox,$koy,$lemin,$flug_neu,$status,$shid));
             }
             if (($flug==4) or ($flug==3)) {
-                $db->execute("UPDATE " . table_prefix . "schiffe set kox_old='" . $kox_old . "', 
-                                                                     koy_old='" . $koy_old . "', 
-                                                                     strecke=strecke+" . $streckemehr . ", 
-                                                                     fracht_min2='" . $fracht_min2 . "', 
-                                                                     kox='" . $kox . "', 
-                                                                     koy='" . $koy . "', 
-                                                                     zielx='" . $zielx . "', 
-                                                                     ziely='" . $ziely . "', 
-                                                                     lemin='" . $lemin . "', 
-                                                                     flug='" . $flug_neu . "', 
-                                                                     status='" . $status . "' 
-                                                        where id='" . $shid . "'");
+                $sqlu = "UPDATE " . table_prefix . "schiffe set kox_old = ?, 
+                                                                koy_old = ?, 
+                                                                strecke = strecke+?, 
+                                                                fracht_min2 = ?, 
+                                                                kox = ?, 
+                                                                koy = ?, 
+                                                                zielx = ?, 
+                                                                ziely = ?, 
+                                                                lemin = ?, 
+                                                                flug = ?, 
+                                                                status = ? 
+                                                    where id = ?";
+                $db->execute($sqlu,array($kox_old,$koy_old,$streckemehr,$fracht_min2,$kox,$koy,$zielx,$ziely,$lemin,$flug_neu,$status,$shid));
             }
             $stat_lichtjahre[$besitzer]=$stat_lichtjahre[$besitzer]+$streckemehr;
             if ($spezialmission==21) {
@@ -1188,7 +1274,7 @@ if ($schiffanzahl>=1) {
         $reichweite=round(intval($array["masse"])/2);
         $zeiger3_temp = "SELECT * FROM " . table_prefix . "schiffe where (sqrt(((kox-$kox)*(kox-$kox))+((koy-$koy)*(koy-$koy)))<=$reichweite) and tarnfeld='1' and spiel='".$spiel."' order by id";
         $rows3_temp = $db->execute($zeiger3_temp);
-        $treffschiff =$rows3_temp->RecordCount();
+        $treffschiff = $rows3_temp->RecordCount();
         if ($treffschiff>=1) {
             $array3temp_out = $db->getArray($zeiger3_temp);
             foreach ($array3temp_out as $array_temp) {                
@@ -1383,7 +1469,7 @@ $rows144 = $db->execute($zeiger144);
 $anoanzahl = $rows144->RecordCount();
 if ($anoanzahl>=1) {
     $array144_out = $db->getArray($zeiger144);
-    foreach  ($array144_oug as $array) {        
+    foreach  ($array144_out as $array) {        
         $shid=$array["id"];
         $projektile=$array["projektile"];
         $projektile_auto=$array["projektile_auto"];
@@ -1535,55 +1621,35 @@ if ($basenanzahl>=1) {
 									   spiel,
 									   extra,
 									   zusatzmodul) 
-								   values ('".$x_pos."',
-                                                                           '".$y_pos."',
-                                                                           '".$besitzer."',
-									  '2',
-									  '".$schiffbau_name2."',
-                                                                          '".$schiffbau_klasse_name."',
-									  '".$schiffbau_klasse."',
-									  '".$schiffbau_rasse."',
-									  '".$schiffbau_techlevel."',
-									  '".$schiffbau_antriebe_stufe."',
-									  '".$schiffbau_antriebe."',
-									  '".$x_pos."',
-									  '".$y_pos."',
-									  '".$schiffbau_crew."',
-									  '".$schiffbau_crew."',
-									  '0',
-									  '".$schiffbau_tank."',
-									  '".$schiffbau_fracht."',
-									  '".$schiffbau_masse."',
-									  '".$schiffbau_masse."',
-									  '".$schiffbau_bild_gross."',
-									  '".$schiffbau_bild_klein."',
-									  '".$schiffbau_energetik_stufe."',
-									  '".$schiffbau_energetik."',
-									  '".$schiffbau_projektile_stufe."',
-									  '".$schiffbau_projektile."',
-									  '".$schiffbau_hangar."',
-									  '100',
-									  '".$schiffbau_fertigkeiten."',
-									  '".$spiel."',
-									  '".$schiffbau_extra."',
-									  '".$schiffbau_zusatz."')");
-$db->execute("UPDATE " . table_prefix . "sternenbasen set ".$vorrat_energetik_string."='".$energetik."',
-							  ".$vorrat_projektile_string."='".$projektile."',
-							  ".$vorrat_antrieb_string."='".$antrieb."' 
-                                                      where spiel='".$spiel."' and id='".$baid."'");
-$db->execute("DELETE FROM " . table_prefix . "huellen where spiel='".$spiel."' and id='".$hid."'");
+								values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                                                                array($x_pos,$y_pos,$besitzer,'2',$schiffbau_name2,$schiffbau_klasse_name,$schiffbau_klasse,$schiffbau_rasse,$schiffbau_techlevel,$schiffbau_antriebe_stufe,$schiffbau_antriebe,
+                                                                      $x_pos,$y_pos,$schiffbau_crew,$schiffbau_crew,'0',$schiffbau_tank,$schiffbau_fracht,$schiffbau_masse,$schiffbau_masse,$schiffbau_bild_gross,$schiffbau_bild_klein,
+                                                                      $schiffbau_energetik_stufe,$schiffbau_energetik,$schiffbau_projektile_stufe,$schiffbau_projektile,$schiffbau_hangar,'100',$schiffbau_fertigkeiten,$spiel,$schiffbau_extra,$schiffbau_zusatz));
+$db->execute("UPDATE " . table_prefix . "sternenbasen set ".$vorrat_energetik_string." = ?,
+							  ".$vorrat_projektile_string." = ?,
+							  ".$vorrat_antrieb_string." = ?  
+                                                      where spiel = ? and id = ?",
+                                        array($energetik,$projektile,$antrieb,$spiel,$baid));
+$db->execute("DELETE FROM " . table_prefix . "huellen where spiel = ? and id = ?",
+                                              array($spiel,$hid));
                     neuigkeiten(2,servername . "daten/$schiffbau_rasse/bilder_schiffe/$schiffbau_bild_gross",$besitzer,$lang['host']['schiffbau0'],array($schiffbau_name2));
                     $schiffbau_name=$schiffbau_name.'(1)';
                     }                    
                 }
             }
         }
-        $db->execute("INSERT INTO " . table_prefix . "schiffe (s_x,s_y,besitzer,status,name,klasse,klasseid,volk,techlevel,antrieb,antrieb_anzahl,kox,koy,crew,crewmax,lemin,leminmax,frachtraum,masse,masse_gesamt,bild_gross,bild_klein,energetik_stufe,energetik_anzahl,projektile_stufe,projektile_anzahl,hanger_anzahl,schild,fertigkeiten,spiel,extra,zusatzmodul) values ($x_pos,$y_pos,$besitzer,2,'$schiffbau_name','$schiffbau_klasse_name',$schiffbau_klasse,'$schiffbau_rasse',$schiffbau_techlevel,$schiffbau_antriebe_stufe, $schiffbau_antriebe,$x_pos,$y_pos,$schiffbau_crew,$schiffbau_crew,0,$schiffbau_tank,$schiffbau_fracht,$schiffbau_masse,$schiffbau_masse,'$schiffbau_bild_gross','$schiffbau_bild_klein',$schiffbau_energetik_stufe,$schiffbau_energetik,$schiffbau_projektile_stufe,$schiffbau_projektile,$schiffbau_hangar,100,'$schiffbau_fertigkeiten',$spiel,'$schiffbau_extra',$schiffbau_zusatz)");
+        $db->execute("INSERT INTO " . table_prefix . "schiffe (s_x,s_y,besitzer,status,name,klasse,klasseid,volk,techlevel,antrieb,antrieb_anzahl,kox,koy,crew,crewmax,lemin,leminmax,frachtraum,masse,masse_gesamt,
+                                                               bild_gross,bild_klein,energetik_stufe,energetik_anzahl,projektile_stufe,projektile_anzahl,hanger_anzahl,schild,fertigkeiten,spiel,extra,zusatzmodul) 
+                                                      values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                                                      array ($x_pos,$y_pos,$besitzer,2,$schiffbau_name,$schiffbau_klasse_name,$schiffbau_klasse,$schiffbau_rasse,$schiffbau_techlevel,$schiffbau_antriebe_stufe,
+                                                             $schiffbau_antriebe,$x_pos,$y_pos,$schiffbau_crew,$schiffbau_crew,0,$schiffbau_tank,$schiffbau_fracht,$schiffbau_masse,$schiffbau_masse,$schiffbau_bild_gross,
+                                                             $schiffbau_bild_klein,$schiffbau_energetik_stufe,$schiffbau_energetik,$schiffbau_projektile_stufe,$schiffbau_projektile,$schiffbau_hangar,100,$schiffbau_fertigkeiten,
+                                                             $spiel,$schiffbau_extra,$schiffbau_zusatz));
         neuigkeiten(2,servername . "daten/$schiffbau_rasse/bilder_schiffe/$schiffbau_bild_gross",$besitzer,$lang['host']['schiffbau0'],array($schiffbau_name));
     
  }
 }
-$db->execute("UPDATE " . table_prefix . "sternenbasen set schiffbau_status='0',schiffbau_extra='' where spiel='".$spiel."'");
+$db->execute("UPDATE " . table_prefix . "sternenbasen set schiffbau_status='0',schiffbau_extra='' where spiel = ?",array($spiel));
 ///////////////////////////////////////////////////////////////////////////////////////////////SCHIFFSBAU ENDE
 ///////////////////////////////////////////////////////////////////////////////////////////////GRAVITATION ANFANG
 $sql200 = "SELECT * FROM " . table_prefix . "schiffe use index (status,spiel) where status<>2 and spiel='".$spiel."' order by id";
@@ -1613,9 +1679,9 @@ if ($schiffanzahl>=1) {
                 $y_pos=$array201["y_pos"];
                 if ($pid==$zielid) {
                     neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['flug5'],array($name));
-                    $db->execute("UPDATE " . table_prefix . "schiffe set flug=0 where id=$shid");
+                    $db->execute("UPDATE " . table_prefix . "schiffe set flug=0 where id = ?",array($shid));
                 }
-                $db->exeecute("UPDATE " . table_prefix . "schiffe set kox='".$x_pos."',koy='".$y_pos."',status='2' where id='".$shid."'");
+                $db->execute("UPDATE " . table_prefix . "schiffe set kox = ?,koy = ?,status = ? where id = ?",array($x_pos,$y_pos,2,$shid));
             }
         }
     }
@@ -1684,10 +1750,10 @@ if($module[2]) {
                 if ($minentreffer>=1) {
                     $aanomalie[2]=$aanomalie[2]-$minentreffer;
                     if ($aanomalie[2]<=0) {
-                        $db->execute("DELETE FROM " . table_prefix . "anomalien where spiel='".$spiel."' and id='".$aanomalie[0]."'");
+                        $db->execute("DELETE FROM " . table_prefix . "anomalien where spiel = ? and id = ?",array($spiel,$aanomalie[0]));
                     } else {
                         $mineextra=$aanomalie[1].':'.$aanomalie[2].':'.$aanomalie[3];
-                        $db->execute("UPDATE " . table_prefix . "anomalien set extra='".$mineextra."' where spiel='".$spiel."' and id='".$aanomalie[0]."'");
+                        $db->execute("UPDATE " . table_prefix . "anomalien set extra = ? where spiel = ? and id = ?",array($mineextra,$spiel,$aanomalie[0]));
                     }
                     $minen_schaden=$torpedoschaden["$aanomalie[3]"];
                     $minen_schaden_crew=$torpedoschadencrew["$aanomalie[3]"];                    
@@ -1699,11 +1765,12 @@ if($module[2]) {
                     $sektork=sektor($kox,$koy);                    
                     if (($schaden>=100) or ($crew<1)) {
                         $db->execute("DELETE FROM " . table_prefix . "schiffe where id='".$shid."' and besitzer='".$besitzer."'");
-                        $db->execute("DELETE FROM " . table_prefix . "anomalien where art='3' and extra like 's:".$shid.":%'");
-                        $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug in ('3','4') and zielid='".$shid."'");
+                        $shids = "s:".$shid.":%";
+                        $db->execute("DELETE FROM " . table_prefix . "anomalien where art='3' and extra like ?",array($shids));
+                        $db->execute("UPDATE " . table_prefix . "schiffe set flug='0',warp='0',zielx='0',ziely='0',zielid='0' where flug in ('3','4') and zielid = ?",array($shid));
                         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['minenfelder0'],array($name,$sektork));
                     } else {
-                        $db->execute("UPDATE " . table_prefix . "schiffe set crew='".$crew."', schaden='".$schaden."',scanner='0' where id='".$shid."' and besitzer='".$besitzer."'");
+                        $db->execute("UPDATE " . table_prefix . "schiffe set crew = ?, schaden = ?,scanner='0' where id = ? and besitzer = ?",array($crew,$schaden,$shid,$besitzer));
                         neuigkeiten(2,servername . "daten/$volk/bilder_schiffe/$bild_gross",$besitzer,$lang['host']['minenfelder1'],array($name,$sektork,$minentreffer,$schaden_rumpf,$schaden_crewmen));
                     }
                 }

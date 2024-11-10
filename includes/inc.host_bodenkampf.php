@@ -240,9 +240,7 @@ foreach ($array11_out as $array11) {
     }
     ////////////////////////////////////////////////////////////////
 }
-/*
- * Sämtliche Datenbank Querys angepasst und Sprachvariablen aus der Datenbank integriert.
- */
+
 /*
  * Speicher des Lang Arrays wieder freigeben.
  */

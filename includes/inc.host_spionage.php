@@ -105,18 +105,22 @@ if($module[0]) {
         $zielsternenbasis_array[$id] = 0;
         //spion am ziel?
         if($spiomission_array[$id] != 9  && $spiomission_array[$id] != 6) {
+            $db->SetFetchMode(ADODB_FETCH_ASSOC);
             $sql_target = "SELECT id, besitzer, sternenbasis_id FROM " . table_prefix . "planeten use index (besitzer,spiel) WHERE besitzer!='0' AND besitzer<>".$spionbesitzer_array[$id]." AND x_pos='".$kox_array[$id]."' AND y_pos='".$koy_array[$id]."' AND spiel='".$spiel."'";
             $zeiger_target = $db->execute($sql_target);
+            var_dump($zeiger_target);
             if(!empty($zeiger_target)) {                
                 $ergebnis_target = $db->getRow($sql_target);
                 if($ergebnis_target['id'] == $zielid_array[$id]) {
                     $temp_zielid = 0;
                     $zielplanetbesitzer_array[$id] = $ergebnis_target['besitzer'];
                     $zielsternenbasis_array[$id] = $ergebnis_target['sternenbasis_id'];
+                    print_r($db->ErrorMsg());
                 } else {
                     $temp_zielid = $ergebnis_target['id'];
                     $temp_zielplanetbesitzer = $ergebnis_target['besitzer'];
                     $temp_zielsternenbasis = $ergebnis_target['sternenbasis_id'];
+                    print_r($db->ErrorMsg());
                 }
             }
             $sql_target2 = "SELECT besitzer FROM " . table_prefix . "schiffe WHERE besitzer<>0 AND besitzer<>".$spionbesitzer_array[$id]." AND kox='".$kox_array[$id]."' AND koy='".$koy_array[$id]."' AND id='".$zielid_array[$id]."' AND spiel='".$spiel."'";

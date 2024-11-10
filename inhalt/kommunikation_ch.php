@@ -86,18 +86,18 @@ if ($fuid==2) {
             $bbcode=preg_replace("/\[u\]/i","<u>",$bbcode);
             $bbcode=preg_replace("/\[\/u\]/i","</u>",$bbcode);
 
-            $bbcode=preg_replace_callback("/(\[)(url)(=)(['\"]?)([^\"']*)(\\4])(.*)(\[\/url\])/siU",		function($m) { return checkurl($m[5], $m[7]); }, $bbcode);
-            $bbcode=preg_replace_callback("/(\[)(url)(])(.*)(\[\/url\])/siU",								function($m) { return checkurl($m[4]); }, $bbcode);
-            $bbcode=preg_replace_callback("/(\[)(email)(=)(['\"]?)([^\"']*)(\\4])(.*)(\[\/email\])/siU",	function($m) { return checkmail($m[5], $m[7]); }, $bbcode);
-            $bbcode=preg_replace_callback("/(\[)(email)(])(.*)(\[\/email\])/siU",							function($m) { return checkmail($m[4]); }, $bbcode);
+            $bbcode=preg_replace_callback("/(\[)(url)(=)(['\"]?)([^\"']*)(\\4])(.*)(\[\/url\])/siU",function($m) { return checkurl($m[5], $m[7]); }, $bbcode);
+            $bbcode=preg_replace_callback("/(\[)(url)(])(.*)(\[\/url\])/siU",function($m) { return checkurl($m[4]); }, $bbcode);
+            $bbcode=preg_replace_callback("/(\[)(email)(=)(['\"]?)([^\"']*)(\\4])(.*)(\[\/email\])/siU",function($m) { return checkmail($m[5], $m[7]); }, $bbcode);
+            $bbcode=preg_replace_callback("/(\[)(email)(])(.*)(\[\/email\])/siU",function($m) { return checkmail($m[4]); }, $bbcode);
 
-            $bbcode=preg_replace_callback("/(\[)(font)(=)(['\"]?)([^\"']*)(\\4])(.*)(\[\/font\])/siU",		function($m) { return checkfont($m[5], $m[7]); }, $bbcode);
-            $bbcode=preg_replace_callback("/(\[)(font)(])(.*)(\[\/font\])/siU",								function($m) { return checkfont($m[4]); }, $bbcode);
-            $bbcode=preg_replace_callback("/(\[)(color)(=)(['\"]?)([^\"']*)(\\4])(.*)(\[\/color\])/siU",	function($m) { return checkcolor($m[5], $m[7]); }, $bbcode);
-            $bbcode=preg_replace_callback("/(\[)(color)(])(.*)(\[\/color\])/siU",							function($m) { return checkcolor($m[4]); }, $bbcode);
+            $bbcode=preg_replace_callback("/(\[)(font)(=)(['\"]?)([^\"']*)(\\4])(.*)(\[\/font\])/siU",function($m) { return checkfont($m[5], $m[7]); }, $bbcode);
+            $bbcode=preg_replace_callback("/(\[)(font)(])(.*)(\[\/font\])/siU",	function($m) { return checkfont($m[4]); }, $bbcode);
+            $bbcode=preg_replace_callback("/(\[)(color)(=)(['\"]?)([^\"']*)(\\4])(.*)(\[\/color\])/siU",function($m) { return checkcolor($m[5], $m[7]); }, $bbcode);
+            $bbcode=preg_replace_callback("/(\[)(color)(])(.*)(\[\/color\])/siU",function($m) { return checkcolor($m[4]); }, $bbcode);
 
-            $bbcode=preg_replace_callback("/(\[)(size)(=)(['\"]?)([^\"']*)(\\4])(.*)(\[\/size\])/siU",		function($m) { return checksize($m[5], $m[7]); }, $bbcode);
-            $bbcode=preg_replace_callback("/(\[)(size)(])(.*)(\[\/size\])/siU",								function($m) { return checksize($m[4]); }, $bbcode);
+            $bbcode=preg_replace_callback("/(\[)(size)(=)(['\"]?)([^\"']*)(\\4])(.*)(\[\/size\])/siU",function($m) { return checksize($m[5], $m[7]); }, $bbcode);
+            $bbcode=preg_replace_callback("/(\[)(size)(])(.*)(\[\/size\])/siU",	function($m) { return checksize($m[4]); }, $bbcode);
 
             $bbcode=preg_replace("/\\[img\\]([^\\[]*)\\[\/img\\]/i","<img src=\"\\1\" border=0>",$bbcode);
             $bbcode2=$bbcode;
@@ -105,16 +105,9 @@ if ($fuid==2) {
         }
         $aktuell=time();
         $farbe=$spieler_chatfarbe;
-        $nachricht=str_post('nachricht','SQLSAFE');
-        //$nachricht=nl2br(stripslashes($nachricht));
-        //$nachricht=str_replace("'", "",$nachricht);
-        //$nachricht=str_replace("\"", "",$nachricht);
-        //$nachricht=str_replace("\\", "",$nachricht);
-        //$nachricht=str_replace("\;", "",$nachricht);
-        //$nachricht=str_replace("\n", "",$nachricht);
+        $nachricht=str_post('nachricht','SQLSAFE');      
         $nachricht=parsetext($nachricht);
         $jetzt=date("H:i",$aktuell);
-         //$text="<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td valign=\"top\" style=\"color:$farbe;\"><nobr>$spieler_name&nbsp;</nobr></td><td valign=\"top\" style=\"color:#aaaaaa;\"><nobr>@ $jetzt&nbsp;</nobr></td><td valign=\"top\">$nachricht</td></tr></table>";
         $an=int_post('an');
         $zeiger = @mysql_query("INSERT INTO $skrupel_chat (spiel,datum,text,an,von,farbe) values ($spiel,'$aktuell','$nachricht','$an','$spieler_name','$farbe');");
     }
@@ -177,7 +170,6 @@ if ($fuid==2) {
                     if (document.formular.akt[3].checked) {Interv=60};
                 }
             }
-            //document.formular.subben.value = Interv
             timrID = setTimeout("startClock2()", 1000);
         }
     </script>

@@ -8,7 +8,7 @@ $rows = $db->execute($sql);
 $schiffanzahl = $rows->RecordCount();
 $checkstring=array();
 if ($schiffanzahl>=1) {
-    $array_out = $rows->getArray();
+    $array_out = $db->getArray($sql);
     foreach ($array_out as $array) {        
         $shid=$array["id"];
         $besitzer=$array["besitzer"];

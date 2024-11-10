@@ -3,11 +3,8 @@
 require_once ('../inc.conf.php');
 require_once (inhalt_dir . 'inc.hilfsfunktionen.php');
 $params = array_merge(filter_struct_utf8(1, $_GET), filter_struct_utf8(1, $_POST), filter_struct_utf8(1, $_REQUEST));
-open_db();
-
 $langfile_1 = 'kommunikation_board';
 $fuid = intval($params["fu"]);
-
 if ($fuid==1) {
     include (inhalt_dir . "inc.header.php");
     ?>

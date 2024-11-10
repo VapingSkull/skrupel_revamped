@@ -10,7 +10,7 @@ $sqlu = "update " . table_prefix . "anomalien set sicht_1 = ?,
                                                   sicht_9 = ?, 
                                                   sicht_10 = ? 
                                     where spiel = ?";
-$db->execute($sqlu, arrray(0,0,0,0,0,0,0,0,0,0,$spiel));
+$db->execute($sqlu, array(0,0,0,0,0,0,0,0,0,0,$spiel));
 $sqlu = "update " . table_prefix . "sternenbasen set sicht_1 = ?, 
                                                   sicht_2 = ?, 
                                                   sicht_3 = ?, 
@@ -22,7 +22,7 @@ $sqlu = "update " . table_prefix . "sternenbasen set sicht_1 = ?,
                                                   sicht_9 = ?, 
                                                   sicht_10 = ? 
                                     where spiel = ?";
-$db->execute($sqlu, arrray(0,0,0,0,0,0,0,0,0,0,$spiel));
+$db->execute($sqlu, array(0,0,0,0,0,0,0,0,0,0,$spiel));
 $sqlu = "update " . table_prefix . "planeten set sicht_1 = ?, 
                                                   sicht_2 = ?, 
                                                   sicht_3 = ?, 
@@ -34,7 +34,7 @@ $sqlu = "update " . table_prefix . "planeten set sicht_1 = ?,
                                                   sicht_9 = ?, 
                                                   sicht_10 = ? 
                                     where spiel = ?";
-$db->execute($sqlu, arrray(0,0,0,0,0,0,0,0,0,0,$spiel));
+$db->execute($sqlu, array(0,0,0,0,0,0,0,0,0,0,$spiel));
 $sqlu = "update " . table_prefix . "schiffe set sicht_1 = ?, 
                                                 sicht_2 = ?, 
                                                 sicht_3 = ?, 
@@ -79,12 +79,7 @@ foreach ($array90_out as $array90) {
     $sternenbasis_art = $array90['sternenbasis_art'];
     $sternenbasis = $array90['sternenbasis'];
     $scanner_r = 53;
-    if ($osys_1==13 or 
-        $osys_2==13 or 
-        $osys_3==13 or 
-        $osys_4==13 or 
-        $osys_5==13 or 
-        $osys_6==13)
+    if (in_array(18, [$osys_1, $osys_2, $osys_3, $osys_4, $osys_5, $osys_6]))
         { 
             $scanner_r=90;
         }

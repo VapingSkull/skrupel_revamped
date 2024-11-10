@@ -220,7 +220,12 @@ if ($fuid==3) {
                 $an=int_post('an');
                 $zeiger = @mysql_query("INSERT INTO $skrupel_chat (spiel,datum,text,an,von,farbe) values (1,'$aktuell','$nachricht','$an','$spieler_name','$farbe');");
             }
-            if (int_get('zeit')>=1) { } else { $neuzeit=time();$first=1;}
+            if (int_get('zeit')>=1) { 
+                
+            } else { 
+                $neuzeit=time();$first=1;
+                
+            }
             ?>
             <script language="JavaScript">
                 function senden(e) {

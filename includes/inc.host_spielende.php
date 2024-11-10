@@ -13,21 +13,25 @@ $spieler_ids[10]=$spieler_10;
 if ($ziel_id==0) {
     for ($m=1;$m<11;$m++) {
         if ($spieler_gesamt_c[$m]==1) {
-            $zeiger_temp= mysql_query("SELECT * FROM " . table_prefix . "user where id='".$spieler_id_c[$m]."'");
-            $array_temp = mysql_fetch_array($zeiger_temp);
-            $username=$array_temp["nick"];
+            /*$zeiger_temp= mysql_query("SELECT * FROM " . table_prefix . "user where id='".$spieler_id_c[$m]."'");
+            $array_temp = mysql_fetch_array($zeiger_temp);*/
+            $username = nick ($spieler_id_c[$m]);
             $gewinner="<font color=".$spielerfarbe[$m].">".$username."</font>";
             $sieger[$siegeranzahl]=$gewinner;
             $siegeranzahl++;
-            $zeiger_temp = mysql_query("UPDATE " . table_prefix . "user set stat_sieg=stat_sieg+1 where id='".$spieler_id_c[$m]."'");
+            $db->execute("UPDATE " . table_prefix . "user set stat_sieg=stat_sieg+1 where id = ?",array($spieler_id_c[$m]));
         }
     }
     if ($siegeranzahl>1) {
         $gewinner="";
         for ($n=0;$n<$siegeranzahl;$n++) {
             $gewinner=$gewinner.$sieger[$n];
-            if ($n<$siegeranzahl-2) { $gewinner=$gewinner.", "; }
-            if ($n==$siegeranzahl-2) { $gewinner=$gewinner." und "; }
+            if ($n<$siegeranzahl-2) { 
+                $gewinner=$gewinner.", ";                 
+            }
+            if ($n==$siegeranzahl-2) { 
+                $gewinner=$gewinner." und ";                 
+            }
         }
     } else {
         $gewinner=$sieger[0];
@@ -36,26 +40,31 @@ if ($ziel_id==0) {
 if ($ziel_id==1) {
     for ($m=1;$m<11;$m++) {
         if (($spieler_raus_c[$m]==0) and ($spieler_id_c[$m]>=1)) {
-            $zeiger_temp= mysql_query("SELECT * FROM " . table_prefix . "user where id='".$spieler_id_c[$m]."'");
+            /*$zeiger_temp= mysql_query("SELECT * FROM " . table_prefix . "user where id='".$spieler_id_c[$m]."'");
             $array_temp = mysql_fetch_array($zeiger_temp);
-            $username=$array_temp["nick"];
+            $username=$array_temp["nick"];*/
+            $username = nick ($spieler_id_c[$m]);
             $gewinner="<font color=".$spielerfarbe[$m].">".$username."</font>";
             $sieger[$siegeranzahl]=$gewinner;
             $siegeranzahl++;
-            $zeiger_temp = mysql_query("UPDATE " . table_prefix . "user set stat_sieg=stat_sieg+1 where id='".$spieler_id_c[$m]."'");
+            $db->execute("UPDATE " . table_prefix . "user set stat_sieg=stat_sieg+1 where id = ?",array($spieler_id_c[$m]));
         }
     }
     if ($siegeranzahl>1) {
         $gewinner="";
         for ($n=0;$n<$siegeranzahl;$n++) {
             $gewinner=$gewinner.$sieger[$n];
-            if ($n<$siegeranzahl-2) { $gewinner=$gewinner.", "; }
-            if ($n==$siegeranzahl-2) { $gewinner=$gewinner." und "; }
+            if ($n<$siegeranzahl-2) { 
+                $gewinner=$gewinner.", ";                 
+            }
+            if ($n==$siegeranzahl-2) { 
+                $gewinner=$gewinner." und ";                 
+            }
         }
     } else {
         $gewinner=$sieger[0];
     }
-    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "spiele set phase='1', gewinner='".$gewinner."', siegeranzahl='".$siegeranzahl."' where id='".$spiel."'");
+    $db->execute("UPDATE " . table_prefix . "spiele set phase = '1', gewinner = ?, siegeranzahl = ? where id = ?",array($gewinner,$siegeranzahl,$spiel));
 }
 if ($ziel_id==2) {
     for ($m=1;$m<11;$m++) {
@@ -68,13 +77,14 @@ if ($ziel_id==2) {
     for ($n=1;$n<=10;$n++) {
         for ($mrt=0;$mrt<$tote;$mrt++) {
             if ($todfeind[$n]==$totleute[$mrt]) {
-                $zeiger_temp= mysql_query("SELECT * FROM " . table_prefix . "user where id='".$spieler_id_c[$n]."' order by id");
+                /*$zeiger_temp= mysql_query("SELECT * FROM " . table_prefix . "user where id='".$spieler_id_c[$n]."' order by id");
                 $array_temp = mysql_fetch_array($zeiger_temp);
-                $username=$array_temp["nick"];
+                $username=$array_temp["nick"];*/
+                $username = nick ($spieler_id_c[$n]);
                 $gewinner="<font color=".$spielerfarbe[$n].">".$username."</font>";
                 $sieger[$siegeranzahl]=$gewinner;
                 $siegeranzahl++;
-                $zeiger_temp = mysql_query("UPDATE " . table_prefix . "user set stat_sieg=stat_sieg+1 where id='".$spieler_id_c[$n]."'");
+                $db->execute("UPDATE " . table_prefix . "user set stat_sieg=stat_sieg+1 where id = ?",array($spieler_id_c[$n]));
             }
         }
     }
@@ -88,18 +98,19 @@ if ($ziel_id==2) {
     } else {
         $gewinner=$sieger[0];
     }
-    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "spiele set phase='1', gewinner='".$gewinner."', siegeranzahl='".$siegeranzahl."' where id='".$spiel."'");
+    $db->execute("UPDATE " . table_prefix . "spiele set phase='1', gewinner = ?, siegeranzahl = ? where id = ?",array($gewinner,$siegeranzahl,$spiel));
 }
 if ($ziel_id==5) {
     for ($k=1;$k<11;$k++) {
         if (intval($spieler_ziel_c[$k]) >= intval($ziel_info)) {
-            $zeiger_temp= mysql_query("SELECT * FROM " . table_prefix . "user where id='".$spieler_id_c[$k]."' order by id");
+            /*$zeiger_temp= mysql_query("SELECT * FROM " . table_prefix . "user where id='".$spieler_id_c[$k]."' order by id");
             $array_temp = mysql_fetch_array($zeiger_temp);
-            $username=$array_temp["nick"];
+            $username=$array_temp["nick"];*/
+            $username = nick ($spieler_id_c[$k]);
             $gewinner="<font color=".$spielerfarbe[$k].">".$username."</font>";
             $sieger[$siegeranzahl]=$gewinner;
             $siegeranzahl++;
-            $zeiger_temp = mysql_query("UPDATE " . table_prefix . "user set stat_sieg=stat_sieg+1 where id='".$spieler_id_c[$k]."'");
+            $db->execute("UPDATE " . table_prefix . "user set stat_sieg=stat_sieg+1 where id = ?",array($spieler_id_c[$k]));
         }
     }
     if ($siegeranzahl>1) {
@@ -112,7 +123,7 @@ if ($ziel_id==5) {
     } else {
         $gewinner=$sieger[0];
     }
-    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "spiele set phase=1, gewinner='".$gewinner."', siegeranzahl='".$siegeranzahl."' where id='".$spiel."'");
+    $db->execute("UPDATE " . table_prefix . "spiele set phase = '1', gewinner = ?, siegeranzahl = ? where id = ?",array($gewinner,$siegeranzahl,$spiel));
 }
 if ($ziel_id==6) {
     for ($k=1;$k<11;$k++) {
@@ -122,19 +133,23 @@ if ($ziel_id==6) {
     }
     $tote=0;
     for ($k=1;$k<11;$k++) {
-        if ($spieler_raus_c[$k]==1) { $totleute[$tote]=$k;$tote++; }
+        if ($spieler_raus_c[$k]==1) { 
+            $totleute[$tote]=$k;
+            $tote++;             
+        }
     }
     for ($n=1;$n<=10;$n++) {
         $ok=1;
         for ($mrt=0;$mrt<$tote;$mrt++) {
             if ((($todfeinda[$n]==$totleute[$mrt]) or ($todfeindb[$n]==$totleute[$mrt])) and ($ok==1)) {
-                $zeiger_temp= mysql_query("SELECT * FROM " . table_prefix . "user where id='".$spieler_ids[$n]."' order by id");
+                /*$zeiger_temp= mysql_query("SELECT * FROM " . table_prefix . "user where id='".$spieler_ids[$n]."' order by id");
                 $array_temp = mysql_fetch_array($zeiger_temp);
-                $username=$array_temp["nick"];
+                $username=$array_temp["nick"];*/
+                $username = nick ($spieler_ids[$n]);
                 $gewinner="<font color=".$spielerfarbe[$n].">".$username."</font>";
                 $sieger[$siegeranzahl]=$gewinner;
                 $siegeranzahl++;
-                $zeiger_temp = mysql_query("UPDATE " . table_prefix . "user set stat_sieg=stat_sieg+1 where id='".$spieler_ids[$n]."'");
+                $db->execute("UPDATE " . table_prefix . "user set stat_sieg=stat_sieg+1 where id = ?",array($spieler_ids[$n]));
                 $ok=2;
             }
         }
@@ -149,5 +164,5 @@ if ($ziel_id==6) {
     } else {
         $gewinner=$sieger[0];
     }
-    $zeiger_temp = mysql_query("UPDATE " . table_prefix . "spiele set phase=1, gewinner='".$gewinner."', siegeranzahl='".$siegeranzahl."' where id='".$spiel."'");
+    $db->execute("UPDATE " . table_prefix . "spiele set phase=1, gewinner = ?, siegeranzahl = ? where id = ?",array($gewinner,$siegeranzahl,$spiel));
 }
