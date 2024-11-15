@@ -1,44 +1,6 @@
 <?php
 
 /*
- * Wird nicht mehr benötigt da diese Functionen in die Zentral Functions integriert wurden.
- * 
- */
-// include (includes . 'inc.host_func.php');
-
-/*
-  (@intval(substr($spiel_extend,1,1))==1) {
-    include(extensions . "ki/ki_basis/berechneKI.php");
-}*/
-/* ((@file_exists(extensions . "xstats")) and (intval(substr($spiel_extend,2,1))==1)) {
-    include(extensions . 'xstats/xstatsCollect.php');
-} */
-///////////////////////////////Sprachinclude(nur die benoetigten) Anfang
-/* 
- * Wir nutzen nur eine Sprache, daher ist dies hier unnötiger Ballast
- */
-/*$zeiger = "SELECT * FROM " . table_prefix . "spiele WHERE id='".$spiel."'";
-
-$sprachtemp_1 = $db->getRow($zeiger);
-$sprachen = array();
-for ($i=1; $i<=10; $i++){
-    $spieler = 'spieler_'.$i;
-    if($sprachtemp_1[$spieler] > 0) {
-        $sprache = $db->getOne("SELECT sprache FROM " . table_prefix . "user WHERE id= '" . $sprachtemp_1[$spieler] . "' order by id");
-       // Unnütze Datenbankabfragen entfernt. 
-        /*$sprachtemp_3 = mysql_fetch_array($zeiger);
-        $spielersprache[$i] = ($sprachtemp_3['sprache']=='') ? $language : $sprachtemp_3['sprache'];
-        if (!in_array($spielersprache[$i], $sprachen)) $sprachen[] = $spielersprache[$i];
-    }
-}*/
-/*if(count($sprachen) == 0) {
-    include(lang_dir.$language.'/lang.inc.host.php');
-} else {
-    foreach($sprachen as $sprache) {
-        include(lang_dir.$sprache.'/lang.inc.host.php');
-    }
-}*/
-/*
  * Da wir nur die deutsche Sprache unterstützen lesen wir auch nur die Deutsche Sprache ein.
  */
 $lang = get_phrasen('de', 'host');

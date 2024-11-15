@@ -119,6 +119,7 @@ if (isset($params)){
             if ($anzahl2==1) {
                 $array2 = $db->getRow($zeiger2sql);
                 $sid   = $array2['sid'];
+                $smarty->assign('sid',$sid);
                 $phase = $array2['phase'];
                 $spiel = $array2['id'];
                 for ($sp=1; $sp<=10; $sp++) {
@@ -128,6 +129,7 @@ if (isset($params)){
                 }
                 $uid = zufallstring();
                 $db->execute("UPDATE " . table_prefix . "user SET uid = '" . $uid . "' WHERE id= '" . $spieler_id ."'");
+                $smarty->assign('uid',$uid);
             } else {
                 $fehler = $lang['index']['spielnichtfuerdich'];
                 $smarty->assign('fehler',$fehler);
@@ -203,7 +205,7 @@ if (isset($params)){
                                                           spieler_8_zug = '0',
                                                           spieler_9_zug = '0',
                                                           spieler_10_zug = '0'
-                              where id = '" . $spiel . "'");
+                              where id = ?",array ($spiel));
             }
         }
         ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -263,8 +265,17 @@ if (isset($params)){
       </body>
     </html> -->
    <?php
-   /* Steht nur noch zu debugzwecken hier. Wenn die Dateien angepaßt sind, erfolgt dann hier alles weitere im Skript  */
+   /* Steht nur noch zu debugzwecken hier. Wenn die Dateien angepaßt sind, erfolgt dann hier alles weitere im Skript  */   
    echo "Login erfolgreich";
+    $zeiger = "SELECT version, extend, serial FROM " . table_prefix . "info";
+    $array = $db->getRow($zeiger);
+    $spiel_version = $array['version'];
+    $spiel_extend  = $array['extend'];
+    $spiel_serial  = $array['serial'];
+    $smarty->assign('servername', servername);
+    $smarty->assign('spiel_version', $spiel_version);
+    $smarty->assign('spiel_serial', $spiel_serial);
+    $smarty->display('framesets/index_frame.tpl');
     
   } else {
     ?>
