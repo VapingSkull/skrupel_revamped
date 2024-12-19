@@ -1,6 +1,6 @@
 <?php
-require_once ('../inc.conf.php'); 
- require_once (inhalt_dir . 'inc.hilfsfunktionen.php');
+
+
 $langfile_1 = 'hilfe_antriebe';
 $fuid = int_get('fu');
 

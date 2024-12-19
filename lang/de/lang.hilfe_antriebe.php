@@ -1,4 +1,4 @@
-<?php
+<?php 
 $lang['hilfe_antriebe'][1][0]="Sonnensegel";
 $lang['hilfe_antriebe'][1][1]="Warp 1";
 $lang['hilfe_antriebe'][1][2]="<ul><li>Kein Leminverbrauch<br>Da Sonnensegel sich von den Sonnenwinden tragen lassen, verbrauchen sie keine einzige Kilotonne Lemin.<li>Warpbeschr&auml;nkung<br>Schiffe mit Sonnensegeln k&ouml;nnen aus eigenem Antrieb nur mit maximal Warp 1 reisen.<li>Nutzen von Ionenwinden<br>Pro Monat besteht eine 11-prozentige Chance, von einem Ionenwind erfasst zu werden. Geschieht dies, bewegt sich das Schiff diesen Monat mit Warp 9.<li>Gravitationsschleuder<br>Mit diesem Antrieb ist man in der Lage, beim Starten aus einem Orbit, sich die Gravitaion wie eine Schleuder zu nutze zu machen. Das Schiff katapultiert sich dann mit Warp 4 aus der Umlaufbahn.<li>Fehlender Traktorstrahl<br>Aufgrund der verwendeten Technologie ist es nicht m&ouml;glich mit diesem Antrieb einen Traktorstrahl zu nutzen.</ul>";

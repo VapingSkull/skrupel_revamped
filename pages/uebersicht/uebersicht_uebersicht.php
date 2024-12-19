@@ -149,7 +149,7 @@ if ($fuid==3) {
             </table>
             <?php
             if (($nebel>=1) and ($spieler_raus==1)) {
-                ?><div id="dark" style="filter:alpha(opacity=70);-moz-opacity:70%;position: absolute; left:0px; top:0px; width:250px; height:250px;visibility=visible;background-Color:#333333;"><img border="0" src="<?php echo servername;?>bilder/empty.gif" width="250" height="250"></div><?php
+                ?><div id="dark" style="filter:alpha(opacity=70);-moz-opacity:70%;position: absolute; left:0px; top:0px; width:250px; height:250px;visibility:visible;background-Color:#333333;"><img border="0" src="<?php echo servername;?>bilder/empty.gif" width="250" height="250"></div><?php
             }
             for ($n=1;$n<=$sektoranzahl;$n++) {
                 $x=(250*$n)/$umfang*$breite;

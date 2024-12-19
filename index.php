@@ -1,9 +1,6 @@
 <?php
 include ("includes/config.php");
 
-//require_once ("inc.conf.php");
-//require_once (inhalt_dir . "inc.hilfsfunktionen.php");
-
 /*
  * Language Phrase werden aus der Datenbank geholt
  */
@@ -341,7 +338,7 @@ if (isset($params)){
                                     }
                                     $query_spieler = $db->execute($qrystr);
                                     
-                                      while($result_spieler = $db->getArray($query_spieler)) {
+                                      while($result_spieler = $query_spieler->FetchRow()) {
                                         $str_spielinfo .= $result_spieler['nick']."\n";
                                       }
                                     

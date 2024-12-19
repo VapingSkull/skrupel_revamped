@@ -1,8 +1,6 @@
 <?php
-require_once ('../inc.conf.php'); 
- require_once ('inc.hilfsfunktionen.php');
-$langfile_1 = 'uebersicht_imperien';
-$fuid = int_get('fu');
+$langueberimperien = get_phrasen('de','uebersichtimperien');
+$fuid = $params['fu'];
 
 if ($fuid==1) {
     include ("inc.header.php");
@@ -32,7 +30,8 @@ if ($fuid==1) {
                                                      } 
                                                     if ($ziel_id==1) {
                                                         $text=str_replace(array('{1}','{2}'),array($ziel_info,$spieleranzahl),$lang['uebersichtimperien']['ueberleben']);
-                                                              echo $text; } 
+                                                              echo $text;                                                               
+                                                    } 
                                                     if ($ziel_id==2) {
                                                         $feind=intval($spieler_ziel);
                                                         $feind_id=$spieler_id_c[$feind];
@@ -41,10 +40,14 @@ if ($fuid==1) {
                                                         $username=$array_temp["nick"];
                                                         $todfeind="<font color='".$spielerfarbe[$feind]."'>".$username."</font>";
                                                         $text=str_replace(array('{1}'),array($todfeind),$lang['uebersichtimperien']['todfeind']);
-                                                                  echo $text; } 
+                                                                  echo $text; 
+                                                                  
+                                                    } 
                                                     if ($ziel_id==5) {
                                                         $text=str_replace(array('{1}','{2}'),array($ziel_info,$spieler_ziel),$lang['uebersichtimperien']['spice']);
-                                                                  echo $text; } 
+                                                                  echo $text; 
+                                                                  
+                                                    } 
                                                     if ($ziel_id==6) {
                                                         $zieldaten=explode(':',$spieler_ziel);
                                                         $feinda=intval($zieldaten[1]);
@@ -60,7 +63,9 @@ if ($fuid==1) {
                                                         $username=$array_temp["nick"];
                                                         $todfeindb="<font color='".$spielerfarbe[$feindb]."'>".$username."</font>";
                                                         $text=str_replace(array('{1}','{2}'),array($todfeinda,$todfeindb),$lang['uebersichtimperien']['teamtodfeind']);
-                                                        echo $text; } ?>
+                                                        echo $text; 
+                                                        
+                                                    } ?>
                                                                    </td>
                                             </tr>
                                         </table>
@@ -161,7 +166,7 @@ if ($fuid==3) {
 if ($fuid==4) {
     include ("inc.header.php");
         $spid=int_get('spid');
-        $zeiger_temp= @mysql_query("SELECT * FROM $skrupel_user where id=$spid");
+        $zeiger_temp= @mysql_query("SELECT * FROM " . table_prefix . "user where id='". $spid."'");
         $array_temp = @mysql_fetch_array($zeiger_temp);
         $nick=$array_temp["nick"];
         $userid=$array_temp["id"];
