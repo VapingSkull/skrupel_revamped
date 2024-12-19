@@ -1,35 +1,35 @@
 <?php 
-require_once ('../inc.conf.php'); 
- require_once ('inc.hilfsfunktionen.php');
-$langfile_1 = 'uebersicht_kolonien';
-$langfile_2 = 'orbitale_systeme';
-$fuid = int_get('fu');
+$params = array_merge(filter_struct_utf8(1, $_GET), filter_struct_utf8(1, $_POST));
+$fuid = $params["fu"];
+$langueberkolonien = array_merge(get_phrasen('de', 'orbitalesysteme'), get_phrasen('de','uebersichtkolonien'));
 
-if ($fuid==1) {
-    include ("inc.header.php");
-    ?>
-    <body text="#ffffff" bgcolor="#444444"  link="#000000" vlink="#000000" alink="#000000" leftmargin="0" rightmargin="0" topmargin="0" marginwidth="0" marginheight="0">
-        <script language=JavaScript>
-            function nativedetail(shid) {
-                oben=100;
-                links=Math.ceil((screen.width-580)/2);
-                window.open('hilfe_native.php?fu2='+shid+'&uid=<?php echo $uid?>&sid=<?php echo $sid?>','domspezien','resizable=yes,scrollbars=no,width=580,height=180,top='+oben+',left='+links);
-            }
-        </script>
-        <div id="bodybody" class="flexcroll" onfocus="this.blur()">
-        <center><img src="../lang/<?php echo $spieler_sprache?>/topics/kolonien.gif" border="0" width="162" height="52"></center>
-        <?php 
-        $zeiger = @mysql_query("SELECT * FROM $skrupel_planeten where besitzer=$spieler and spiel=$spiel order by name");
-        $planetenanzahl = @mysql_num_rows($zeiger);
+switch ($fuid){
+    case 1:
+        set_header();
+        
+        $smarty->assign('fuid',$fuid);
+        $smarty->assign('uid',$params["uid"]);
+        $smarty->assign('sid',$params["sid"]);
+        $smarty->assign('servername', servername);
+        $kolfu1html = "";
+        $kolfu1html .= "<body text=\"#ffffff\" bgcolor=\"#444444\"  link=\"#000000\" vlink=\"#000000\" alink=\"#000000\" leftmargin=\"0\" rightmargin=\"0\" topmargin=\"0\" marginwidth=\"0\" marginheight=\"0\">";
+        $kolfu1html .= "<script language=\"JavaScript\">";
+        $kolfu1html .= "    function nativedetail(shid) {";
+        $kolfu1html .= "        oben=100;";
+        $kolfu1html .= "        links=Math.ceil((screen.width-580)/2);";
+        $kolfu1html .= "        window.open('".servername."pages/hilfe/hilfe_native.php?fu2='+shid+'&uid=".$uid."&sid=".$sid."','domspezien','resizable=yes,scrollbars=no,width=580,height=180,top='+oben+',left='+links);";
+        $kolfu1html .= "    }";
+        $kolfu1html .= "</script>";
+        $kolfu1html .= "<div id=\"bodybody\" class=\"flexcroll\" onfocus=\"this.blur();\">";
+        $kolfu1html .= "<center><img src=\"".servername."/lang/de/topics/kolonien.gif\" border=\"0\" width=\"162\" height=\"52\"></center>";
+        $kolfu1html .= "<center>";
+        $kolfu1html .= "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">";
+        $zeiger = "SELECT * FROM " . table_prefix ."planeten where besitzer='".$spieler."' and spiel='".$spiel."' order by name";
+        $rows = $db->execute($zeiger);
+        $planetenanzahl = $rows->RecordCount();
         if ($planetenanzahl>=1) {
-            ?>
-            <center>
-                <table border="0" cellspacing="0" cellpadding="0">
-                    <?php 
-                    for  ($i=0; $i<$planetenanzahl;$i++) {
-                        $ok = @mysql_data_seek($zeiger,$i);
-                        $array = @mysql_fetch_array($zeiger);
-                        $pid=$array["id"];
+            while ($array = $rows->fetchRow()){
+              $pid=$array["id"];
                         $name=$array["name"];
                         $x_pos=$array["x_pos"];
                         $y_pos=$array["y_pos"];
@@ -69,14 +69,19 @@ if ($fuid==1) {
                         $osys[5]=$array["osys_5"];
                         $osys[6]=$array["osys_6"];
                         for($i2=1; $i2<=$osys_anzahl; $i2++) {
+                            $orbname = "name".$osys[$i2];
                             if ($osys[$i2]>=1) {
-                                $osys[$i2] = "<img src=\"../bilder/osysteme/".$osys[$i2].".gif\" border=\"0\" width=\"32\" height=\"30\" title=\"".$lang['orbitalesysteme']['name'][$osys[$i2]]."\">";
+                                $osys[$i2] = "<img src=\"../bilder/osysteme/".$osys[$i2].".gif\" border=\"0\" width=\"32\" height=\"30\" title=\"".$langueberkolonien['orbitalesysteme'].$orbname."\">";
+                                $kolfu1html .=  $osys[$i2];
                             } else {
                                 $osys[$i2] = "<img src=\"../bilder/osysteme/blank.gif\" border=\"0\" width=\"32\" height=\"30\">";
+                                $kolfu1html .= $osys[$i2];
                             }
+                           
                         }
                         for($i2=6; $i2>$osys_anzahl; $i2--) {
                             $osys[$i2] = "<img src=\"../bilder/empty.gif\" border=\"0\" width=\"32\" height=\"30\">";
+                            $kolfu1html .= $osys[$i2];
                         }
                         $temp=$array["temp"];
                         $klasse=$array["klasse"];
@@ -151,316 +156,319 @@ if ($fuid==1) {
                         }elseif ($konz_min3==5) {
                             $konz_min3="hochkonz.";
                         }
-                        ?>
-                        <tr>
-                            <td>
-                                <table border="0" cellspacing="0" cellpadding="0">
-                                    <tr>
-                                        <td bgcolor="#aaaaaa" colspan="3"><img src="../bilder/empty.gif" border="0" width="1" height="1"></td>
-                                    </tr>
-                                    <tr>
-                                        <td bgcolor="#aaaaaa"><img src="../bilder/empty.gif" border="0" width="1" height="1"></td>
-                                        <td><a href="planeten.php?fu=2&pid=<?php echo $pid?>&uid=<?php echo $uid?>&sid=<?php echo $sid?>" target="untenmitte"><img src="<?php echo $bildpfad?>/planeten/<?php echo $klasse?>_<?php echo $bild?>.jpg" border="0" title="<?php echo $logbuch?>"></a></td>
-                                        <td bgcolor="#aaaaaa"><img src="../bilder/empty.gif" border="0" width="1" height="1"></td>
-                                    </tr>
-                                    <tr>
-                                        <td bgcolor="#aaaaaa" colspan="3"><img src="../bilder/empty.gif" border="0" width="1" height="1"></td>
-                                    </tr>
-                                </table>
-                            </td>
-                            <td><img src="../bilder/empty.gif" border="0" width="8" height="1"></td>
-                            <td>
-                                <center>
-                                    <table border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td><nobr><a href="planeten.php?fu=2&pid=<?php echo $pid?>&uid=<?php echo $uid?>&sid=<?php echo $sid?>" target="untenmitte"><?php echo $name?></a></nobr></td>
-                                            <td  style="color:#aaaaaa;"><nobr>&nbsp;(<?php echo  $x_pos."/".$y_pos;?>)</nobr></td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="2"><img src="../bilder/empty.gif" border="0" width="1" height="3"></td>
-                                        </tr>
-                                    </table>
-                                </center>
-                                <center>
-                                    <table border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td>
-                                                <center>
-                                                    <table border="0" cellspacing="0" cellpadding="0">
-                                                        <tr>
-                                                            <td  style="color:#aaaaaa;"><?php echo $lang['uebersichtkolonien']['klasse']?>&nbsp;</td>
-                                                            <td><?php echo $klassename?></td>
-                                                            <td  style="color:#aaaaaa;">&nbsp;<?php echo $lang['uebersichtkolonien']['planet']?></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td colspan="3"><img src="../bilder/empty.gif" border="0" width="1" height="4"></td>
-                                                        </tr>
-                                                    </table>
-                                                </center>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><img src="../bilder/empty.gif" border="0" width="140" height="1"></td>
-                                        </tr>
-                                        <tr>
-                                            <td background="<?php echo $bildpfad?>/skalen/temperatur.gif">
-                                                <table border="0" cellspacing="0" cellpadding="0">
-                                                    <tr>
-                                                        <td><img src="../bilder/empty.gif" border="0" width="<?php echo  ($temp*1.4)-1; ?>" height="25"></td>
-                                                        <td bgcolor="#528ECE"><img src="../bilder/empty.gif" border="0" width="1" height="25"></td>
-                                                    </tr>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><img src="../bilder/empty.gif" border="0" width="140" height="1"></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <center>
-                                                    <table border="0" cellspacing="0" cellpadding="0">
-                                                        <tr>
-                                                            <td><img src="../bilder/empty.gif" border="0" width="1" height="3"></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td  style="color:#aaaaaa;"><center><?php echo $lang['uebersichtkolonien']['durchtemperatur']?><br></center></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td><center><?php echo  $temp-35; ?> <?php echo $lang['uebersichtkolonien']['grad']?></center></td>
-                                                        </tr>
-                                                    </table>
-                                                </center>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </center>
-                            </td>
-                            <td><img src="../bilder/empty.gif" border="0" width="8" height="1"></td>
-                            <td>
-                                <table border="0" cellspacing="0" cellpadding="0">
-                                    <tr>
-                                        <td rowspan="2"><img src="<?php echo $bildpfad?>/icons/alleleute.gif" border="0" width="17" height="17"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td colspan="2" style="color:#aaaaaa;"><?php echo $lang['uebersichtkolonien']['kolonisten']?></td>
-                                    </tr>
-                                    <tr>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="15" height="1"></td>
-                                        <td><nobr><?php echo $kolonisten?>/<?php echo $leichtebt?>/<?php echo $schwerebt?></nobr></td>
-                                    </tr>
-                                    <tr>
-                                        <td rowspan="2"><img src="<?php echo $bildpfad?>/icons/cantox.gif" border="0" width="17" height="17"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td colspan="2" style="color:#aaaaaa;"><?php echo $lang['uebersichtkolonien']['cantox']?></td>
-                                    </tr>
-                                    <tr>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="15" height="1"></td>
-                                        <td><nobr><?php echo $cantox?></nobr></td>
-                                    </tr>
-                                    <?php
-                                    if (($native_id>=1) and ($native_kol>=1)) {
-                                        ?>
-                                        <tr>
-                                            <td rowspan="2"><img src="<?php echo $bildpfad?>/icons/native_1.gif" border="0" width="17" height="17"></td>
-                                            <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                            <td colspan="2" style="color:#aaaaaa;"><?php echo $lang['uebersichtkolonien']['domspezies']?></td>
-                                        </tr>
-                                        <tr>
-                                            <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                            <td><img src="../bilder/empty.gif" border="0" width="15" height="1"></td>
-                                            <td><nobr><a href="javascript:nativedetail(<?php echo $native_id?>);" style="color:#ffffff"><?php echo $native_name?></a></nobr></td>
-                                        </tr>
-                                        <tr>
-                                            <td rowspan="2"><img src="<?php echo $bildpfad?>/icons/native_2.gif" border="0" width="17" height="17"></td>
-                                            <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                            <td colspan="2" style="color:#aaaaaa;"><?php echo $lang['uebersichtkolonien']['population']?></td>
-                                        </tr>
-                                        <tr>
-                                            <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                            <td><img src="../bilder/empty.gif" border="0" width="15" height="1"></td>
-                                            <td><nobr><?php echo  $native_kol; ?></nobr></td>
-                                        </tr>
-                                        <?php
-                                    } else {
-                                        ?>
-                                        <tr>
-                                            <td rowspan="2"><img src="../bilder/empty.gif" border="0" width="17" height="17"></td>
-                                            <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                            <td colspan="2" style="color:#aaaaaa;">&nbsp;</td>
-                                        </tr>
-                                        <tr>
-                                            <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                            <td><img src="../bilder/empty.gif" border="0" width="15" height="1"></td>
-                                            <td><nobr>&nbsp;</nobr></td>
-                                        </tr>
-                                        <tr>
-                                            <td rowspan="2"><img src="../bilder/empty.gif" border="0" width="17" height="17"></td>
-                                            <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                            <td colspan="2" style="color:#aaaaaa;">&nbsp;</td>
-                                        </tr>
-                                        <tr>
-                                            <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                            <td><img src="../bilder/empty.gif" border="0" width="15" height="1"></td>
-                                            <td><nobr>&nbsp;</nobr></td>
-                                        </tr>
-                                        <?php
-                                    }
-                                    ?>
-                                </table>
-                            </td>
-                            <td><img src="../bilder/empty.gif" border="0" width="8" height="1"></td>
-                            <td>
-                                <table border="0" cellspacing="0" cellpadding="0">
-                                    <tr>
-                                        <td rowspan="2"><img src="<?php echo $bildpfad?>/icons/minen.gif" border="0" width="17" height="17"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td colspan="2" style="color:#aaaaaa;"><?php echo $lang['uebersichtkolonien']['minen']?></td>
-                                    </tr>
-                                    <tr>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="15" height="1"></td>
-                                        <td><nobr><?php echo $minen?><?php  if ($auto_minen==1) { echo " <i>(".$lang['uebersichtkolonien']['auto'].")</i>";} ?></nobr></td>
-                                    </tr>
-                                    <tr>
-                                        <td rowspan="2"><img src="<?php echo $bildpfad?>/icons/fabrik.gif" border="0" width="17" height="17"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td colspan="2" style="color:#aaaaaa;"><?php echo $lang['uebersichtkolonien']['fabriken']?></td>
-                                    </tr>
-                                    <tr>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="15" height="1"></td>
-                                        <td><nobr><?php echo $fabriken?><?php  if ($auto_fabriken==1) { echo " <i>(".$lang['uebersichtkolonien']['auto'].")</i>";} ?></nobr></td>
-                                    </tr>
-                                    <tr>
-                                        <td rowspan="2"><img src="<?php echo $bildpfad?>/icons/abwehr.gif" border="0" width="17" height="17"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td colspan="2" style="color:#aaaaaa;"><?php echo $lang['uebersichtkolonien']['pds']?></td>
-                                    </tr>
-                                    <tr>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="15" height="1"></td>
-                                        <td><nobr><?php echo $abwehr?><?php  if ($auto_abwehr==1) { echo " <i>(".$lang['uebersichtkolonien']['auto'].")</i>";} ?></nobr></td>
-                                    </tr>
-                                    <tr>
-                                        <td rowspan="2"><img src="<?php echo $bildpfad?>/icons/vorrat.gif" border="0" width="17" height="17"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td colspan="2" style="color:#aaaaaa;"><?php echo $lang['uebersichtkolonien']['vorraete']?></td>
-                                    </tr>
-                                    <tr>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="15" height="1"></td>
-                                        <td><nobr><?php echo str_replace('{1}',$vorrat,$lang['uebersichtkolonien']['kt']); if ($auto_vorrat==1) { echo " <i>(".$lang['uebersichtkolonien']['auto'].")</i>";} ?></nobr></td>
-                                    </tr>
-                                </table>
-                            </td>
-                            <td><img src="../bilder/empty.gif" border="0" width="8" height="1"></td>
-                            <td>
-                                <table border="0" cellspacing="0" cellpadding="0">
-                                    <tr>
-                                        <td rowspan="2"><img src="<?php echo $bildpfad?>/icons/lemin.gif" border="0" width="17" height="17"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td colspan="2" style="color:#aaaaaa;"><?php echo $lang['uebersichtkolonien']['lemin']?></td>
-                                    </tr>
-                                    <tr>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="15" height="1"></td>
-                                        <td><?php echo str_replace('{1}',$lemin.'/'.$planet_lemin,$lang['uebersichtkolonien']['kt'])?></td>
-                                        <td>&nbsp;(<?php echo $konz_lemin?>)</td>
-                                    </tr>
-                                    <tr>
-                                        <td rowspan="2"><img src="<?php echo $bildpfad?>/icons/mineral_1.gif" border="0" width="17" height="17"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td colspan="2" style="color:#aaaaaa;"><?php echo $lang['uebersichtkolonien']['baxterium']?></td>
-                                    </tr>
-                                    <tr>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="15" height="1"></td>
-                                        <td><?php echo str_replace('{1}',$min1.'/'.$planet_min1,$lang['uebersichtkolonien']['kt'])?></td>
-                                        <td>&nbsp;(<?php echo $konz_min1?>)</td>
-                                    </tr>
-                                    <tr>
-                                        <td rowspan="2"><img src="<?php echo $bildpfad?>/icons/mineral_2.gif" border="0" width="17" height="17"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td colspan="2" style="color:#aaaaaa;"><?php echo $lang['uebersichtkolonien']['rennurbin']?></td>
-                                    </tr>
-                                    <tr>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="15" height="1"></td>
-                                        <td><?php echo str_replace('{1}',$min2.'/'.$planet_min2,$lang['uebersichtkolonien']['kt'])?></td>
-                                        <td>&nbsp;(<?php echo $konz_min2?>)</td>
-                                    </tr>
-                                    <tr>
-                                        <td rowspan="2"><img src="<?php echo $bildpfad?>/icons/mineral_3.gif" border="0" width="17" height="17"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td colspan="2" style="color:#aaaaaa;"><?php echo $lang['uebersichtkolonien']['vomisaan']?></td>
-                                    </tr>
-                                    <tr>
-                                        <td><img src="../bilder/empty.gif" border="0" width="5" height="1"></td>
-                                        <td><img src="../bilder/empty.gif" border="0" width="15" height="1"></td>
-                                        <td><?php echo str_replace('{1}',$min3.'/'.$planet_min3,$lang['uebersichtkolonien']['kt'])?></td>
-                                        <td>&nbsp;(<?php echo $konz_min3?>)</td>
-                                    </tr>
-                                </table>
-                            </td>
-                            <td><img src="../bilder/empty.gif" border="0" width="4" height="1"></td>
-                            <td>
-                                <table border="0" cellspacing="0" cellpadding="0">
-                                    <tr>
-                                        <td><?php echo $osys[1]?></td>
-                                        <td><?php echo $osys[2]?></td>
-                                    </tr>
-                                    <tr>
-                                        <td><?php echo $osys[3]?></td>
-                                        <td><?php echo $osys[4]?></td>
-                                    </tr>
-                                    <tr>
-                                        <td><?php echo $osys[5]?></td>
-                                        <td><?php echo $osys[6]?></td>
-                                    </tr>
-                                </table>
-                            </td>
-                            <td>
-                                <?php 
-                                if ($sternenbasis==2) {
+            $kolfu1html .= "<tr>";
+            $kolfu1html .= "    <td>";
+            $kolfu1html .= "        <table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">";
+            $kolfu1html .= "            <tr>";
+            $kolfu1html .= "                <td bgcolor=\"#aaaaaa\" colspan=\"3\"><img src=\"" . image_dir . "empty.gif\" border=\"0\" width=\"1\" height=\"1\"></td>";
+            $kolfu1html .= "            </tr>";
+            $kolfu1html .= "            <tr>";
+            $kolfu1html .= "                <td bgcolor=\"#aaaaaa\"><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"1\" height=\"1\"></td>";
+            $kolfu1html .= "                <td><a href=\"pages/planeten.php?fu=2&pid=".$pid."&uid=".$uid."&sid=".$sid."\" target=\"untenmitte\"><img src=\"".image_dir."planeten/".$klasse."_".$bild.".jpg\" border=\"0\" title=\"".$logbuch."\"></a></td>";
+            $kolfu1html .= "                <td bgcolor=\"#aaaaaa\"><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"1\" height=\"1\"></td>";
+            $kolfu1html .= "            </tr>";
+            $kolfu1html .= "            <tr>";
+            $kolfu1html .= "                <td bgcolor=\"#aaaaaa\" colspan=\"3\"><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"1\" height=\"1\"></td>";
+            $kolfu1html .= "            </tr>";
+            $kolfu1html .= "        </table>";             
+            $kolfu1html .= "   </td>";            
+            $kolfu1html .= "   <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"8\" height=\"1\"></td>";
+            $kolfu1html .= "   <td>";
+            $kolfu1html .= "    <center>";
+            $kolfu1html .= "        <table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">";
+            $kolfu1html .= "            <tr>";
+            $kolfu1html .= "                <td><nobr><a href=\"".servername."pages/planeten.php?fu=2&pid=".$pid."&uid=".$uid."&sid=".$sid."\" target=\"untenmitte\">".$name."</a></nobr></td>";
+            $kolfu1html .= "                <td style=\"color:#aaaaaa;\"><nobr>&nbsp;(".$x_pos."/".$y_pos.")</nobr></td>";
+            $kolfu1html .= "            </tr>";
+            $kolfu1html .= "            <tr>";
+            $kolfu1html .= "                <td colspan=\"2\"><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"1\" height=\"3\"></td>";
+            $kolfu1html .= "            </tr>";
+            $kolfu1html .= "         </table>";
+            $kolfu1html .= "    </center>";
+            $kolfu1html .= "    <center>";
+            $kolfu1html .= "        <table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">";
+            $kolfu1html .= "            <tr>";
+            $kolfu1html .= "                <td>";
+            $kolfu1html .= "                <center>";
+            $kolfu1html .= "                <table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">";
+            $kolfu1html .= "                    <tr>";
+            $kolfu1html .= "                        <td style=\"color:#aaaaaa;\">" . $langueberkolonien['uebersichtkolonien']['klasse'] ."&nbsp;</td>";
+            $kolfu1html .= "                        <td>" . $klassename ."</td>";
+            $kolfu1html .= "                        <td style=\"color:#aaaaaa;\">&nbsp;".$langueberkolonien['uebersichtkolonien']['planet']."</td>";
+            $kolfu1html .= "                    </tr>";
+            $kolfu1html .= "                    <tr>";
+            $kolfu1html .= "                        <td colspan=\"3\"><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"1\" height=\"4\"></td>";
+            $kolfu1html .= "                    </tr>";
+            $kolfu1html .= "                </table>";
+            $kolfu1html .= "                                    </center>";
+            $kolfu1html .= "                                </td>";
+            $kolfu1html .= "                            </tr>";
+            $kolfu1html .= "                            <tr>";
+            $kolfu1html .= "                                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"140\" height=\"1\"></td>";
+            $kolfu1html .= "                            </tr>";
+            $kolfu1html .= "                            <tr>";
+            $kolfu1html .= "                                <td background=\"".image_dir."skalen/temperatur.gif\">";
+            $kolfu1html .= "                                    <table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">";
+            $kolfu1html .= "                                        <tr>";
+            $kolfu1html .= "                                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"".($temp*1.4)-1;"\" height=\"25\"></td>";
+            $kolfu1html .= "                                            <td bgcolor=\"#528ECE\"><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"1\" height=\"25\"></td>";
+            $kolfu1html .= "                                        </tr>";
+            $kolfu1html .= "                                    </table>";
+            $kolfu1html .= "                                </td>";
+            $kolfu1html .= "                            </tr>";
+            $kolfu1html .= "                            <tr>";
+            $kolfu1html .= "                                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"140\" height=\"1\"></td>";
+            $kolfu1html .= "                            </tr>";
+            $kolfu1html .= "                            <tr>";
+            $kolfu1html .= "                                <td>";
+            $kolfu1html .= "                                    <center>";
+            $kolfu1html .= "                                        <table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">";
+            $kolfu1html .= "                                            <tr>";
+            $kolfu1html .= "                                                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"1\" height=\"3\"></td>";
+            $kolfu1html .= "                                            </tr>";
+            $kolfu1html .= "                                            <tr>";
+            $kolfu1html .= "                                                <td  style=\"color:#aaaaaa;\"><center>".$langueberkolonien['uebersichtkolonien']['durchtemperatur']."<br></center></td>";
+            $kolfu1html .= "                                            </tr>";
+            $kolfu1html .= "                                            <tr>";
+            $kolfu1html .= "                                                <td><center>".$temp-35;"&nbsp;".$langueberkolonien['uebersichtkolonien']['grad']."</center></td>";
+            $kolfu1html .= "                                            </tr>";
+            $kolfu1html .= "                                        </table>";
+            $kolfu1html .= "                                    </center>";
+            $kolfu1html .= "                                </td>";
+            $kolfu1html .= "                            </tr>";
+            $kolfu1html .= "                        </table>";
+            $kolfu1html .= "                    </center>";
+            $kolfu1html .= "                </td>";
+            $kolfu1html .= "                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"8\" height=\"1\"></td>";
+            $kolfu1html .= "                <td>";
+            $kolfu1html .= "                    <table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td rowspan=\"2\"><img src=\"".image_dir."icons/alleleute.gif\" border=\"0\" width=\"17\" height=\"17\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td colspan=\"2\" style=\"color:#aaaaaa;\">".$langueberkolonien['uebersichtkolonien']['kolonisten']."</td>";
+            $kolfu1html .= "                       </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"15\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td><nobr>".$kolonisten."/".$leichtebt."/".$schwerebt."</nobr></td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td rowspan=\"2\"><img src=\"".image_dir."icons/cantox.gif\" border=\"0\" width=\"17\" height=\"17\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td colspan=\"2\" style=\"color:#aaaaaa;\">".$langueberkolonien['uebersichtkolonien']['cantox']."</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                           <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"15\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td><nobr>".$cantox."</nobr></td>";
+            $kolfu1html .= "                        </tr>";
+            if (($native_id>=1) and ($native_kol>=1)) {
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                                <td rowspan=\"2\"><img src=\"".image_dir."icons/native_1.gif\" border=\"0\" width=\"17\" height=\"17\"></td>";
+            $kolfu1html .= "                                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                                <td colspan=\"2\" style=\"color:#aaaaaa;\">".$langueberkolonien['uebersichtkolonien']['domspezies']."</td>";
+            $kolfu1html .= "                            </tr>";
+            $kolfu1html .= "                            <tr>";
+            $kolfu1html .= "                                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"15\" height=\"1\"></td>";
+            $kolfu1html .= "                                <td><nobr><a href=\"javascript:nativedetail(".$native_id.");\" style=\"color:#ffffff\">".$native_name."</a></nobr></td>";
+            $kolfu1html .= "                            </tr>";
+            $kolfu1html .= "                            <tr>";
+            $kolfu1html .= "                                <td rowspan=\"2\"><img src=\"".image_dir."icons/native_2.gif\" border=\"0\" width=\"17\" height=\"17\"></td>";
+            $kolfu1html .= "                                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                                <td colspan=\"2\" style=\"color:#aaaaaa;\">".$langueberkolonien['uebersichtkolonien']['population']."</td>";
+            $kolfu1html .= "                            </tr>";
+            $kolfu1html .= "                            <tr>";
+            $kolfu1html .= "                                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"15\" height=\"1\"></td>";
+            $kolfu1html .= "                                <td><nobr>".$native_kol."</nobr></td>";
+            $kolfu1html .= "                            </tr>                ";
+            } else {
+            $kolfu1html .= "<tr>";
+            $kolfu1html .= "                                <td rowspan=\"2\"><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"17\" height=\"17\"></td>";
+            $kolfu1html .= "                                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                                <td colspan=\"2\" style=\"color:#aaaaaa;\">&nbsp;</td>";
+            $kolfu1html .= "                            </tr>";
+            $kolfu1html .= "                            <tr>";
+            $kolfu1html .= "                                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"15\" height=\"1\"></td>";
+            $kolfu1html .= "                                <td><nobr>&nbsp;</nobr></td>";
+            $kolfu1html .= "                            </tr>";
+            $kolfu1html .= "                            <tr>";
+            $kolfu1html .= "                                <td rowspan=\"2\"><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"17\" height=\"17\"></td>";
+            $kolfu1html .= "                                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                                <td colspan=\"2\" style=\"color:#aaaaaa;\">&nbsp;</td>";
+            $kolfu1html .= "                            </tr>";
+            $kolfu1html .= "                            <tr>";
+            $kolfu1html .= "                                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"15\" height=\"1\"></td>";
+            $kolfu1html .= "                                <td><nobr>&nbsp;</nobr></td>";
+            $kolfu1html .= "                            </tr>";
+            }
+            $kolfu1html .= "    </table>";
+            $kolfu1html .= "                </td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"8\" height=\"1\"></td>";
+            $kolfu1html .= "                <td>";
+            $kolfu1html .= "                    <table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td rowspan=\"2\"><img src=\"".image_dir."icons/minen.gif\" border=\"0\" width=\"17\" height=\"17\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td colspan=\"2\" style=\"color:#aaaaaa;\">".$langueberkolonien['uebersichtkolonien']['minen']."</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"15\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td><nobr>".$minen."&nbsp;";
+                                                            if ($auto_minen==1) { 
+                                                            $kolfu1html .= " <i>(".$langueberkolonien['uebersichtkolonien']['auto'].")</i>";                                                            
+                                                            }
+            $kolfu1html .= "                                </nobr></td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td rowspan=\"2\"><img src=\"".image_dir."icons/fabrik.gif\" border=\"0\" width=\"17\" height=\"17\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td colspan=\"2\" style=\"color:#aaaaaa;\">".$langueberkolonien['uebersichtkolonien']['fabriken']."</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"15\" height=\"1\"></td>";
+            $kolfu1html .= "                           <td><nobr>".$fabriken."&nbsp;";
+                                                       if ($auto_fabriken==1) { 
+            $kolfu1html .= "                            <i>(".$langueberkolonien['uebersichtkolonien']['auto'].")</i>";
+                                                        } 
+            $kolfu1html .= "                            </nobr></td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                           <td rowspan=\"2\"><img src=\"".image_dir."icons/abwehr.gif\" border=\"0\" width=\"17\" height=\"17\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td colspan=\"2\" style=\"color:#aaaaaa;\">".$langueberkolonien['uebersichtkolonien']['pds']."</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                           <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"15\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td><nobr>".$abwehr."&nbsp;";
+                                                            if ($auto_abwehr==1) { 
+            $kolfu1html .= "                                <i>(".$langueberkolonien['uebersichtkolonien']['auto'].")</i>";
+                                                           } 
+            $kolfu1html .= "                            </nobr></td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td rowspan=\"2\"><img src=\"".image_dir."icons/vorrat.gif\" border=\"0\" width=\"17\" height=\"17\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td colspan=\"2\" style=\"color:#aaaaaa;\">".$langueberkolonien['uebersichtkolonien']['vorraete']."</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"15\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td><nobr>".str_replace('{1}',$vorrat,$langueberkolonien['uebersichtkolonien']['kt']); 
+                                                            if ($auto_vorrat==1) { 
+                                                                $kolfu1html .= " <i>(".$langueberkolonien['uebersichtkolonien']['auto'].")</i>";                                                                
+                                                            } 
+            $kolfu1html .= "</nobr></td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                    </table>";
+            $kolfu1html .= "</td>";
+            $kolfu1html .= "                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"8\" height=\"1\"></td>";
+            $kolfu1html .= "                <td>";
+            $kolfu1html .= "                    <table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">";
+            $kolfu1html .= "                       <tr>";
+            $kolfu1html .= "                            <td rowspan=\"2\"><img src=\"".image_dir."icons/lemin.gif\" border=\"0\" width=\"17\" height=\"17\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td colspan=\"2\" style=\"color:#aaaaaa;\">".$langueberkolonien['uebersichtkolonien']['lemin']."</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"15\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td>".str_replace('{1}',$lemin.'/'.$planet_lemin,$langueberkolonien['uebersichtkolonien']['kt'])."</td>";
+            $kolfu1html .= "                            <td>&nbsp;(".$konz_lemin.")</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td rowspan=\"2\"><img src=\"".image_dir."icons/mineral_1.gif\" border=\"0\" width=\"17\" height=\"17\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td colspan=\"2\" style=\"color:#aaaaaa;\">".$langueberkolonien['uebersichtkolonien']['baxterium']."</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"15\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td>".str_replace('{1}',$min1.'/'.$planet_min1,$langueberkolonien['uebersichtkolonien']['kt'])."</td>";
+            $kolfu1html .= "                            <td>&nbsp;(".$konz_min1.")</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td rowspan=\"2\"><img src=\"".image_dir."icons/mineral_2.gif\" border=\"0\" width=\"17\" height=\"17\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td colspan=\"2\" style=\"color:#aaaaaa;\">".$langueberkolonien['uebersichtkolonien']['rennurbin']."</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"15\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td>".str_replace('{1}',$min2.'/'.$planet_min2,$langueberkolonien['uebersichtkolonien']['kt'])."</td>";
+            $kolfu1html .= "                            <td>&nbsp;(".$konz_min2.")</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td rowspan=\"2\"><img src=\"".image_dir."icons/mineral_3.gif\" border=\"0\" width=\"17\" height=\"17\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td colspan=\"2\" style=\"color:#aaaaaa;\">".$langueberkolonien['uebersichtkolonien']['vomisaan']."</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"5\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"15\" height=\"1\"></td>";
+            $kolfu1html .= "                            <td>". str_replace('{1}',$min3.'/'.$planet_min3,$langueberkolonien['uebersichtkolonien']['kt'])."</td>";
+            $kolfu1html .= "                            <td>&nbsp;(".$konz_min3.")</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                    </table>";
+            $kolfu1html .= "                </td>";
+            $kolfu1html .= "                <td><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"4\" height=\"1\"></td>";
+            $kolfu1html .= "                <td>";
+            $kolfu1html .= "                    <table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td>".$osys[1]."</td>";
+            $kolfu1html .= "                            <td>".$osys[2]."</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td>".$osys[3]."</td>";
+            $kolfu1html .= "                            <td>".$osys[4]."</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                        <tr>";
+            $kolfu1html .= "                            <td>".$osys[5]."</td>";
+            $kolfu1html .= "                            <td>".$osys[6]."</td>";
+            $kolfu1html .= "                        </tr>";
+            $kolfu1html .= "                    </table>";
+            $kolfu1html .= "                </td>";
+            $kolfu1html .= "                <td>";
+            if ($sternenbasis==2) {
                                     if ($sternenbasis_art==1) {
                                         $icon='erf_1.gif';
-                                        $artname=$lang['uebersichtkolonien']['raumwerft'];
+                                        $artname=$langueberkolonien['uebersichtkolonien']['raumwerft'];
                                     }elseif ($sternenbasis_art==2) {
                                         $icon='erf_2.gif';
-                                        $artname=$lang['uebersichtkolonien']['kampfstation'];
+                                        $artname=$langueberkolonien['uebersichtkolonien']['kampfstation'];
                                     }elseif ($sternenbasis_art==0) {
                                         $icon='erf_3.gif';
-                                        $artname=$lang['uebersichtkolonien']['sternenbasis'];
+                                        $artname=$langueberkolonien['uebersichtkolonien']['sternenbasis'];
                                     }elseif ($sternenbasis_art==3) {
                                         $icon='erf_5.gif';
-                                        $artname=$lang['uebersichtkolonien']['Kriegsbasis'];
+                                        $artname=$langueberkolonien['uebersichtkolonien']['Kriegsbasis'];
                                     }
-                                    ?>
-                                    <center>
-                                        <a href="basen.php?fu=2&baid=<?php echo $sternenbasis_id?>&uid=<?php echo $uid?>&sid=<?php echo $sid?>" target="untenmitte">
-                                            <img src="<?php echo $bildpfad?>/icons/<?php echo $icon?>" border="0" title="<?php echo $artname?>">
-                                            <br>
-                                            <img src="../bilder/icons/basis.gif" border="0" width="36" height="36" title="<?php echo $artname?>">
-                                        </a>
-                                    </center>
-                                    <?php
+            $kolfu1html .= "<center>";
+            $kolfu1html .= "                            <a href=\"".servername."pages/basen.php?fu=2&baid=".$sternenbasis_id."&uid=".$uid."&sid=".$sid."\" target=\"untenmitte\">";
+            $kolfu1html .= "                                <img src=\"".image_dir."icons/".$icon."\" border=\"0\" title=\"".$artname."\">";
+            $kolfu1html .= "                                <br>";
+            $kolfu1html .= "                                <img src=\"".image_dir."icons/basis.gif\" border=\"0\" width=\"36\" height=\"36\" title=\"".$artname."\"></a>";            
+            $kolfu1html .= "                        </center>";
                                 } else {
-                                    echo "&nbsp;";
+                                    $kolfu1html .= "&nbsp;";
                                 }
-                                ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="11"><img src="../bilder/empty.gif" border="0" width="1" height="17"></td>
-                        </tr>
-                        <?php
+            $kolfu1html .= "                            </td>";
+            $kolfu1html .= "            </tr>";
+            $kolfu1html .= "            <tr>";
+            $kolfu1html .= "                <td colspan=\"11\"><img src=\"".image_dir."empty.gif\" border=\"0\" width=\"1\" height=\"17\"></td>";
+            $kolfu1html .= "            </tr>";            
                     }
-                    ?>
-                </table>
-            </center>
-            </div>
-            <?php 
+            
+            $kolfu1html .= "    </table>";
+            $kolfu1html .= "</center>";
+            $kolfu1html .= "</div>";      
         }
-    include ("inc.footer.php");
+        $smarty->display('uebersicht/uebersicht_kolfu1.tpl');
+    break;
 }
